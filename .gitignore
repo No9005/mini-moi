@@ -1,0 +1,12 @@
+.venv
+.env
+__pycache__
+__py_cache__
+Pipfile
+Pipfile.lock
+
+app.db
+
+vorlagen
+dist
+/dist
