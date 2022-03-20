@@ -1,3 +1,4 @@
 {
-    "default_language":"EN"    
+    "default_language":"EN",
+    "tz_info":"Europe/France" 
 }

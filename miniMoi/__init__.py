@@ -36,6 +36,7 @@ with open(cwd/"settings/settings.json", "r") as file:
 #region 'app config'
 app.config['VERSION'] = version.__version__
 app.config['DEFAULT_LANGUAGE'] = settings['default_language']
+app.config['TZ_INFO'] = settings['tz_info']
 
 #endregion
 

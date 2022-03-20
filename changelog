@@ -1,8 +1,14 @@
+v.0.1.0: Added handlers for db manipulation. See changelog.
+    Added all functions for the db manipulation.
+    Still needed are the functions for the overviews &
+    delivery summaries.
+    Need to add the logging functions too (db wise).
+    Unittests are also not done yet.
+
+
+------------ old versions ----------------------------------
 v.0.0.0: Let the speedcoding begin. See changelog.
     The project structur is created. Also the db.
     The customer business logic is also added.
     The rest is missing. The same goes for the
     unittests.
-
-
------------- old versions ----------------------------------

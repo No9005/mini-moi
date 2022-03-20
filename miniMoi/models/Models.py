@@ -18,9 +18,42 @@ class Customers(base):
     
     attributes:
     -----------
+    id : int
+        The customer id.
+    date : datetime
+        Date of creation.
+    name : str
+        Name of customer.
+    surname : str
+        Surname of customer.
+    street : str
+        Name of the street.
+    nr : int
+        House number.
+    postal : str
+        Zip code of the town
+    town : str
+        Town name
+    phone : str
+        Customers phone number.
+    mobile : str
+        Customers mobile number.
+    birthdate : str
+        Date of birth.
+            Format: %Y.%m.%d
+    approach : int
+        This value is needed to indicate
+        the order of approach for multipe
+        customers within one town.
+    notes : str
+        Additional notes.
     
     relational:
     -----------
+    orders
+        Link to Orders -> id
+    abo
+        Link to Abo -> id
 
     """
 
@@ -37,7 +70,8 @@ class Customers(base):
     town = Column(String(20), nullable = False)
     phone = Column(String(20), default = "")
     mobile = Column(String(20), default = "")
-    birthdate = Column(String(20), default = "")
+    birthdate = Column(DateTime)
+    approach = Column(Integer)
     
     notes = Column(String(100), default = "")
 
@@ -118,13 +152,14 @@ class Abo(base):
                            again after a certain amount of time.
                             Example: if the 'interval' column is
                                      2, this means, every second day.
-    interval : str
+    interval : int
         The interval of the delivery.
-            Options {
-                'None', str(Integer),
-                'Monday', 'Tuesday', 'Wendsday', 'Thursday',
-                'Friday', 'Saturday', 'Sunday'
+            Options: {
+                'None', str(Integer)
                 }
+            Caution: The days Monday to Sunday
+                     are mapped to ints starting at
+                     zero (0 = Monday)
     next_delivery : datetime
         The datetime of the next delivery.
             Caution: This is the actual delivery date!
@@ -141,7 +176,7 @@ class Abo(base):
     update_date = Column(DateTime, default = datetime.utcnow)
 
     cycle_type = Column(String(10))
-    interval = Column(String(10))
+    interval = Column(Integer)
     next_delivery = Column(DateTime)
 
     product = Column(Integer, ForeignKey("products.id"), nullable=False)
@@ -222,7 +257,7 @@ class Products(base):
     ordered = relationship("Orders", backref="product", cascade=False)
     abos = relationship("Abo", backref="product", cascade="all, delete-orphan")
 
-class Changes(base):
+class Log(base):
     """Table tracks all made changes 
     
     This table saves all made changes
@@ -243,7 +278,7 @@ class Changes(base):
     
     """
 
-    __tablename__ = "changes"
+    __tablename__ = "log"
 
     id = Column(Integer, primary_key = True)
     date = Column(DateTime, default = datetime.utcnow)

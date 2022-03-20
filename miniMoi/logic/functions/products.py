@@ -1,15 +1,16 @@
 """
-Collection of functions to handle processes
-related to the customer.
+Contains the functions to add/delete & update
+products
 
 """
 
 # imports
-import datetime
 import typing
 
+import pandas as pd
+
 from miniMoi import Session, app
-from miniMoi.models.Models import Customers
+from miniMoi.models.Models import Products, Category
 from miniMoi.language import language_files
 from miniMoi.logic.helpers import tools
 
@@ -20,20 +21,21 @@ def get(
         amount:typing.Union[int, None] = None,
         language:str = app.config['DEFAULT_LANGUAGE']
     ) -> dict:
-    """Returns the requested customers
+    """Returns the requested products
 
     params:
     -------
     filter_type : str | None
         Indicates the type of filter to apply.
-            Options: { None, 'customer', 
-                       'town' }
+            Options: { None, 'product', 
+                       'category' }
                     None: Fetches data by id
                           interval.
-                    'customer': Searches for
-                                a singel customer.
-                    'town': Searches for all
-                            customers in one town.
+                    'product': Searches for
+                                a singel product.
+                    'category': Searches for all
+                                products in one
+                                category.
     what : str | None:
         Indicates the query phrase.
             Example: if None, the string indicates
@@ -53,17 +55,12 @@ def get(
             'result':[
                 {
                     'id':int,
-                    'date':datetime,
                     'name':str,
-                    'surname':str,
-                    'street':str,
-                    'nr':int,
-                    'postal':str,
-                    'town':str,
-                    'phone':str,
-                    'mobile':str,
-                    'birthdate':str("%Y.%m.%d)
-                    'notes':str,
+                    'category':int,
+                    'purchase_price':float,
+                    'selling_price':float,
+                    'store':str,
+                    'phone':str
                 },
                 ...
             ]
@@ -76,7 +73,7 @@ def get(
     except: errors = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
 
     # check if the filter is one of the allowed keywords
-    allowedFilter = [None, "customer", "town"]
+    allowedFilter = [None, "product", "category"]
     try: assert(filter_type in allowedFilter)
     except AssertionError as e:
         return {
@@ -94,22 +91,22 @@ def get(
     # is filter & what both none? -> return first x elements
     if filter_type is None and what is None: 
         
-        result = session.query(Customers)
+        result = session.query(Products)
     
     # filter is None -> what should be the start of the users
     elif filter_type is None:
 
-        result = session.query(Customers).filter(Customers.id >= int(what))
+        result = session.query(Products).filter(Products.id >= int(what))
 
     # filter by customer surname?
-    elif filter_type == "customer" and what is not None: 
+    elif filter_type == "product" and what is not None: 
         
-        result = session.query(Customers).filter_by(surname = what).first()
+        result = session.query(Products).filter_by(name = what).first()
 
     # filter by town
-    elif filter_type == "town":
+    elif filter_type == "category":
 
-        result = session.query(Customers).filter_by(town = what)
+        result = session.query(Products).filter_by(category = int(what))
 
     # else return error
     else: return {'success':False, 'error':errors['unknownFilter'], 'data':{}}
@@ -127,28 +124,24 @@ def get(
             'result':[u.__dict__ for u in result.all()]
         }
     }
-
-def update(customer_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
-    """Updates a single customer
+    
+def update(product_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
+    """Updates a single product
 
     params:
     -------
-    customer_id : int
+    product_id : int
         The customer unique id.
     data : dict
         A dict containing the data
         to update.
             Format: {
                 'name':str,
-                'surname':str,
-                'street':str,
-                'nr':int,
-                'postal':str,
-                'town':str,
-                'phone':str,
-                'mobile':str,
-                'birthdate':str("%Y.%m.%d)
-                'notes':str
+                'category':int,
+                'purchase_price':float,
+                'selling_price':float,
+                'store':str,
+                'phone':str
             }
     language : str, optional
         the language iso code. Needed for the
@@ -173,50 +166,64 @@ def update(customer_id:int, data:dict, language:str = app.config['DEFAULT_LANGUA
     session = Session()
 
     # try to find the customer
-    customer = session.query(Customers).filter_by(id = customer_id).first()
-    if customer is None:
+    product = session.query(Products).filter_by(id = product_id).first()
+    if product is None:
 
         # close session & return error
         session.close()
 
-        return {'success':False, 'error':errors['notFound'].format(element="customer"), 'data':{}}
+        return {'success':False, 'error':errors['notFound'].format(element="product"), 'data':{}}
 
+    # fetch all possible categories
+    categories = pd.read_sql_query(
+        session.query(Category).statement,
+        session.bind
+    )
+
+    # get unique ids
+    availableCategories = categories['id'].unique().tolist()
+
+    # check if product has valid category
+    if data['category'] not in availableCategories:
+
+        # close session
+        session.close()
+
+        return {
+            'success':False,
+            'error':errors['wrongCategory'].format(
+                p = str(product['name']),
+                c = str(data['category'])
+            ),
+            'data':{}
+        }
+
+    # try to update
     try:
-
-        # check if the format of the birthdate is correct
-        birthdate = datetime.datetime.strptime(data['birthdate'], "%Y.%m.%d")
-
-        # try to update him
-        customer.name = data['name']
-        customer.surname = data['surname']
-        customer.street = data['street']
-        customer.nr = data['nr']
-        customer.postal = data['postal']
-        customer.town = data['town']
-        customer.phone = data['phone']
-        customer.mobile = data['mobile']
-        customer.birthdate = birthdate
-    
-        # commit
-        session.commit()
+        product.name = data['name']
+        product.category = data['category']
+        product.purchase_price = data['purchase_price']
+        product.selling_price = data['selling_price']
+        product.store = data['store']
+        product.phone = data['phone']
 
     except Exception as e:
 
-            code, msg = tools._convert_exception(e)
+        code, msg = tools._convert_exception(e)
 
-            # close session
-            session.close()
+        # close session
+        session.close()
 
-            return {
-                'success':False, 
-                'error':errors['unableOperation'].format(
-                    operation = "update",
-                    element = "customer",
-                    e=str(code),
-                    m=str(msg)
-                ),
-                'data':{}
-                }
+        return {
+            'success':False, 
+            'error':errors['unableOperation'].format(
+                operation = "update",
+                element = "product",
+                e=str(code),
+                m=str(msg)
+            ),
+            'data':{}
+            }
 
     # did all work?
     return {
@@ -225,29 +232,25 @@ def update(customer_id:int, data:dict, language:str = app.config['DEFAULT_LANGUA
         'data':{}
     }
 
-def add(customers:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
-    """Adds customers to the db
+def add(products:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
+    """Adds products to the db
 
     The add function either adds only one
-    customer or a complete list of customers.
+    or multiple products.
 
     params:
     -------
-    customers : list
+    products : list
         A list containing every single new
-        customer.
+        product.
             Format: [
                 {
                     'name':str,
-                    'surname':str,
-                    'street':str,
-                    'nr':int,
-                    'postal':str,
-                    'town':str,
-                    'phone':str,
-                    'mobile':str,
-                    'birthdate':str("%Y.%m.%d)
-                    'notes':str
+                    'category':int,
+                    'purchase_price':float,
+                    'selling_price':float,
+                    'store':str,
+                    'phone':str
                 },
                 ...
             ]
@@ -269,34 +272,59 @@ def add(customers:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
     except: errors = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
 
     # check if the list is not empty
-    if not bool(customers): return {'success':False, 'error':errors['noEntry'], 'data':{}}
+    if not bool(products): return {'success':False, 'error':errors['noEntry'].format(
+        element = "product"
+    ), 'data':{}}
 
-    # create a session
+    # turn into pd.DataFrame
+    df = pd.DataFrame(products)
+
+    # calculate margin
+    df['margin'] = ((df['selling_price'] - df['purchase_price']) / df['purchase_price']).round(3)
+
+    # create session
     session = Session()
 
-    # empty list to add the class objects
+    # fetch all possible category numbers (with_entities for only one column)
+    categories = pd.read_sql_query(
+        session.query(Category).statement,
+        session.bind
+    )
+
+    # get unique ids
+    availableCategories = categories['id'].unique().tolist()
+
+    # create empty list to store new entries
     toAdd = []
 
-    # create a new customer object for each in the list
-    for customer in customers:
+    # create the new products
+    for product in df.iterrows():
 
         try:
 
-            # check if the datetime is convertable
-            birthdate = datetime.datetime.strptime(customer['birthdate'], "%Y.%m.%d")
+            # check if selected category is available
+            if not product['category'] in availableCategories: 
+                
+                # close session
+                session.close()
 
-            # try to create the new object
-            toAdd.append(Customers(
-                name = customer['name'],
-                surname = customer['surname'],
-                street = customer['street'],
-                nr = customer['nr'],
-                postal = customer['postal'],
-                town = customer['town'],
-                phone = customer['phone'],
-                mobile = customer['mobile'],
-                birthdate = birthdate,
-                notes = customer['notes']
+                return {
+                    'success':False,
+                    'error':errors['wrongCategory'].format(
+                        p = str(product['name']),
+                        c = str(product['category'])
+                    ),
+                    'data':{}
+                }
+
+            toAdd.append(Products(
+                name = product['name'],
+                category = product['category'],
+                purchase_price = product['purchase_price'],
+                selling_price = product['selling_price'],
+                margin = product['margin'],
+                store = product['store'],
+                phone = product['phone'] 
             ))
 
         except Exception as e:
@@ -311,14 +339,13 @@ def add(customers:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
                 'success':False, 
                 'error':errors['unableOperation'].format(
                     operation = "add",
-                    element = "customer",
-                    c=str(customer['name']),
+                    element = "product",
+                    c=str(product['name']),
                     e=str(code),
                     m=str(msg)
                     ), 
                 'data':{}
                     }
-        
     # append to session
     session.add_all(toAdd)
 
@@ -346,12 +373,12 @@ def add(customers:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
         'data':{}
     }
 
-def delete(customer_id:int, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
-    """Deletes a customer
+def delete(product_id:int, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
+    """Deletes a product
 
     params:
     -------
-    customer_id : int
+    product_id : int
         the customer unique id.
     language : str, optional
         The language iso. Needed for the error
@@ -373,16 +400,16 @@ def delete(customer_id:int, language:str = app.config['DEFAULT_LANGUAGE']) -> di
     session = Session()
 
     # get the user
-    customer = session.query(Customers).filter_by(id = customer_id).first()
-    if customer is None: return {
+    product = session.query(Products).filter_by(id = product_id).first()
+    if product is None: return {
         'success':False, 
-        'error':errors['notFound'].format(element="customer"), 
+        'error':errors['notFound'].format(element="product"), 
         'data':{}
         }
-
+    
     try:
         # delete it
-        session.delete(customer)
+        session.delete(product)
 
         # commit
         session.commit()
@@ -394,7 +421,7 @@ def delete(customer_id:int, language:str = app.config['DEFAULT_LANGUAGE']) -> di
             'success':False, 
             'error':errors['unableOperation'].format(
                 operation = "delete",
-                element = "customer",
+                element = "product",
                 e=str(code),
                 m=str(msg)
             ), 

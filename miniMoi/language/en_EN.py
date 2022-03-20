@@ -5,14 +5,20 @@ The english language files
 
 mapping = {
     'error_codes':{
-        'cust.add.0':"You did not add a customer.",
-        'cust.add.1':"Not able to add the customer: {c}: {e}: {m}.",
-        'cust.add.2':"Not able to commit: {e}: {m}.",
-        'cust.upt.0':"You did change anything.",
-        'cust.upt.1':"Not able to update the customer.: {e}: {m}.",
-        'cust.notFound':"The customer was not found.",
-        'cust.get.0':"The applied filter needs to be one of the following: {f}",
-        'cust.get.1':"The applied filter is not known.",
-        'cust.del.0':"Not able to delete customer.: {e}: {m}",
+        'noCommit':"Not able to commit.: {e}: {m}.",
+        'unableOperation':"Not able to run the operation '{operation}' the {element}.: {c}: {e}: {m}.",
+        'wrongCategory':"Selected category for product not available. (product '{p}', category '{c}').",
+        'wrongProduct':"Selected product not available.",
+        'noEntry':"You did not enter/change anything.",
+        'notFound':"The {element} was not found.",
+        'wrongFilter':"The applied filter needs to be one of the following: {f}",
+        'uknownFilter':"The applied filter is not known.",
+        'wrongType':"'{var} needs to be a(n) {dtype}.",
+        'notAllowed':"'{var}' needs to be one of the following '{available}'.",
+        'weekdays':"Monday, Tuesday, Wendsday, Thursday, Friday, Saturday, Sunday",
+        'cycleMismatch':"The 'interval' is not allowed to be None if the 'cycle_type' indicates a 'day' or 'interval'.",
+
+
+
     }
 }

@@ -30,6 +30,19 @@ def base():
     return render_template("html/base.html")
 #endregion
 
+#shutdown server
+@app.route("/shutdown/app",  methods=["GET"])
+def shutdown():
+    """Shutsdown the app """
+
+    func = request.environ.get('werkzeug.server.shutdown')
+    if func is None: raise RuntimeError('Not running with the Werkzeug server')
+    
+    # kill the server
+    func()
+
+    return "server shutting down"
+
 #region 'cleanup'
 @app.teardown_appcontext
 def shutdown_session(exception=None):
@@ -39,6 +52,8 @@ def shutdown_session(exception=None):
     # .close() 'resets' the session (incl. rollback())
     # and .remove() closes the connection to db
     Session.remove()
+
+#endregion
 
 #region 'api routes'
 @app.route("/api/<path:ressource>", methods=["POST"])
