@@ -13,5 +13,5 @@ from sqlalchemy import create_engine
 testEngine = create_engine(
                 "sqlite://",
                 echo=False,
-                future=True
+                future=False
             )

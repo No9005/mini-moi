@@ -56,14 +56,23 @@ def get(amount:typing.Union[int, None] = None, language:str = app.config['DEFAUL
     result = session.query(Category)
 
     # limit?
-    if amount is not None: result.limit(amount)
+    if amount is not None: result = result.limit(amount)
+
+    # result is None?
+    if result is None: return{'success':True, 'error':"", 'data':{'result':[]}}
+
+    # turn into list
+    fetched = []
+    for row in result.all():
+
+        fetched.append({col.name:getattr(row, col.name) for col in row.__table__.columns})
 
     # turn into dict & return
     return {
         'success':True,
         'error':"",
         'data':{
-            'result':[u.__dict__ for u in result.all()]
+            'result':fetched
         }
     }
 
@@ -111,7 +120,11 @@ def update(category_id:int, name:str, language:str = app.config['DEFAULT_LANGUAG
         return {'success':False, 'error':errors['notFound'].format(element="category"), 'data':{}}
 
     # try to update
-    try: category.name = name  
+    try: 
+        category.name = name
+
+        session.commit()
+          
     except Exception as e:
 
         code, msg = tools._convert_exception(e)
@@ -129,6 +142,9 @@ def update(category_id:int, name:str, language:str = app.config['DEFAULT_LANGUAG
             ),
             'data':{}
             }
+
+    # add logs
+    if app.config['ACTION_LOGGING']: tools._update_logs(session, 'miniMoi.logic.functions.category.update', str(locals()))
 
     # did all work?
     return {
@@ -229,6 +245,9 @@ def add(categories:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
             )
         }
 
+    # add logs
+    if app.config['ACTION_LOGGING']: tools._update_logs(session, 'miniMoi.logic.functions.category.add', str(locals()))
+
     # did all work?
     return {
         'success':True,
@@ -290,6 +309,9 @@ def delete(category_id:int, language:str = app.config['DEFAULT_LANGUAGE']) -> di
             ), 
             'data':{}
             }
+
+    # add logs
+    if app.config['ACTION_LOGGING']: tools._update_logs(session, 'miniMoi.logic.functions.category.delete', str(locals()))
 
     # did all work?
     return {

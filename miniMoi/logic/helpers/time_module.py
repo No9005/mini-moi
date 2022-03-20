@@ -164,7 +164,7 @@ def calculate_next_delivery(date:datetime.datetime, cycle_type:str, interval:int
     else: raise AssertionError(
         errors['notAllowed'].format(
                 var="cycle_type",
-                available = str(set(None, 'day', 'interval'))
+                available = str(set([None, 'day', 'interval']))
             )
         )
 

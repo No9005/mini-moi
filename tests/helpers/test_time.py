@@ -22,11 +22,22 @@ class TestTime(unittest.TestCase):
     call. These are
         - today()
         - utcnow()
+        - parse_date_string()
+        - to_string()
+        - utz_to_local()
 
     methods:
     --------
     setUp
+        Setup before testing
     tearDown
+        Cleaning after testing
+    test_date_by_weekday
+        Calculate date based on weekday
+    test_date_by_interval
+        Calculate date based on interval
+    test_clalculate_next_delivery
+        Calculate next delivery
 
     """
 
@@ -117,6 +128,120 @@ class TestTime(unittest.TestCase):
     def test_clalculate_next_delivery(self):
         """Tests the next delivery calculation """
 
-        pass
+        # create a today (-> Wendsday, aka 2)
+        date = datetime.datetime.strptime("16.03.2022", "%d.%m.%Y")
+
+
+        #region 'cycle_type = None'
+        result = time.calculate_next_delivery(
+            date = date,
+            cycle_type = None,
+            interval = 2,
+            language = "EN"
+        )
+
+        # assert
+        self.assertEqual(result, None)
+
+        #endregion
+
+        #region 'cycle_type = day, interval = None'
+        with self.assertRaises(AssertionError) as e:
+            result = time.calculate_next_delivery(
+                date = date,
+                cycle_type = "day",
+                interval = None,
+                language = "EN"
+            )
+        
+        # assert
+        self.assertEqual(str(e.exception), "The 'interval' is not allowed to be None if the 'cycle_type' indicates a 'day' or 'interval'.")
+
+        #endregion
+
+        #region 'cycle_type = day, interval > 6'
+        with self.assertRaises(AssertionError) as e:
+            result = time.calculate_next_delivery(
+                date = date,
+                cycle_type = "day",
+                interval = 7,
+                language = "EN"
+            )
+        
+        # assert
+        self.assertEqual(str(e.exception), "'interval for day' needs to be one of the following '{ Monday, Tuesday, Wendsday, Thursday, Friday, Saturday, Sunday }'.")
+
+        #endregion
+
+        #region 'cycle_type = day, interval < 0'
+        with self.assertRaises(AssertionError) as e:
+            result = time.calculate_next_delivery(
+                date = date,
+                cycle_type = "day",
+                interval = -1,
+                language = "EN"
+            )
+        
+        # assert
+        self.assertEqual(str(e.exception), "'interval for day' needs to be one of the following '{ Monday, Tuesday, Wendsday, Thursday, Friday, Saturday, Sunday }'.")
+
+        #endregion
+
+        #region 'cycle_type = day, success'
+        result = time.calculate_next_delivery(
+                date = date,
+                cycle_type = "day",
+                interval = 3,
+                language = "EN"
+            )
+        
+        # assert
+        self.assertEqual(result.strftime("%d.%m.%Y"), "24.03.2022")
+
+        #endregion
+
+        #region 'cycle_type = interval, interval = None'
+        with self.assertRaises(AssertionError) as e:
+            result = time.calculate_next_delivery(
+                date = date,
+                cycle_type = "interval",
+                interval = None,
+                language = "EN"
+            )
+        
+        # assert
+        self.assertEqual(str(e.exception), "The 'interval' is not allowed to be None if the 'cycle_type' indicates a 'day' or 'interval'.")
+
+        #endregion
+
+        #region 'cycle_type = interval, success'
+        result = time.calculate_next_delivery(
+                date = date,
+                cycle_type = "interval",
+                interval = 4,
+                language = "EN"
+            )
+        
+        # assert
+        self.assertEqual(result.strftime("%d.%m.%Y"), "20.03.2022")
+
+        #endregion
+
+        #region 'cycle_type = unknown'
+        with self.assertRaises(AssertionError) as e:
+            result = time.calculate_next_delivery(
+                date = date,
+                cycle_type = "notKnown",
+                interval = None,
+                language = "EN"
+            )
+        
+        # assert
+        self.assertEqual(str(e.exception).split("{")[0], "'cycle_type' needs to be one of the following '")
+
+
+        #endregion
+
+
     #endregion
 

@@ -95,14 +95,14 @@ def get(
 
     #region 'query'
     # is filter & what both none? -> return first x elements
-    if filter_type is None and what is None: 
+    if filter_type is None: 
         
         result = session.query(Abo)
 
     # filter by customer surname?
     elif filter_type == "abo" and what is not None: 
         
-        result = session.query(Abo).filter_by(id = what).first()
+        result = session.query(Abo).filter_by(id = what)
 
     # filter by town
     elif filter_type == "customer":
@@ -115,7 +115,10 @@ def get(
     #endregion
 
     # limit the amount?
-    if amount is not None: result.limit(amount)
+    if amount is not None: result = result.limit(amount)
+
+    # is result none?
+    if result is None: return{'success':True, 'error':"", 'data':{'result':[]}}
 
     #region 'fetch all products'
     products = pd.read_sql_query(
@@ -129,14 +132,14 @@ def get(
     for r in result.all():
 
         resultList.append({
-                'id':r['id'],
-                'customer_id':r['customer_id'],
-                'update_date':time.to_string(time.utc_to_local(r['update_date'], tz), "%Y.%m.%d %H:%M"),
-                'cycle_type':r['cycle_type'],
-                'interval':r['interval'],
-                'next_delivery':time.to_string(time.utc_to_local(r['next_delivery'], tz), "%Y.%m.%d %H:%M"),
-                'product_id':r['product'],
-                'product_name':products.loc[products['id'] == r['product'], "name"]
+                'id':r.id,
+                'customer_id':r.customer_id,
+                'update_date':time.to_string(time.utc_to_local(r.update_date, tz), "%Y.%m.%d %H:%M"),
+                'cycle_type':r.cycle_type,
+                'interval':r.interval,
+                'next_delivery':time.to_string(time.utc_to_local(r.next_delivery, tz), "%Y.%m.%d"),
+                'product_id':r.product,
+                'product_name':products.loc[products['id'] == r.product, "name"].values.tolist()[0]
             })
 
     # turn into dict & return
@@ -162,7 +165,7 @@ def update(abo_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE'])
                 'cycle_type':str,
                 'interval':int,
                 'product':int,
-                'custom_next_delivery':str | None
+                'next_delivery':str | None
             }
     language : str, optional
         the language iso code. Needed for the
@@ -279,6 +282,9 @@ def update(abo_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE'])
             ),
             'data':{}
             }
+
+    # add logs
+    if app.config['ACTION_LOGGING']: tools._update_logs(session, 'miniMoi.logic.functions.abo.update', str(locals()))
 
     # did all work?
     return {
@@ -438,6 +444,9 @@ def add(customer_id:int, abos:list, language:str = app.config['DEFAULT_LANGUAGE'
             )
         }
 
+    # add logs
+    if app.config['ACTION_LOGGING']: tools._update_logs(session, 'miniMoi.logic.functions.abo.add', str(locals()))
+
     # did all work?
     return {
         'success':True,
@@ -499,6 +508,9 @@ def delete(abo_id:int, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
             ), 
             'data':{}
             }
+
+    # add logs
+    if app.config['ACTION_LOGGING']: tools._update_logs(session, 'miniMoi.logic.functions.abo.delete', str(locals()))
 
     # did all work?
     return {

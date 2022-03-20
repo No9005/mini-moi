@@ -6,6 +6,7 @@ products
 
 # imports
 import typing
+from numpy import var
 
 import pandas as pd
 
@@ -92,21 +93,32 @@ def get(
     if filter_type is None and what is None: 
         
         result = session.query(Products)
-    
-    # filter is None -> what should be the start of the users
-    elif filter_type is None:
 
-        result = session.query(Products).filter(Products.id >= int(what))
-
-    # filter by customer surname?
+    # filter by product name?
     elif filter_type == "product" and what is not None: 
         
-        result = session.query(Products).filter_by(name = what).first()
+        result = session.query(Products).filter_by(name = what)
 
     # filter by town
     elif filter_type == "category":
 
-        result = session.query(Products).filter_by(category = int(what))
+        try: result = session.query(Products).filter_by(category = int(what))
+        except ValueError as e:
+
+            code, msg = tools._convert_exception(e)
+
+            # close session
+            session.close()
+
+            return {
+                'success':False, 
+                'error':errors['wrongType'].format(
+                    var = "what",
+                    dtype = "int"
+                ),
+                'data':{}
+                }
+
 
     # else return error
     else: return {'success':False, 'error':errors['unknownFilter'], 'data':{}}
@@ -114,14 +126,23 @@ def get(
     #endregion
 
     # limit the amount?
-    if amount is not None: result.limit(amount)
+    if amount is not None: result = result.limit(amount)
+
+    # result is None?
+    if result is None: return{'success':True, 'error':"", 'data':{'result':[]}}
+
+    # turn into list
+    fetched = []
+    for row in result.all():
+
+        fetched.append({col.name:getattr(row, col.name) for col in row.__table__.columns})
 
     # turn into dict & return
     return {
         'success':True,
         'error':"",
         'data':{
-            'result':[u.__dict__ for u in result.all()]
+            'result':fetched
         }
     }
     
@@ -192,7 +213,8 @@ def update(product_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAG
         return {
             'success':False,
             'error':errors['wrongCategory'].format(
-                p = str(product['name']),
+                prior = str(product.name),
+                p = str(data['name']),
                 c = str(data['category'])
             ),
             'data':{}
@@ -206,6 +228,12 @@ def update(product_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAG
         product.selling_price = data['selling_price']
         product.store = data['store']
         product.phone = data['phone']
+        product.margin = round(
+            (data['selling_price'] - data['purchase_price']) / data['purchase_price'],
+            3
+            )
+
+        session.commit()
 
     except Exception as e:
 
@@ -224,6 +252,9 @@ def update(product_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAG
             ),
             'data':{}
             }
+
+    # add logs
+    if app.config['ACTION_LOGGING']: tools._update_logs(session, 'miniMoi.logic.functions.products.update', str(locals()))
 
     # did all work?
     return {
@@ -298,7 +329,7 @@ def add(products:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
     toAdd = []
 
     # create the new products
-    for product in df.iterrows():
+    for i, product in df.iterrows():
 
         try:
 
@@ -335,6 +366,8 @@ def add(products:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
             # close the session
             session.close()
 
+            print(product)
+
             return {
                 'success':False, 
                 'error':errors['unableOperation'].format(
@@ -365,6 +398,9 @@ def add(products:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
                 m=str(msg)
             )
         }
+
+    # add logs
+    if app.config['ACTION_LOGGING']: tools._update_logs(session, 'miniMoi.logic.functions.products.add', str(locals()))
 
     # did all work?
     return {
@@ -427,6 +463,9 @@ def delete(product_id:int, language:str = app.config['DEFAULT_LANGUAGE']) -> dic
             ), 
             'data':{}
             }
+
+    # add logs
+    if app.config['ACTION_LOGGING']: tools._update_logs(session, 'miniMoi.logic.functions.products.delete', str(locals()))
 
     # did all work?
     return {

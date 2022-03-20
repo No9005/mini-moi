@@ -7,18 +7,21 @@ related to the customer.
 # imports
 import datetime
 import typing
+import copy
 
 from miniMoi import Session, app
 from miniMoi.models.Models import Customers
 from miniMoi.language import language_files
 from miniMoi.logic.helpers import tools
+import miniMoi.logic.helpers.time_module as time
 
 #region 'functions'
 def get(
         filter_type:typing.Union[str, None], 
         what:typing.Union[str, None],
         amount:typing.Union[int, None] = None,
-        language:str = app.config['DEFAULT_LANGUAGE']
+        language:str = app.config['DEFAULT_LANGUAGE'],
+        tz:str = app.config['TZ_INFO']
     ) -> dict:
     """Returns the requested customers
 
@@ -45,6 +48,9 @@ def get(
         the language iso code. Needed for the
         error msg.
         (default is app.config['DEFAULT_LANGUAGE])
+    tz : str, optional
+        The timezone info.
+        (default is app.config['TZ_INFO'])
 
     returns:
     --------
@@ -104,7 +110,7 @@ def get(
     # filter by customer surname?
     elif filter_type == "customer" and what is not None: 
         
-        result = session.query(Customers).filter_by(surname = what).first()
+        result = session.query(Customers).filter_by(surname = what)
 
     # filter by town
     elif filter_type == "town":
@@ -117,14 +123,40 @@ def get(
     #endregion
 
     # limit the amount?
-    if amount is not None: result.limit(amount)
+    if amount is not None: result = result.limit(amount)
+
+    # result is None?
+    if result is None: return{'success':True, 'error':"", 'data':{'result':[]}}
+
+    # turn into list
+    fetched = []
+    for row in result.all():
+
+        tmp = {}
+
+        for col in row.__table__.columns:
+
+            # convert timestamp
+            if col.name == "date": tmp[col.name] = time.to_string(
+                time.utc_to_local(getattr(row, col.name), tz),
+                "%Y.%m.%d %H:%M"
+                )
+            
+            elif col.name == "birthdate": tmp[col.name] = time.to_string(
+                time.utc_to_local(getattr(row, col.name), tz),
+                "%Y.%m.%d"
+                )
+            
+            else: tmp[col.name] = getattr(row, col.name)
+
+        fetched.append(copy.deepcopy(tmp))
 
     # turn into dict & return
     return {
         'success':True,
         'error':"",
         'data':{
-            'result':[u.__dict__ for u in result.all()]
+            'result':fetched
         }
     }
 
@@ -212,11 +244,15 @@ def update(customer_id:int, data:dict, language:str = app.config['DEFAULT_LANGUA
                 'error':errors['unableOperation'].format(
                     operation = "update",
                     element = "customer",
+                    c = "",
                     e=str(code),
                     m=str(msg)
                 ),
                 'data':{}
                 }
+
+    # add logs
+    if app.config['ACTION_LOGGING']: tools._update_logs(session, 'miniMoi.logic.functions.customer.update', str(locals()))
 
     # did all work?
     return {
@@ -339,6 +375,9 @@ def add(customers:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
             )
         }
 
+    # add logs
+    if app.config['ACTION_LOGGING']: tools._update_logs(session, 'miniMoi.logic.functions.customer.add', str(locals()))
+
     # did all work?
     return {
         'success':True,
@@ -400,6 +439,9 @@ def delete(customer_id:int, language:str = app.config['DEFAULT_LANGUAGE']) -> di
             ), 
             'data':{}
             }
+
+    # add logs
+    if app.config['ACTION_LOGGING']: tools._update_logs(session, 'miniMoi.logic.functions.customer.delete', str(locals()))
 
     # did all work?
     return {

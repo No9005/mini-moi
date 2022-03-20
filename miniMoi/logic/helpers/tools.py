@@ -7,8 +7,11 @@ Contains collection of tools
 import typing
 import datetime
 import json
+import sys
 
 import numpy as np
+
+from miniMoi.models.Models import Log
 
 #region 'functions'
 def _convert_exception(e) -> tuple:
@@ -24,6 +27,47 @@ def _to_dict(orm_object, to_fetch:list) -> dict:
     payload = {col:orm_object.__dict__[col] for col in to_fetch}
     
     return payload
+
+def _update_logs(session, ressource:str, action:str) -> None:
+    """Adds the user action to the logs 
+    
+    NOTE:
+    prints warnings if the commit was no success
+
+    params:
+    -------
+    session : sqlAlchemy session object
+        The sql session object to add elements to.
+    ressource : str
+        The function name/endpoint which was called.
+    action : str
+        Stringified parameters.
+
+    returns:
+    -------
+    None
+
+    """
+
+    # create a new log
+    newLog = Log(
+        ressource = str(ressource),
+        action = str(action)
+    )
+
+    # add to session
+    session.add(newLog)
+
+    #try to commit
+    try: session.commit()
+    except:
+
+        session.rollback()
+        
+        print("NOT ABLE TO LOG: ", str(ressource), str(action))
+        sys.stdout.flush()
+
+    return
 
 #endregion
 

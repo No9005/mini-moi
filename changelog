@@ -1,3 +1,12 @@
+v.0.1.1: Added unittests. See changelog.
+    Added unittests. Maybe we need some additional
+    assertion checks. Lets see how much time is left at
+    the end of the challenge.
+    delivery & order overview functions are still missing.
+    Also the frontend (which will be basically just a 
+    editable table).
+
+------------ old versions ----------------------------------
 v.0.1.0: Added handlers for db manipulation. See changelog.
     Added all functions for the db manipulation.
     Still needed are the functions for the overviews &
@@ -5,8 +14,6 @@ v.0.1.0: Added handlers for db manipulation. See changelog.
     Need to add the logging functions too (db wise).
     Unittests are also not done yet.
 
-
------------- old versions ----------------------------------
 v.0.0.0: Let the speedcoding begin. See changelog.
     The project structur is created. Also the db.
     The customer business logic is also added.

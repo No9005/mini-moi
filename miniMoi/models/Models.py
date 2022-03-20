@@ -75,8 +75,8 @@ class Customers(base):
     
     notes = Column(String(100), default = "")
 
-    orders = relationship("Orders", backref="customer", cascade=False)
-    abo = relationship("Abo", backref="customer", cascade="all, delete-orphan")
+    orders = relationship("Orders", backref="customer_orders", cascade=False)
+    abo = relationship("Abo", backref="customer_abo", cascade="all, delete-orphan")
 
 class Orders(base):
     """Contains all orders ever done 
@@ -203,7 +203,7 @@ class Category(base):
     id = Column(Integer, primary_key = True)
     name = Column(String(50), nullable = False, unique = True)
 
-    products = relationship("Products", backref="category", cascade="all, delete-orphan")
+    products = relationship("Products", backref="category_products", cascade="all, delete-orphan")
 
 class Products(base):
     """Contains all available products to order 
@@ -254,8 +254,8 @@ class Products(base):
     store = Column(String(100))
     phone = Column(String(20))
 
-    ordered = relationship("Orders", backref="product", cascade=False)
-    abos = relationship("Abo", backref="product", cascade="all, delete-orphan")
+    ordered = relationship("Orders", backref="product_ordered", cascade=False)
+    abos = relationship("Abo", backref="product_abos", cascade="all, delete-orphan")
 
 class Log(base):
     """Table tracks all made changes 
@@ -283,8 +283,8 @@ class Log(base):
     id = Column(Integer, primary_key = True)
     date = Column(DateTime, default = datetime.utcnow)
 
-    ressource = Column(String(100), nullable = False)
-    action = Column(String(100), nullable = False)
+    ressource = Column(String(500), nullable = False)
+    action = Column(String(500), nullable = False)
 
 
 

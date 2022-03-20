@@ -37,6 +37,7 @@ with open(cwd/"settings/settings.json", "r") as file:
 app.config['VERSION'] = version.__version__
 app.config['DEFAULT_LANGUAGE'] = settings['default_language']
 app.config['TZ_INFO'] = settings['tz_info']
+app.config['ACTION_LOGGING'] = settings['action_logging'] == "True"
 
 #endregion
 

@@ -4,6 +4,9 @@ Contains the handler logic for the api
 """
 
 # imports
+from miniMoi import app
+from miniMoi.language import language_files
+from miniMoi.logic.helpers import tools
 from miniMoi.logic.functions import customer, products, category, abo
 
 #region 'handler'
@@ -68,6 +71,10 @@ def api(request:dict) -> dict:
                 the language iso code. Needed for the
                 error msg.
                 (default is app.config['DEFAULT_LANGUAGE])
+            time_zone : str, optional
+                Mapped to tz. Indicates the
+                timezone. The default value is in
+                the settings.json.
 
             returns:
             --------
@@ -95,6 +102,7 @@ def api(request:dict) -> dict:
                 what = request['what'],
                 amount = request['amount'],
                 language = request['language'],
+                tz = request['time_zone']
             )
 
             return response
@@ -537,8 +545,9 @@ def api(request:dict) -> dict:
                 the language iso code. Needed for the
                 error msg.
                 (default is app.config['DEFAULT_LANGUAGE'])
-            tz : str, optional
+            time_zone : str, optional
                 Timezone info as string.
+                Mapped to tz.
                 (default is app.config['TZ_INFO])
 
             returns:
@@ -567,7 +576,7 @@ def api(request:dict) -> dict:
                 what = request['what'],
                 amount = request['amount'],
                 language = request['language'],
-                tz = request['tz']
+                tz = request['time_zone']
             )
 
             return response
@@ -685,12 +694,22 @@ def api(request:dict) -> dict:
 
         #endregion
 
+        else: return {'success':False, 'error':errors['404'].format(ressource=ressource), 'data':{}}
+
 
     except Exception as e: 
         
         # get code & msg
+        code, msg = tools._convert_exception(e)
+
+        # grab the language files
+        try: errors = language_files[request['language']]['error_codes']
+        except: errors = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
         
-        return {'success':False, 'error':"", 'data':{}}
+        return {'success':False, 'error':errors['500'].format(
+            c=str(code),
+            m = str(msg)
+        ), 'data':{}}
 
     return
 
