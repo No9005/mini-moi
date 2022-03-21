@@ -1,10 +1,12 @@
+v.0.3.0: Added xlsx writing. Frontend needed.
+
+------------ old versions ----------------------------------
 v.0.2.0: Added test + tables + delivery. See changelog.
     First delivery function added (create).
     Added unittests and adjusted unittests to be able to
     process the new table infos.
     Need th 'booking' and overview functions.
 
------------- old versions ----------------------------------
 v.0.1.1: Added unittests. See changelog.
     Added unittests. Maybe we need some additional
     assertion checks. Lets see how much time is left at

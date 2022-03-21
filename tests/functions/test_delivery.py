@@ -12,7 +12,7 @@ import datetime
 from sqlalchemy.orm import scoped_session, sessionmaker, Session
 
 from miniMoi import base
-from miniMoi.models.Models import Abo, Customers, Products, Category, Subcategory
+from miniMoi.models.Models import Abo, Customers, Products, Category, Subcategory, Orders
 
 from miniMoi.logic.functions import delivery
 
@@ -26,6 +26,13 @@ testSession = scoped_session(testSessionFactory)
 @patch('miniMoi.logic.functions.delivery.Session', testSession)
 class TestDelivery(unittest.TestCase):
     """Tests the delivery functions 
+
+    CAUTION:
+    The functions
+        - _prepare_granular()
+        - _category_overview()
+        - _product_overview()
+    are tested with integration tests.
     
     methods:
     --------
@@ -349,11 +356,15 @@ class TestDelivery(unittest.TestCase):
             'customer_phone':["+83 phone"],
             'customer_mobile':["+83 mobile"],
             'quantity':[10], 
-            'product_name':["Doppelweck"], 
+            'product_name':["Doppelweck"],
+            'product_id':[5],
+            'product_selling_price':[.5],
             'subcategory_name':["Geschnitten"],
+            'category_name':["Semmel"],
             'cost':[5.00],
             'total_cost':[5.00],
-            'customer_notes':["First boy, again"]
+            'customer_notes':["First boy, again"],
+            'id':[8]
         })
 
         # check town 'Entenhausen'
@@ -369,10 +380,14 @@ class TestDelivery(unittest.TestCase):
             'customer_mobile':["+83 mobile", "+83 mobile", "+83 mobile", "+83 mobile", "+83 mobile"],
             'quantity':[10,5,10,5,2], 
             'product_name':["Doppelweck", "Sonnenkernbrot", "Fitnessbrot", "Kaisersemmel", "Sonnenkernbrot"], 
+            'product_id':[5, 1, 2, 4, 1],
+            'product_selling_price':[0.5, 3.5, 5.0, 0.5, 3.5],
             'subcategory_name':["Geschnitten", "Ganz", "Geschnitten", "Ganz", "Ganz"],
+            'category_name':["Semmel", "Brot", "Brot", "Semmel", "Brot"],
             'cost':[5.00, 17.50, 50.0, 2.50,7.0],
             'total_cost':[22.50, 22.50, 59.50, 59.50, 59.50],
-            'customer_notes':["First boy", "First boy", "idx 1", "idx 1", "idx 1"]
+            'customer_notes':["First boy", "First boy", "idx 1", "idx 1", "idx 1"],
+            'id':[5, 6, 1, 3, 2]
         })
 
         # check 'overview_category'
@@ -397,5 +412,79 @@ class TestDelivery(unittest.TestCase):
                 'Ganz':[0,5]
             }
         })
+
+    def test_book(self):
+        """Tests the order booking """
+
+        # get old abo ids
+        with Session(self.testEngine) as session:
+
+            oldDates = {
+                5:session.query(Abo).filter_by(id = 5).first().next_delivery,
+                1:session.query(Abo).filter_by(id = 1).first().next_delivery,
+                3:session.query(Abo).filter_by(id = 3).first().next_delivery,
+                4:session.query(Abo).filter_by(id = 4).first().next_delivery,
+                7:session.query(Abo).filter_by(id = 7).first().next_delivery,
+            }
+
+        # test data
+        test = {
+            'customer_approach':[1,1,3,3,3], 
+            'customer_street':["Quickhausen", "Quickhausen", "Elmstreet", "Elmstreet", "Elmstreet"], 
+            'customer_nr':[5,5,5,5,5],
+            'customer_town':["Entenhausen", "Entenhausen", "Entenhausen", "Entenhausen", "Entenhausen"],
+            'customer_name':["Hans", "Hans", "Fritz", "Fritz", "Fritz"],
+            'customer_surname':["Peter", "Peter", "Meier", "Meier", "Meier"],
+            'customer_id':[2,2,1,1,1],
+            'customer_phone':["+83 phone", "+83 phone", "+83 phone", "+83 phone", "+83 phone"],
+            'customer_mobile':["+83 mobile", "+83 mobile", "+83 mobile", "+83 mobile", "+83 mobile"],
+            'quantity':[10,5,10,5,2], 
+            'product_name':["Doppelweck", "Sonnenkernbrot", "Fitnessbrot", "Kaisersemmel", "Sonnenkernbrot"], 
+            'product_id':[5, 1, 2, 4, 1],
+            'product_selling_price':[0.5, 3.5, 5.0, 0.5, 3.5],
+            'subcategory_name':["Geschnitten", "Ganz", "Geschnitten", "Ganz", "Ganz"],
+            'category_name':["Semmel", "Brot", "Brot", "Semmel", "Brot"],
+            'cost':[5.00, 17.50, 50.0, 2.50,7.0],
+            'total_cost':[22.50, 22.50, 59.50, 59.50, 59.50],
+            'customer_notes':["First boy", "First boy", "idx 1", "idx 1", "idx 1"],
+            'id':[5, 6, 1, 3, 2]
+        }
+
+        # run
+        result = delivery.book(test, "EN")
+
+        # assert
+        self.assertTrue(result['success'])
+
+        # check db
+        with Session(self.testEngine) as session:
+
+            # get Orders
+            orders = session.query(Orders)
+
+            # assert
+            """
+            CAUTION:
+            The orders are not added according the order of
+            the passed data.
+            It is added by the order of the fetched abo.id s.
+            
+            """
+
+            self.assertEqual(orders.count(), 5)
+            self.assertEqual(orders.first().customer_id, 1)
+            self.assertEqual(orders.first().name, "Fitnessbrot")
+            self.assertEqual(orders.first().total, 50.0)
+
+            # check if abos where updated
+            for i in [5,1,3]:
+                self.assertNotEqual(session.query(Abo).filter_by(id = i).first().next_delivery, oldDates[i])
+
+            # check if equal
+            for i in [4,7]:
+                self.assertEqual(session.query(Abo).filter_by(id = i).first().next_delivery, oldDates[i])
+
+
+            
 
     #endregion

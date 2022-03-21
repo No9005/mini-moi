@@ -11,13 +11,112 @@ import pandas as pd
 import xlsxwriter as xlsx
 
 from miniMoi import Session, app
-from miniMoi.models.Models import Abo, Customers, Products, Category, Subcategory
+from miniMoi.models.Models import Abo, Customers, Products, Category, Subcategory, Orders
 from miniMoi.logic.helpers import tools
 from miniMoi.language import language_files
 import miniMoi.logic.helpers.time_module as time
 
 #region 'helpers (private) functions' ----------------------------
+def _product_overview(granular:pd.DataFrame, to_dict:bool=False) -> typing.Union[pd.DataFrame, dict]:
+    """Produces the product overview
 
+    params:
+    ------
+    granular : pd.DataFrame
+        The result from the 
+        'granular()' function.
+    to_dict : bool, optional
+        If true, the df gets converted
+        to a dict.
+    
+    returns:
+    --------
+    pd.DataFrame | dict
+
+    """
+
+    # create product overview
+    overview_product = granular.groupby('category_name').apply(lambda x: pd.crosstab(
+        index = x['product_name'],
+        columns = x['subcategory_name'],
+        values = x['quantity'],
+        aggfunc="sum"
+    ))
+
+    # add total to overview
+    overview_product['total'] = overview_product.sum(axis=1)
+    
+    # prepare for convert
+    overview_product = overview_product.fillna(0).astype(int).reset_index()
+    
+    # all but 'category_name' column
+    opCols = [col for col in overview_product.columns if col != "category_name"]
+
+    if to_dict: return {
+        t:overview_product.loc[overview_product['category_name'] == t, opCols].sort_values('product_name').to_dict("list") for t in overview_product['category_name'].unique().tolist()
+    }
+
+    return overview_product
+
+
+def _category_overview(granular:pd.DataFrame, to_dict:bool=False) -> typing.Union[pd.DataFrame, dict]:
+    """Produces the category overview
+
+    params:
+    ------
+    granular : pd.DataFrame
+        The result from the 
+        'granular()' function.
+    to_dict : bool, optional
+        If true, the df gets converted
+        to a dict.
+    
+    returns:
+    --------
+    pd.DataFrame | dict
+
+    """
+
+    # create category overview
+    overview_category = granular.groupby('category_name').apply(
+        lambda x: x[['quantity', 'cost']].sum()
+        ).reset_index().fillna(0).sort_values('category_name')
+
+    if to_dict: return overview_category.to_dict("list")
+    
+    return overview_category
+
+def _prepare_granular(df:pd.DataFrame, reset_index:bool = True) -> pd.DataFrame:
+    """Produces the granular grouping 
+    
+    params:
+    ------
+    df : pd.DataFrame
+        The dataframe to group.
+            Columns: { 'product_name',
+                       'category_name',
+                       'subcategory_name',
+                       'quantity',
+                       'cost'
+                    }
+    reset_index : bool, optional
+        If true, the index gets reset.
+        (default is True)
+            
+    returns:
+    --------
+    pd.DataFrame
+        The grouped dataframe
+    
+    """
+
+    granular =  df.groupby(
+        ['product_name', 'category_name', 'subcategory_name']
+        ).apply(lambda x: x[['quantity','cost']].sum())
+
+    if reset_index: return granular.reset_index()
+
+    return granular
 
 #endregion
 
@@ -31,10 +130,10 @@ def create(language = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']
 
     params:
     -------
-    language : str
+    language : str, optional
         language ISO code for the errors.
         (default is app.config['DEFAULT_LANGUAGE])
-    tz : str
+    tz : str, optional
         Timzone information.
         (default is app.config['TZ_INFO'])
 
@@ -48,29 +147,41 @@ def create(language = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']
                 'cost':[]
                 },
             'overview_product':{
-                'product_name':[],
-                'subcategory_name':[],
-                'category_name':[],
-                'subcat_1:[],
-                'subcat_2:[],
-                'subcat_X:[],
+                'category_name':{
+                    'product_name':[],
+                    'subcat_1:[],
+                    'subcat_2:[],
+                    'subcat_X:[],
+                    ...
+                },
+                'category_name2':{
+                    ...
+                },
                 ...
+                
                 },
             'total_earnigns':int,
             'town_based':{
                 'townName':{
-                    'customer_approach':int, 
-                    'customer_street':str, 
-                    'customer_nr':int,
-                    'customer_town':str,
-                    'customer_name':str,
-                    'customer_surname':str,
-                    'customer_id':int,
-                    'quantity':int, 
-                    'product_name':str, 
-                    'cost':float,
-                    'total_cost':float,
-                    'notes':str
+                    'customer_approach':list[int], 
+                    'customer_street':list[str], 
+                    'customer_nr':list[int],
+                    'customer_town':list[str],
+                    'customer_name':list[str],
+                    'customer_surname':list[str],
+                    'customer_id':list[int],
+                    'customer_phone':list[str],
+                    'customer_mobile':list[str],
+                    'quantity':list[int], 
+                    'product_name':list[str],
+                    'product_id':list[int],
+                    'category_name':list[str],
+                    'subcategory_name':list[str],
+                    'product_selling_price':list[float],
+                    'cost':list[float],
+                    'total_cost':list[float],
+                    'notes':list[str]
+                    'id':list[int] # -> the abo_id
                     },
                 'townName':{
                     ...
@@ -175,38 +286,14 @@ def create(language = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']
     df['cost'] = df.loc[:, 'product_selling_price'] * df.loc[:, 'quantity']
 
     # group on granularest level
-    granular = df.groupby(['product_name', 'category_name', 'subcategory_name']).apply(lambda x: x[['quantity','cost']].sum())
-    granular.reset_index(inplace=True)
+    granular = _prepare_granular(df)
 
     # create category overview
-    overview_category = granular.groupby('category_name').apply(lambda x: x[['quantity', 'cost']].sum()).reset_index().fillna(0).sort_values('category_name').to_dict("list")
+    overview_category = _category_overview(granular, to_dict=True)
 
-    #region 'product overview'
     # create product overview
-    overview_product = granular.groupby('category_name').apply(lambda x: pd.crosstab(
-        index = x['product_name'],
-        columns = x['subcategory_name'],
-        values = x['quantity'],
-        aggfunc="sum"
-    ))
+    overview_product = _product_overview(granular, to_dict = True)
 
-    # add total to overview
-    overview_product['total'] = overview_product.sum(axis=1)
-    
-    # prepare for convert
-    overview_product = overview_product.fillna(0).astype(int).reset_index()
-    
-    # all but 'category_name' column
-    opCols = [col for col in overview_product.columns if col != "category_name"]
-
-    # convert to dict.
-    overview_product = {
-        t:overview_product.loc[overview_product['category_name'] == t, opCols].sort_values('product_name').to_dict("list") for t in overview_product['category_name'].unique().tolist()
-    }
-    #overview_product = overview_product.reset_index().fillna(0).to_dict("list")
-
-    # endregion
-    
     # get total earned price
     totalEarnings = df['cost'].sum()
 
@@ -229,11 +316,15 @@ def create(language = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']
         'customer_phone',
         'customer_mobile',
         'quantity', 
-        'product_name', 
+        'product_name',
+        'product_id',
+        'product_selling_price',
         'subcategory_name',
+        'category_name',
         'cost',
         'total_cost',
-        'customer_notes'
+        'customer_notes',
+        'id'
         ]].sort_values(['customer_town', 'customer_approach', 'product_name'])
 
     # turn into townbased dict
@@ -255,6 +346,165 @@ def create(language = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']
         }
     }
 
+def book(data:dict, language = app.config['DEFAULT_LANGUAGE']) -> dict:
+    """Books the manipulated data
+
+    This function takes the data and adds 
+    the provided info to the 'Orders' table.
+    It also calculates the next delivery
+    date.
+    In the end it returns the printed excel.
+
+    params:
+    -------
+    data : dict
+        The town based data for each abo.
+            Format: {
+                    'customer_approach':list[int], 
+                    'customer_street':list[str], 
+                    'customer_nr':list[int],
+                    'customer_town':list[str],
+                    'customer_name':list[str],
+                    'customer_surname':list[str],
+                    'customer_id':list[int],
+                    'customer_phone':list[str],
+                    'customer_mobile':list[str],
+                    'quantity':list[int], 
+                    'product_name':list[str], 
+                    'product_id':list[int],
+                    'category_name':list[str],
+                    'subcategory_name':list[str],
+                    'product_selling_price':list[float],
+                    'cost':list[float],
+                    'total_cost':list[float],
+                    'notes':list[str]
+                    'id':list[int] # -> the abo_id
+                    }
+            }
+    language : str, optional
+        language ISO code for the errors.
+        (default is app.config['DEFAULT_LANGUAGE])
+ 
+    returns:
+    -------
+    dict
+        success, error & data
+
+    """
+
+    # get language errorcodes
+    try: errors = language_files[language]['error_codes']
+    except: errors = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
+
+    # data empty?
+    if not bool(data): return {'success':False, 'error':errors['noEntry'], 'data':{}}
+
+    # turn into pd.dataFrame
+    df = pd.DataFrame(data)
+
+    # create session
+    session = Session()
+
+    # fetch all abos to update
+    abos = session.query(Abo).filter(Abo.id.in_(
+        df['id'].unique().tolist()
+    )).all()
+    
+    # add order & update next_delivery
+    toAdd = []
+    
+    try:
+        for abo in abos:
+
+            # grab df row
+            tmp = df[df['id'] == abo.id]
+
+            # add order
+            toAdd.append(Orders(
+                customer_id = tmp['customer_id'].tolist()[0],
+                product = tmp['product_id'].tolist()[0],
+                name = tmp['product_name'].tolist()[0],
+                quantity = tmp['quantity'].tolist()[0],
+                price = tmp['product_selling_price'].tolist()[0],
+                total = tmp['cost'].tolist()[0]
+            ))
+
+            # update abo next_delivery
+            abo.next_delivery = time.calculate_next_delivery(
+                date = abo.next_delivery,
+                cycle_type = abo.cycle_type,
+                interval = abo.interval,
+                language = language
+            )
+
+    except Exception as e:
+
+        code, msg = tools._convert_exception(e)
+
+        # close session
+        session.close()
+
+        return {
+            'success':False, 
+            'error':errors['unableOperation'].format(
+                operation = "book",
+                element = "abo",
+                c = "",
+                e=str(code),
+                m=str(msg)
+            ),
+            'data':{}
+            }
+
+    # add to add to the session
+    session.add_all(toAdd)
+
+    # create product overviews
+    # group on granularest level
+    granular = _prepare_granular(df)
+
+    # create category overview
+    overview_category = _category_overview(granular, to_dict=True)
+
+    # create product overview
+    overview_product = _product_overview(granular, to_dict = True)
+
+    # create excel
+    # TBD
+
+    # commit
+    try: session.commit()
+    except Exception as e:
+
+        code, msg = tools._convert_exception(e)
+
+        # close the session
+        session.close()
+
+        return {
+            'success':False,
+            'error':errors['noCommit'].format(
+                e=str(code),
+                m=str(msg)
+            )
+        }
+
+    # add logs
+    if app.config['ACTION_LOGGING']: tools._update_logs(session, 'miniMoi.logic.functions.delivery.book', "See oders around: {time}".format(time=time.to_string(time.utcnow(), "%Y-%m-%d %H:%M:%S")))
+
+    return {
+        'success':True,
+        'error':"",
+        'data':{
+            'excel':"TBD"
+        }
+    }
+
+def print_overview():
+    """
+    """
+
+    return
 
 #endregion
 
