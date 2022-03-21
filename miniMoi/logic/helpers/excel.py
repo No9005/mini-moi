@@ -481,6 +481,21 @@ def print_order_list(
             'valign':"vcenter",
             'text_wrap':True,
             'bottom':4
+        }),
+        'table_no_border':workbook.add_format({
+            'align':"left",
+            'font_size':8,
+            'font_name':"Grotesk",
+            'valign':"vcenter",
+            'text_wrap':True
+        }),
+        'table_separator':workbook.add_format({
+            'align':"left",
+            'font_size':8,
+            'font_name':"Grotesk",
+            'valign':"vcenter",
+            'text_wrap':True,
+            'bottom':1
         })
         }
 
@@ -547,7 +562,7 @@ def print_order_list(
         cursor_row = cursor_row_start
 
         # for each column in the data
-        for col in tmp.keys():
+        for c, col in enumerate(tmp.keys()):
 
             # write down the column
             worksheet.write(cursor_row, cursor_col, xlsx_language[col], formats['table_head'])
@@ -558,11 +573,32 @@ def print_order_list(
             # get length of rows
             n_rows = len(tmp[col])
 
-            # for each entry
-            for row in tmp[col]:
+            # only for the first col: check the separator idx
+            if c == 0:
+                separator_idx = []
+                for i, row in enumerate(tmp[col]):
+                    try: 
+                        if row != tmp[col][i+1]: separator_idx.append(i)
+                    except: separator_idx.append(i)
 
-                # write down
-                worksheet.write(cursor_row, cursor_col, row, formats['table'])
+            # for each entry
+            for i, row in enumerate(tmp[col]):
+                
+                # blank text
+                insert_value = ""
+
+                # determin if we should write the text or not
+                if i == 0: insert_value = row
+                else :
+
+                    # was the last value a different one?
+                    if row != tmp[col][i-1]: insert_value = row
+
+                if i in separator_idx: use_format = formats['table_separator']
+                else: use_format = formats['table']
+
+                # write the value
+                worksheet.write(cursor_row, cursor_col, insert_value, use_format)
 
                 # add to cursor
                 cursor_row += 1
@@ -580,7 +616,8 @@ def print_order_list(
         # for length of n_rows write nothing
         for i in range(n_rows): 
             
-            worksheet.write(cursor_row, cursor_col, "", formats['table'])
+            if i in separator_idx: worksheet.write(cursor_row, cursor_col, "", formats['table_separator'])
+            else: worksheet.write(cursor_row, cursor_col, "", formats['table'])
 
             # add to cursor row
             cursor_row += 1

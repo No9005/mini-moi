@@ -33,7 +33,7 @@ mapping = {
         'end':"End",
         'product_name':"name",
         'total':"total",
-        'quantity':"Quant.",
+        'quantity':"#",
         'category_name':"Category",
         'days':{
             0:"Monday",

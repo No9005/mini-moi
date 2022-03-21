@@ -1,6 +1,8 @@
-v.0.3.0: Added xlsx writing. Frontend needed.
+v.0.3.1: Xlsx bugfixing. Frontend needed.
 
 ------------ old versions ----------------------------------
+v.0.3.0: Added xlsx writing. Frontend needed.
+
 v.0.2.0: Added test + tables + delivery. See changelog.
     First delivery function added (create).
     Added unittests and adjusted unittests to be able to
