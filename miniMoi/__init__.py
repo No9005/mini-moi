@@ -9,6 +9,7 @@ import os
 import sys
 import json
 from pathlib import Path
+from tzlocal import get_localzone
 
 from flask import Flask
 
@@ -36,8 +37,10 @@ with open(cwd/"settings/settings.json", "r") as file:
 #region 'app config'
 app.config['VERSION'] = version.__version__
 app.config['DEFAULT_LANGUAGE'] = settings['default_language']
-app.config['TZ_INFO'] = settings['tz_info']
 app.config['ACTION_LOGGING'] = settings['action_logging'] == "True"
+
+app.config['TZ_INFO'] = get_localzone()
+print("TIMEZONE: ", get_localzone())
 
 #endregion
 

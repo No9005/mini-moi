@@ -7,7 +7,7 @@ Contains the handler logic for the api
 from miniMoi import app
 from miniMoi.language import language_files
 from miniMoi.logic.helpers import tools
-from miniMoi.logic.functions import customer, products, category, abo
+from miniMoi.logic.functions import customer, products, categories, abo
 
 #region 'handler'
 def api(request:dict) -> dict:
@@ -71,10 +71,6 @@ def api(request:dict) -> dict:
                 the language iso code. Needed for the
                 error msg.
                 (default is app.config['DEFAULT_LANGUAGE])
-            time_zone : str, optional
-                Mapped to tz. Indicates the
-                timezone. The default value is in
-                the settings.json.
 
             returns:
             --------
@@ -102,7 +98,7 @@ def api(request:dict) -> dict:
                 what = request['what'],
                 amount = request['amount'],
                 language = request['language'],
-                tz = request['time_zone']
+                tz = app.config['TZ_INFO']
             )
 
             return response
@@ -418,7 +414,7 @@ def api(request:dict) -> dict:
 
             """
 
-            response = category.get(
+            response = categories.get(
                 amount = request['amount'],
                 language = request['language'],
             )
@@ -453,7 +449,7 @@ def api(request:dict) -> dict:
 
             """
 
-            response = category.add(
+            response = categories.add(
                 categories = request['categories'],
                 language = request['language']
             )
@@ -479,7 +475,7 @@ def api(request:dict) -> dict:
 
             """
 
-            response = category.delete(
+            response = categories.delete(
                 category_id = request['category_id'],
                 language = request['language'],
             )
@@ -507,8 +503,143 @@ def api(request:dict) -> dict:
 
             """
 
-            response = category.update(
+            response = categories.update(
                 category_id = request['category_id'],
+                name = request['name'],
+                language = request['language']
+            )
+
+            return response
+
+        #endregion
+
+        #region 'subcategory'
+        elif ressource == "subcategory/get":
+            """Gets all product subcategory
+
+            Fetches all product subcategory
+            and return them.
+
+            params:
+            -------
+            amount : int | None, optional
+                The number of entries to query.
+                (default is None).
+            language : str, optional
+                the language iso code. Needed for the
+                error msg.
+                (default is app.config['DEFAULT_LANGUAGE])
+
+            returns:
+            -------
+            dict
+                success, error & data {
+                    'result':[
+                        {
+                            'id':int,
+                            'name':str
+                        },
+                        ...
+                    ]
+                }
+
+            """
+
+            response = categories.get(
+                category_type = "subcategory",
+                amount = request['amount'],
+                language = request['language'],
+            )
+
+            return response
+
+        elif ressource == "subcategory/add":
+            """Adds subcategory to the db
+
+            The add function either adds only one
+            or multiple subcategory.
+
+            params:
+            -------
+            categories : list
+                A list containing every single new
+                category.
+                    Format: [
+                        'name',
+                        'name',
+                        ...
+                    ]
+            language : str, optional
+                The language iso. Needed for the error
+                msg.
+                (default is app.config['DEFAULT_LANGUAGE])
+
+            returns:
+            --------
+            dict
+                success, error & data {}
+
+            """
+
+            response = categories.add(
+                categories = request['categories'],
+                category_type = "subcategory",
+                language = request['language']
+            )
+
+            return response
+
+        elif ressource == "subcategory/delete":
+            """Deletes a subcategory
+
+            params:
+            -------
+            category_id : int
+                the category unique id.
+            language : str, optional
+                The language iso. Needed for the error
+                msg.
+                (default is app.config['DEFAULT_LANGUAGE])
+            
+            returns:
+            -------
+            dict
+                success, error & data
+
+            """
+
+            response = categories.delete(
+                category_id = request['category_id'],
+                category_type = "subcategory",
+                language = request['language'],
+            )
+
+            return response
+
+        elif ressource == "subcategory/update":
+            """Updates a single subcategory
+
+            params:
+            -------
+            category_id : int
+                The customer unique id.
+            name : str
+                The new category name
+            language : str, optional
+                the language iso code. Needed for the
+                error msg.
+                (default is app.config['DEFAULT_LANGUAGE])
+
+            returns:
+            -------
+            dict
+                success, error & data
+
+            """
+
+            response = categories.update(
+                category_id = request['category_id'],
+                category_type = "subcategory",
                 name = request['name'],
                 language = request['language']
             )
@@ -545,10 +676,6 @@ def api(request:dict) -> dict:
                 the language iso code. Needed for the
                 error msg.
                 (default is app.config['DEFAULT_LANGUAGE'])
-            time_zone : str, optional
-                Timezone info as string.
-                Mapped to tz.
-                (default is app.config['TZ_INFO])
 
             returns:
             --------
@@ -576,7 +703,7 @@ def api(request:dict) -> dict:
                 what = request['what'],
                 amount = request['amount'],
                 language = request['language'],
-                tz = request['time_zone']
+                tz = app.config['TZ_INFO']
             )
 
             return response
@@ -619,7 +746,8 @@ def api(request:dict) -> dict:
             response = abo.add(
                 customer_id = request['customer_id'],
                 abos = request['abos'],
-                language = request['language']
+                language = request['language'],
+                tz = app.config['TZ_INFO']
             )
 
             return response
@@ -681,7 +809,8 @@ def api(request:dict) -> dict:
             response = abo.update(
                 abo_id = request['abo_id'],
                 data = request['data'],
-                language = request['language']
+                language = request['language'],
+                tz = app.config['TZ_INFO']
             )
 
             return response

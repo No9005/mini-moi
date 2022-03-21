@@ -12,9 +12,9 @@ import datetime
 from sqlalchemy.orm import scoped_session, sessionmaker, Session
 
 from miniMoi import base
-from miniMoi.models.Models import Abo, Customers, Products, Category
+from miniMoi.models.Models import Abo, Customers, Products, Category, Subcategory
 
-from miniMoi.logic.functions import category
+from miniMoi.logic.functions import categories
 
 from tests import testEngine
 
@@ -23,8 +23,8 @@ testSessionFactory = sessionmaker(bind=testEngine)
 testSession = scoped_session(testSessionFactory)
 
 # class
-@patch('miniMoi.logic.functions.category.Session', testSession)
-class TestCategory(unittest.TestCase):
+@patch('miniMoi.logic.functions.categories.Session', testSession)
+class TestCategories(unittest.TestCase):
     """Tests the category functions 
     
     methods:
@@ -99,7 +99,9 @@ class TestCategory(unittest.TestCase):
                 cycle_type = "day",
                 interval = 5,
                 next_delivery = datetime.datetime.strptime("2022.03.16", "%Y.%m.%d"),
-                product = 2
+                product = 2,
+                subcategory = 2,
+                quantity = 10
             )
 
             # create category
@@ -111,8 +113,17 @@ class TestCategory(unittest.TestCase):
                 name = "Weißwaren"
             )
 
+            # create subcategories
+            newSub = Subcategory(
+                name="Sub1"
+            )
+
+            newSub2 = Subcategory(
+                name="Sub2"
+            )
+
             # add to db
-            session.add_all([newUser, newProduct, newProduct2, newAbo, newCategory, newCategory2])
+            session.add_all([newUser, newProduct, newProduct2, newAbo, newCategory, newCategory2, newSub, newSub2])
 
             # commit
             session.commit()
@@ -122,14 +133,13 @@ class TestCategory(unittest.TestCase):
 
         base.metadata.drop_all(self.testEngine)
         self.testEngine = None
-        self.account = None
 
     #region 'tests'
     def test_get(self):
         """Tests the data getter """
 
         #region 'success'
-        result = category.get(
+        result = categories.get(
             language = "EN",
         )
 
@@ -146,24 +156,25 @@ class TestCategory(unittest.TestCase):
                         'id': 2, 
                         'name':"Weißwaren",
                     },
-                    ]
+                    ],
+                'category_type':"category"
                 }
         })
 
         #endregion
 
         #region 'amount = 0'
-        result = category.get(
+        result = categories.get(
             amount = 0,
             language = "EN"
         )
 
-        self.assertEqual(result, {'success':True, 'error':"", 'data':{'result':[]}})
+        self.assertEqual(result, {'success':True, 'error':"", 'data':{'result':[], 'category_type':"category"}})
 
         #endregion
 
         #region 'amount = 1'
-        result = category.get(
+        result = categories.get(
             amount = 1,
             language = "EN"
         )
@@ -174,16 +185,45 @@ class TestCategory(unittest.TestCase):
                         'id': 1, 
                         'name':"Brot",
                     },
-                    ]
-            }})
+                    ],
+            'category_type':"category"
+            }
+            })
+
+        #endregion
+
+        #region 'success, fetch 'subcategory''
+        result = categories.get(
+            category_type = "subcategory",
+            language = "EN",
+        )
+
+        self.assertEqual(result, {
+            'success': True,
+            'error': '',
+            'data': {
+                'result': [
+                    {
+                        'id': 1, 
+                        'name':"Sub1",
+                    },
+                    {
+                        'id': 2, 
+                        'name':"Sub2",
+                    },
+                    ],
+                'category_type':"subcategory"
+                
+                }
+        })
 
         #endregion
 
     def test_update(self):
         """Tests the updater """
 
-        #region 'id not found'
-        result = category.update(
+        #region 'id not found, type = categories'
+        result = categories.update(
             category_id = 5,
             name = ""
         )
@@ -193,8 +233,20 @@ class TestCategory(unittest.TestCase):
 
         #endregion
 
+        #region 'id not found, type = subcategories'
+        result = categories.update(
+            category_id = 5,
+            category_type = "subcategory",
+            name = ""
+        )
+
+        # assert
+        self.assertEqual(result['error'], "The subcategory was not found.")
+
+        #endregion
+
         #region 'wrong type'
-        result = category.update(
+        result = categories.update(
             category_id = 1,
             name = None
         )
@@ -211,8 +263,8 @@ class TestCategory(unittest.TestCase):
 
         #endregion
 
-        #region 'success'
-        result = category.update(
+        #region 'success, type = category'
+        result = categories.update(
             category_id = 2,
             name = "Wurst"
         )
@@ -230,11 +282,31 @@ class TestCategory(unittest.TestCase):
 
         #endregion
 
+        #region 'success, type = subcategory'
+        result = categories.update(
+            category_id = 1,
+            category_type="subcategory",
+            name = "DifferentName"
+        )
+
+        # assert
+        self.assertTrue(result['success'])
+
+        # check db
+        with Session(testEngine) as session:
+            # query abo
+            result = session.query(Subcategory)
+
+            self.assertEqual(result.filter_by(id = 1).first().name, "DifferentName")
+            self.assertEqual(result.filter_by(id=2).first().name, "Sub2")
+
+        #endregion
+
     def test_add(self):
         """Adds a element to the db """
 
         #region 'no changes'
-        result = category.add(
+        result = categories.add(
             categories = [],
             language = "EN"
         )
@@ -244,13 +316,13 @@ class TestCategory(unittest.TestCase):
 
         #endregion
 
-        #region 'success'
+        #region 'success, categories'
         """
         We add multiple categories at once!
         
         """
 
-        result = category.add(
+        result = categories.add(
             categories = ["Semmelbrösel", "Noobkanone"]
         )
 
@@ -271,6 +343,42 @@ class TestCategory(unittest.TestCase):
             self.assertEqual(result.filter_by(id = 4).first().name, "Noobkanone")
             self.assertEqual(result.filter_by(id = 1).first().name, "Brot")
 
+
+            self.assertEqual(session.query(Subcategory).count(), 2)
+
+        #endregion
+
+        #region 'success, subcategories'
+        """
+        We add multiple subcategories at once!
+        
+        """
+
+        result = categories.add(
+            categories = ["Sub4", "Sub5"],
+            category_type="subcategory"
+        )
+
+        # assert
+        self.assertTrue(result['success'])
+
+        # check with db
+        with Session(testEngine) as session:
+
+            # query
+            result = session.query(Subcategory)
+
+            # 3 entries?
+            self.assertEqual(result.count(), 4)
+
+            # check entries
+            self.assertEqual(result.filter_by(id = 3).first().name, "Sub4")
+            self.assertEqual(result.filter_by(id = 4).first().name, "Sub5")
+            self.assertEqual(result.filter_by(id = 1).first().name, "Sub1")
+
+
+            self.assertEqual(session.query(Category).count(), 4)
+
         #endregion
 
     def test_delete(self):
@@ -287,7 +395,7 @@ class TestCategory(unittest.TestCase):
             self.assertEqual(session.query(Category).count(), 3)
 
         #region 'abo not found'
-        result = category.delete(
+        result = categories.delete(
             category_id = 10,
             language = "EN"
         )
@@ -297,13 +405,13 @@ class TestCategory(unittest.TestCase):
 
         #endregion
 
-        #region 'success'
-        result = category.delete(
+        #region 'success, categories'
+        result = categories.delete(
             category_id = 1,
             language = "EN"
         )
 
-        result = category.delete(
+        result = categories.delete(
             category_id = 3,
             language = "EN"
         )
@@ -319,6 +427,30 @@ class TestCategory(unittest.TestCase):
             self.assertEqual(result.count(), 1)
             self.assertEqual(result.first().id, 2)
             self.assertEqual(result.first().name, "Weißwaren")
+
+            self.assertEqual(session.query(Subcategory).count(), 2)
+
+        #endregion
+
+        #region 'success, subcategories'
+        result = categories.delete(
+            category_id = 1,
+            category_type  = "subcategory",
+            language = "EN"
+        )
+
+        # assert
+        self.assertTrue(result['success'])
+
+        # db check
+        with Session(testEngine) as session:
+
+            result = session.query(Subcategory)
+
+            self.assertEqual(result.count(), 1)
+            self.assertEqual(result.first().id, 2)
+
+            self.assertEqual(session.query(Category).count(), 1)
 
 
         #endregion

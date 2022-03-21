@@ -24,7 +24,8 @@ class TestTime(unittest.TestCase):
         - utcnow()
         - parse_date_string()
         - to_string()
-        - utz_to_local()
+        - utc_to_local()
+        - local_to_utc()
 
     methods:
     --------

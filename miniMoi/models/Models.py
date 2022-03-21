@@ -38,7 +38,7 @@ class Customers(base):
         Customers phone number.
     mobile : str
         Customers mobile number.
-    birthdate : str
+    birthdate : DateTime
         Date of birth.
             Format: %Y.%m.%d
     approach : int
@@ -161,11 +161,13 @@ class Abo(base):
                      are mapped to ints starting at
                      zero (0 = Monday)
     next_delivery : datetime
-        The datetime of the next delivery.
+        The datetime of the next delivery (in UTCnow!).
             Caution: This is the actual delivery date!
     product : int
         Product id.
             ForeignKey: Products -> id
+    quantity : int
+        The quantity of the product in the abo.
     
     """
 
@@ -180,6 +182,8 @@ class Abo(base):
     next_delivery = Column(DateTime)
 
     product = Column(Integer, ForeignKey("products.id"), nullable=False)
+    subcategory = Column(Integer, ForeignKey("subcategory.id"), nullable=False)
+    quantity = Column(Integer, nullable=False)
 
 class Category(base):
     """Contains all product categories 
@@ -204,6 +208,28 @@ class Category(base):
     name = Column(String(50), nullable = False, unique = True)
 
     products = relationship("Products", backref="category_products", cascade="all, delete-orphan")
+
+class Subcategory(base):
+    """Keeps types of subcategories
+    
+    A subcategory could be 'cut' or
+    'whole'
+
+    attributes:
+    -----------
+    id : int
+        the primary key.
+    name : str
+        The name of the category.
+
+    """
+
+    __tablename__ = "subcategory"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(50), nullable=False, unique=True)
+
+    abo = relationship("Abo", backref="subcategory_abo", cascade=False)
 
 class Products(base):
     """Contains all available products to order 
@@ -243,7 +269,7 @@ class Products(base):
 
     id = Column(Integer, primary_key = True)
 
-    name = Column(String(100))
+    name = Column(String(100), nullable=False, unique=True)
     category = Column(Integer, ForeignKey("category.id"), nullable = False)
     
     purchase_price = Column(Float, nullable = False)
@@ -285,7 +311,5 @@ class Log(base):
 
     ressource = Column(String(500), nullable = False)
     action = Column(String(500), nullable = False)
-
-
 
 #endregion

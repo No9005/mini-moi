@@ -12,7 +12,7 @@ import datetime
 from sqlalchemy.orm import scoped_session, sessionmaker, Session
 
 from miniMoi import base
-from miniMoi.models.Models import Abo, Customers, Products
+from miniMoi.models.Models import Abo, Customers, Products, Subcategory
 
 from miniMoi.logic.functions import customer
 
@@ -100,11 +100,22 @@ class TestCustomer(unittest.TestCase):
                 cycle_type = "day",
                 interval = 5,
                 next_delivery = datetime.datetime.strptime("2022.03.16", "%Y.%m.%d"),
-                product = 2
+                product = 2,
+                quantity = 5,
+                subcategory = 1
+            )
+
+            # create subcategories
+            newSub = Subcategory(
+                name="Sub1"
+            )
+
+            newSub2 = Subcategory(
+                name="Sub2"
             )
 
             # add to db
-            session.add_all([newUser, newProduct, newProduct2, newAbo])
+            session.add_all([newUser, newProduct, newProduct2, newAbo, newSub, newSub2])
 
             # commit
             session.commit()
@@ -254,7 +265,7 @@ class TestCustomer(unittest.TestCase):
                 'town':"Birdy",
                 'phone':"",
                 'mobile':"",
-                'birthdate':"1832.12.10",
+                'birthdate':"1832-12-10",
                 'notes':"Some notes"
             },
             language = "EN"
@@ -296,7 +307,7 @@ class TestCustomer(unittest.TestCase):
                 'town':"Birdy",
                 'phone':"",
                 'mobile':"",
-                'birthdate':"1832.12.10",
+                'birthdate':"1832-12-10",
                 'notes':"Some notes"
             },
             language = "EN"
@@ -333,7 +344,7 @@ class TestCustomer(unittest.TestCase):
         )
 
         # assert
-        self.assertEqual(result['error'], "Not able to run the operation 'update' the customer.: : ValueError: time data '1832-12.10' does not match format '%Y.%m.%d'.")
+        self.assertEqual(result['error'], "Not able to run the operation 'update' the customer.: : ValueError: time data '1832-12.10' does not match format '%Y-%m-%d'.")
 
         # check db
         with Session(testEngine) as session:
@@ -374,7 +385,7 @@ class TestCustomer(unittest.TestCase):
                     'town':"Schnapp",
                     'phone':"",
                     'mobile':"",
-                    'birthdate':"1755.12.10",
+                    'birthdate':"1755-12-10",
                     'notes':"Gut'n Tach"
                 },
                 {
@@ -386,7 +397,7 @@ class TestCustomer(unittest.TestCase):
                     'town':"Dreamland",
                     'phone':"",
                     'mobile':"",
-                    'birthdate':"2022.12.10",
+                    'birthdate':"2022-12-10",
                     'notes':""
                 }
             ],
@@ -432,7 +443,7 @@ class TestCustomer(unittest.TestCase):
         )
 
         # assert
-        self.assertEqual(result['error'], "Not able to run the operation 'add' the customer.: Bilbo: ValueError: time data '1755-12.10' does not match format '%Y.%m.%d'.")
+        self.assertEqual(result['error'], "Not able to run the operation 'add' the customer.: Bilbo: ValueError: time data '1755-12.10' does not match format '%Y-%m-%d'.")
 
         #endregion
 

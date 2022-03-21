@@ -233,4 +233,34 @@ def utc_to_local(date:datetime.datetime, tz:str = "Europe/Paris") -> datetime.da
 
     return pytz.utc.localize(date).astimezone(tzInfo)
 
+def local_to_utc(date:datetime.datetime, tz:str = "Europe/Paris") -> datetime.datetime:
+    """Converst a local time to utc 
+    
+    REFERENCE:
+       [1] https://stackoverflow.com/questions/79797/how-to-convert-local-time-string-to-utc
+
+    params:
+    -------
+    date : datetime.datetime
+        The datetime object in local time.
+    tz : str, optional
+        The timezone from the current time
+        object.
+        (default is "Europe/Paris")
+    
+    returns:
+    --------
+    datetime.datetime
+        Time converted into utc
+
+    """
+
+    # create local timezone
+    local = pytz.timezone(tz)
+    
+    # localize
+    localized = local.localize(date, is_dst=None)
+
+    return localized.astimezone(pytz.utc)
+
 #endregion

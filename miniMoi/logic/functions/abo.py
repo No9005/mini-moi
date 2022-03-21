@@ -5,12 +5,13 @@ the abo add, delete & update.
 """
 
 # imports
+from datetime import tzinfo
 import typing
 
 import pandas as pd
 
 from miniMoi import Session, app
-from miniMoi.models.Models import Abo, Customers, Products
+from miniMoi.models.Models import Abo, Customers, Products, Subcategory
 from miniMoi.language import language_files
 from miniMoi.logic.helpers import tools
 import miniMoi.logic.helpers.time_module as time
@@ -151,7 +152,7 @@ def get(
         }
     }
 
-def update(abo_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
+def update(abo_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']) -> dict:
     """Updates a single abo for a customer
 
     params:
@@ -165,12 +166,17 @@ def update(abo_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE'])
                 'cycle_type':str,
                 'interval':int,
                 'product':int,
-                'next_delivery':str | None
+                'quantity':int,
+                'subcategory':int,
+                'next_delivery':str(%Y.%m.%d) | None
             }
     language : str, optional
         the language iso code. Needed for the
         error msg.
         (default is app.config['DEFAULT_LANGUAGE])
+    tz : str, optional
+        The timezone info.
+        (default is app.config['TZ_INFO'])
 
     returns:
     -------
@@ -219,6 +225,25 @@ def update(abo_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE'])
             'data':{}
         }
 
+    # fetch all available subcategories
+    subcategories = pd.read_sql_query(
+        session.query(Subcategory).statement,
+        session.bind
+    )
+
+    # get unique ids
+    availableSubcategory = subcategories['id'].unique().tolist()
+    if not data['subcategory'] in availableSubcategory:
+
+        # close session
+        session.close()
+
+        return {
+            'success':False,
+            'error':errors['wrongSubcategory'],
+            'data':{}
+        }
+
     # grab interval & cycle_type
     interval = data['interval']
     cycle_type = data['cycle_type']
@@ -237,7 +262,10 @@ def update(abo_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE'])
             )
             
         # set the custom next delivery date
-        else: next_delivery = time.parse_date_string(data['next_delivery'])
+        else: next_delivery = time.local_to_utc(
+            time.parse_date_string(data['next_delivery']),
+            tz
+            )
     
     except Exception as e:
         code, msg = tools._convert_exception(e)
@@ -249,6 +277,7 @@ def update(abo_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE'])
             'error':errors['unableOperation'].format(
                 operation = "update",
                 element = "abo",
+                c = "",
                 e=str(code),
                 m=str(msg)
             ),
@@ -261,7 +290,9 @@ def update(abo_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE'])
         abo.cycle_type = cycle_type
         abo.interval = interval
         abo.next_delivery = next_delivery
-        abo. product = data['product']
+        abo.product = data['product']
+        abo.quantity = int(data['quantity'])
+        abo.subcategory = int(data['subcategory'])
 
         # commit
         session.commit()
@@ -293,7 +324,7 @@ def update(abo_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE'])
         'data':{}
     }
 
-def add(customer_id:int, abos:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
+def add(customer_id:int, abos:list, language:str = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']) -> dict:
     """Adds abos to a customer
 
     This function adds one or
@@ -313,6 +344,9 @@ def add(customer_id:int, abos:list, language:str = app.config['DEFAULT_LANGUAGE'
                     'cycle_type':str,
                     'interval':int,
                     'product':int,
+                    'quantity':int,
+                    'subcategory':int,
+                    'next_delivery':str(%Y.%m.%d) | None
                 },
                 ...
             ]
@@ -320,6 +354,9 @@ def add(customer_id:int, abos:list, language:str = app.config['DEFAULT_LANGUAGE'
         The language iso. Needed for the error
         msg.
         (default is app.config['DEFAULT_LANGUAGE])
+    tz : str, optional
+        The timezone info.
+        (default is app.config['TZ_INFO'])
 
     returns:
     --------
@@ -357,6 +394,15 @@ def add(customer_id:int, abos:list, language:str = app.config['DEFAULT_LANGUAGE'
     # get unique ids
     availableProducts = products['id'].unique().tolist()
 
+    # fetch all available subcategories
+    subcategories = pd.read_sql_query(
+        session.query(Subcategory).statement,
+        session.bind
+    )
+
+    # get unique ids
+    availableSubcategory = subcategories['id'].unique().tolist()
+
     # create empty list to store new entries
     toAdd = []
 
@@ -378,6 +424,18 @@ def add(customer_id:int, abos:list, language:str = app.config['DEFAULT_LANGUAGE'
                     'data':{}
                 }
 
+            # selected subcategory?
+            if not abo['subcategory'] in availableSubcategory:
+
+                # close session
+                session.close()
+
+                return {
+                    'success':False,
+                    'error':errors['wrongSubcategory'],
+                    'data':{}
+        }
+
             # get today
             today = time.today()
 
@@ -387,12 +445,21 @@ def add(customer_id:int, abos:list, language:str = app.config['DEFAULT_LANGUAGE'
             # get cycle_type
             cycle_type = abo['cycle_type']
 
-            next_delivery = time.calculate_next_delivery(
-                date = today,
-                cycle_type = cycle_type,
-                interval = interval,
-                language = language
-            )
+
+            # calculate next delivery (if next_delivery is None)
+            if abo['next_delivery'] is None:
+                next_delivery = time.calculate_next_delivery(
+                    date = today,
+                    cycle_type = cycle_type,
+                    interval = interval,
+                    language = language
+                )
+
+            # else set the custom next delivery date
+            else: next_delivery = time.local_to_utc(
+                time.parse_date_string(abo['next_delivery']),
+                tz
+                )
             
             #endregion
 
@@ -402,6 +469,8 @@ def add(customer_id:int, abos:list, language:str = app.config['DEFAULT_LANGUAGE'
                 interval = interval,
                 next_delivery = next_delivery,
                 product = abo['product'],
+                quantity = int(abo['quantity']),
+                subcategory = int(abo['subcategory'])
             ))
 
         except Exception as e:

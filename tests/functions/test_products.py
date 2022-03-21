@@ -12,7 +12,7 @@ import datetime
 from sqlalchemy.orm import scoped_session, sessionmaker, Session
 
 from miniMoi import base
-from miniMoi.models.Models import Abo, Customers, Products, Category
+from miniMoi.models.Models import Abo, Customers, Products, Category, Subcategory
 
 from miniMoi.logic.functions import products
 
@@ -99,7 +99,9 @@ class TestProducts(unittest.TestCase):
                 cycle_type = "day",
                 interval = 5,
                 next_delivery = datetime.datetime.strptime("2022.03.16", "%Y.%m.%d"),
-                product = 2
+                product = 2,
+                subcategory = 1,
+                quantity = 5
             )
 
             # create category
@@ -111,8 +113,17 @@ class TestProducts(unittest.TestCase):
                 name = "Weißwaren"
             )
 
+            # create subcategories
+            newSub = Subcategory(
+                name="Sub1"
+            )
+
+            newSub2 = Subcategory(
+                name="Sub2"
+            )
+
             # add to db
-            session.add_all([newUser, newProduct, newProduct2, newAbo, newCategory, newCategory2])
+            session.add_all([newUser, newProduct, newProduct2, newAbo, newCategory, newCategory2, newSub, newSub2])
 
             # commit
             session.commit()

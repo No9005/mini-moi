@@ -12,9 +12,10 @@ import datetime
 from sqlalchemy.orm import scoped_session, sessionmaker, Session
 
 from miniMoi import base
-from miniMoi.models.Models import Abo, Customers, Products
+from miniMoi.models.Models import Abo, Customers, Products, Subcategory
 
 from miniMoi.logic.functions import abo
+from miniMoi.logic.helpers.time_module import local_to_utc
 
 from tests import testEngine
 
@@ -99,11 +100,22 @@ class TestAbo(unittest.TestCase):
                 cycle_type = "day",
                 interval = 5,
                 next_delivery = datetime.datetime.strptime("2022.03.16", "%Y.%m.%d"),
-                product = 2
+                product = 2,
+                subcategory = 1,
+                quantity = 5
+            )
+            
+            # create subcategories
+            newSub = Subcategory(
+                name="Sub1"
+            )
+
+            newSub2 = Subcategory(
+                name="Sub2"
             )
 
             # add to db
-            session.add_all([newUser, newProduct, newProduct2, newAbo])
+            session.add_all([newUser, newProduct, newProduct2, newAbo, newSub, newSub2])
 
             # commit
             session.commit()
@@ -169,7 +181,9 @@ class TestAbo(unittest.TestCase):
                 cycle_type = "interval",
                 interval = 6,
                 next_delivery = datetime.datetime.strptime("2022.03.16", "%Y.%m.%d"),
-                product = 1
+                product = 1,
+                subcategory =2,
+                quantity = 5
             )
             
             session.add(newAbo)
@@ -299,7 +313,9 @@ class TestAbo(unittest.TestCase):
                 'cycle_type':"interval",
                 'interval':3,
                 'product':1,
-                'next_delivery':None
+                'next_delivery':None,
+                'subcategory':2,
+                'quantity':2
             }
         )
 
@@ -315,6 +331,7 @@ class TestAbo(unittest.TestCase):
             result = session.query(Abo).filter_by(id = 1).first()
             self.assertEqual(result.cycle_type, "interval")
             self.assertEqual(result.next_delivery.strftime("%Y.%m.%d"), current)
+            self.assertEqual(result.subcategory, 2)
 
         #endregion
 
@@ -325,8 +342,11 @@ class TestAbo(unittest.TestCase):
                 'cycle_type':"day",
                 'interval':2,
                 'product':1,
-                'next_delivery':"2021-12-01"
-            }
+                'next_delivery':"2021-12-01",
+                'subcategory':1,
+                'quantity':3
+            },
+            tz = "Europe/Berlin"
         )
 
         # assert
@@ -337,7 +357,8 @@ class TestAbo(unittest.TestCase):
             # query abo
             result = session.query(Abo).filter_by(id = 1).first()
             self.assertEqual(result.cycle_type, "day")
-            self.assertEqual(result.next_delivery.strftime("%Y.%m.%d"), "2021.12.01")
+            self.assertEqual(result.next_delivery.strftime("%Y.%m.%d"), "2021.11.30")
+            self.assertEqual(result.quantity, 3)
 
         #endregion
 
@@ -357,6 +378,23 @@ class TestAbo(unittest.TestCase):
 
         #endregion
     
+        #region 'subcategory not found'
+        result = abo.update(
+            abo_id = 1,
+            data = {
+                'cycle_type':"interval",
+                'interval':3,
+                'product':1,
+                'custom_next_delivery':None,
+                'subcategory':10
+            }
+        )
+
+        # assert
+        self.assertEqual(result['error'], "Selected subcategory not available.")
+
+        #endregion
+    
     def test_add(self):
         """Adds a element to the db """
 
@@ -366,8 +404,12 @@ class TestAbo(unittest.TestCase):
             abos = [{
                 'cycle_type':"day",
                 'interval':6,
-                'product':6
-            }]
+                'product':6,
+                'next_delivery':None,
+                'subcategory':1,
+                'quantity':5
+            }],
+            tz = "Europe/Berlin"
         )
 
         # assert
@@ -381,12 +423,33 @@ class TestAbo(unittest.TestCase):
             abos = [{
                 'cycle_type':"day",
                 'interval':6,
-                'product':6
+                'product':6,
+                'next_delivery':None,
+                'subcategory':1,
+                'quantity':5
             }]
         )
 
         # assert
         self.assertEqual(result['error'], "Selected product not available.")
+
+        #endregion
+
+        #region 'subcategory not available'
+        result = abo.add(
+            customer_id = 1,
+            abos = [{
+                'cycle_type':"day",
+                'interval':6,
+                'product':1,
+                'next_delivery':None,
+                'subcategory':10,
+                'quantity':5
+            }]
+        )
+
+        # assert
+        self.assertEqual(result['error'], "Selected subcategory not available.")
 
         #endregion
 
@@ -396,21 +459,39 @@ class TestAbo(unittest.TestCase):
         
         """
 
+        # run function
         result = abo.add(
             customer_id = 1,
             abos = [{
                 'cycle_type':"day",
                 'interval':6,
-                'product':1
+                'product':1,
+                'next_delivery':"2022-03-12",
+                'subcategory':1,
+                'quantity':5
                 },
                 {'cycle_type':"interval",
                 'interval':8,
-                'product':2}
-            ]
+                'product':2,
+                'next_delivery':None,
+                'subcategory':2,
+                'quantity':15
+                }
+            ],
+            tz = "Europe/Berlin"
         )
 
         # assert
         self.assertTrue(result['success'])
+
+        # create next delivery
+        next_delivery = datetime.datetime.utcnow().date() + datetime.timedelta(days=8)
+        
+        # next delivery for specific start date
+        specific = local_to_utc(
+            datetime.datetime.strptime("2022.03.12", "%Y.%m.%d"),
+            "Europe/Berlin"
+        )
 
         # check with db
         with Session(testEngine) as session:
@@ -423,8 +504,15 @@ class TestAbo(unittest.TestCase):
 
             # check entry 2 & 3
             self.assertEqual(result.filter_by(id = 2).first().cycle_type, "day")
-            self.assertEqual(result.filter_by(id = 3).first().cycle_type, "interval")
+            self.assertEqual(result.filter_by(id = 2).first().next_delivery.strftime("%Y.%m.%d"), specific.strftime("%Y.%m.%d"))
+            self.assertEqual(result.filter_by(id = 2).first().quantity, 5)
+            self.assertEqual(result.filter_by(id = 2).first().subcategory, 1)
+            
 
+            self.assertEqual(result.filter_by(id = 3).first().cycle_type, "interval")
+            self.assertEqual(result.filter_by(id = 3).first().next_delivery.strftime("%Y.%m.%d"), next_delivery.strftime("%Y.%m.%d"))
+            self.assertEqual(result.filter_by(id = 3).first().quantity, 15)
+            self.assertEqual(result.filter_by(id = 3).first().subcategory, 2)
         
         #endregion
 
@@ -440,7 +528,9 @@ class TestAbo(unittest.TestCase):
                 cycle_type = "interval",
                 interval = 100,
                 next_delivery = datetime.datetime.strptime("2022.03.16", "%Y.%m.%d"),
-                product = 1
+                product = 1,
+                subcategory = 1,
+                quantity = 5
             ))        
     
             session.commit()

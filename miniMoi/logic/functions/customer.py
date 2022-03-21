@@ -160,7 +160,7 @@ def get(
         }
     }
 
-def update(customer_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
+def update(customer_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']) -> dict:
     """Updates a single customer
 
     params:
@@ -179,13 +179,16 @@ def update(customer_id:int, data:dict, language:str = app.config['DEFAULT_LANGUA
                 'town':str,
                 'phone':str,
                 'mobile':str,
-                'birthdate':str("%Y.%m.%d)
+                'birthdate':str("%Y-%m-%d)
                 'notes':str
             }
     language : str, optional
         the language iso code. Needed for the
         error msg.
         (default is app.config['DEFAULT_LANGUAGE])
+    tz : str, optional
+        The timezone info
+        (default is app.config['TZ_INFO'])
 
     returns:
     -------
@@ -216,7 +219,10 @@ def update(customer_id:int, data:dict, language:str = app.config['DEFAULT_LANGUA
     try:
 
         # check if the format of the birthdate is correct
-        birthdate = datetime.datetime.strptime(data['birthdate'], "%Y.%m.%d")
+        birthdate = time.local_to_utc(
+            time.parse_date_string(data['birthdate']),
+            tz
+            )
 
         # try to update him
         customer.name = data['name']
@@ -261,7 +267,7 @@ def update(customer_id:int, data:dict, language:str = app.config['DEFAULT_LANGUA
         'data':{}
     }
 
-def add(customers:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
+def add(customers:list, language:str = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']) -> dict:
     """Adds customers to the db
 
     The add function either adds only one
@@ -282,7 +288,7 @@ def add(customers:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
                     'town':str,
                     'phone':str,
                     'mobile':str,
-                    'birthdate':str("%Y.%m.%d)
+                    'birthdate':str("%Y-%m-%d)
                     'notes':str
                 },
                 ...
@@ -291,7 +297,9 @@ def add(customers:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
         The language iso. Needed for the error
         msg.
         (default is app.config['DEFAULT_LANGUAGE])
-
+    tz : str, optional
+        The timezone info
+        (default is app.config['TZ_INFO'])
 
     returns:
     --------
@@ -319,7 +327,10 @@ def add(customers:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
         try:
 
             # check if the datetime is convertable
-            birthdate = datetime.datetime.strptime(customer['birthdate'], "%Y.%m.%d")
+            birthdate = time.local_to_utc(
+                time.parse_date_string(customer['birthdate']),
+                tz
+                )
 
             # try to create the new object
             toAdd.append(Customers(
