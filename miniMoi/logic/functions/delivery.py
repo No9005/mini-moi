@@ -366,7 +366,7 @@ def create(language = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']
         'id'
         ]
     df = df.loc[:, relevantCols].sort_values(['customer_town', 'customer_approach', 'product_name'])
-
+#
     # turn into townbased dict
     townbased = {
             t:df[df['customer_town'] == t].to_dict("list") for t in df['customer_town'].unique().tolist()
