@@ -74,7 +74,7 @@ def api(request:dict) -> dict:
                         ...
                         
                         },
-                    'total_earnigns':int,
+                    'total_earnings':int,
                     'town_based':{
                         'townName':{
                             'customer_approach':list[int], 

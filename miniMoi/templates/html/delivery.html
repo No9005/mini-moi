@@ -17,7 +17,7 @@
     <div class="row force-min-height">
 
         <div class="col-4">
-            <button type="button" class="btn btn-lg btn-block btn-info" data-toggle="tooltip" data-placement="bottom" title="{{ delivery_create_tooltip|safe }}" onClick=""> 
+            <button type="button" class="btn btn-lg btn-block btn-info" onClick="fetch_report()" data-toggle="tooltip" data-placement="bottom" title="{{ delivery_create_tooltip|safe }}" onClick=""> 
                 {{ delivery_create_report }}
             </button>
         </div>
@@ -49,31 +49,117 @@
         
     </div>
 
-    <div class="row">
+    <hr class="py-2">
+
+    <!-- product summary -->
+    <div class="row" id="productSummary">
+
+        <div class="col-12">
+            <h3>{{ delivery_category_table_name }}</h3>
+        </div>
+
+        <div class="col-12">
+
+            <div class="card-deck my-3 text-center">
+    
+                <!-- products -->
+                <div class="card mb-4 box-shadow">
+                    <div class="card-header">
+                        <h4 class="my-0 font-weight-normal">{{ delivery_product_overview }}</h4>
+                    </div>
+                <div class="card-body">
+                    <p class="mt-3 mb-4 text-muted">{{ delivery_product_overview_description }}</p>
+                    
+                    <div class="" id="productTablePlaceholder">
+                        
+                        <!-- table generation -->
+
+                    </div>
+                      
+                </div>
+                </div>
+
+                <!-- categories -->
+                <div class="card mb-4 box-shadow">
+                    <div class="card-header">
+                        <h4 class="my-0 font-weight-normal">{{ delivery_category_overview }}</h4>
+                    </div>
+                <div class="card-body">
+                    <p class="mt-3 mb-4 text-muted">{{ delivery_category_overview_description }}</p>
+                    
+                    <div class="table-responsive" id="categoryTablePlaceholder">
+                        
+                        <!-- table generation -->
+
+                    </div>
+                    
+                    
+                </div>
+                </div>
+            
+                <!-- total earnings -->
+                <div class="card mb-4 box-shadow">
+                    <div class="card-header">
+                        <h4 class="my-0 font-weight-normal">{{ delivery_total_earnings }}</h4>
+                    </div>
+                <div class="card-body">
+                    <p class="mt-3 mb-4 text-muted">{{ delivery_total_earnings_description }}</p>
+                    
+                    <h1 class="card-title earnings-card-title"><span id="earningsPlaceholder">0</span>€</h1>
+                    
+                </div>
+                </div>
+            </div>
+
+        </div>
+        
 
         
     </div>
 
-</div>
+    <!-- orders -->
+    <div class="row mt-3 mb-5">
 
-<div class="card-deck mb-3 text-center">
-    
-    <!-- language settings -->
-    <div class="card mb-4 box-shadow">
-    <div class="card-body">
-        <h4 class="my-0 font-weight-normal">{{ delivery_create_report }}</h4>
-        <p class="mt-3 mb-4">{{ settings_language_description }}</p>
-        <div class="dropdown">
-            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownLanguageButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              {{ selected_language }}
-            </button>
-            <div class="dropdown-menu" aria-labelledby="dropdownLanguageButton">
-                {% for element in available_languages %}
-                    <li class="dropdown-item" value="{{ element }}" onClick="set_language(this)"> {{ element }}</li>
-                {% endfor %}
-            </div>
-          </div>
-    </div>
+        <div class="col-12">
+            <h2>{{ delivery_orders_table_name }}</h2>
+
+        </div>
+
+        <div class="col-12">
+
+            <table class="table">
+                <thead class="thead-dark">
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">First</th>
+                    <th scope="col">Last</th>
+                    <th scope="col">Handle</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row">1</th>
+                    <td>Mark</td>
+                    <td>Otto</td>
+                    <td>@mdo</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">2</th>
+                    <td>Jacob</td>
+                    <td>Thornton</td>
+                    <td>@fat</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">3</th>
+                    <td>Larry</td>
+                    <td>the Bird</td>
+                    <td>@twitter</td>
+                  </tr>
+                </tbody>
+              </table>
+
+        </div>
+        
     </div>
 
 </div>
@@ -82,6 +168,291 @@
 
 {% block script %}
 <script>
+
+    // create vars
+    var total_earnings = 0;
+    var product_overview_raw = null;
+    var category_overview_raw = null;
+    var orders_overview_raw = null;
+    var n_product_cols = 0;
+    var n_category_cols = 0;
+    var n_orders_cols = 0;
+
+    // get html elements
+    var earnings_placeholder = document.getElementById('earningsPlaceholder');
+    var category_table_palceholder = document.getElementById('categoryTablePlaceholder');
+    var product_table_palceholder = document.getElementById('productTablePlaceholder');
+    var product_summary = document.getElementById('productSummary');
+
+    function append_empty_tr(n_cols, element, editable) {
+        /* creates a empty table row
+        
+        params:
+        -------
+        n_columns : int
+            Number of columns for the row
+        element : html element
+            The element to append to
+        editable : bool
+            If true, the element is editable
+            
+        returns:
+        --------
+        null
+
+        */
+
+        // create table row tag
+        var tr = document.createElement('td');
+
+        // append cells to it
+        for (var i = 0; i <= n_cols; i++) {
+
+            // create cell
+            if (editable) {
+                var td = document.createElement('td', {editable:true});
+            } else {
+                var td = document.createElement('td');
+            };
+            
+            // append as child
+            tr.appendChild(td);
+
+        };
+
+        // add remove icon
+        var td = document.createElement('td');
+        td.appendChild(document.createElement('span', {class:"table-remove glyphicon glyphicon-remove"}));
+        tr.append(td);
+
+        // append to element
+        element.appendChild(tr);
+
+        return
+    };
+
+    function create_table(data, editable) {
+        /* creates a table and returns it
+
+        params:
+        -------
+        data : json-object
+            The data to use for the population.
+                Format: {
+                    col:[values],
+                    col:[values],
+                    col:[values],
+                    ....
+                }
+        editable : bool
+            if true, the rows are editable
+
+        returns:
+        --------
+        html object
+            The generated table.
+
+        */
+
+        // get col names
+        var cols = Object.keys(data);
+        var n_cols = cols.length;
+
+        // get the length of the table
+        var n_entries = data[cols[0]].length;
+
+        // create table element
+        var tbl = document.createElement('table');
+        tbl.classList.add("table", "table-hover", "table-sm");
+
+        // add head
+        var tblh = document.createElement('thead');
+        tblh.classList.add("thead-dark");
+        var tblh_tr = document.createElement('tr');
+        
+        // populate thead
+        for (i = 0; i < n_cols; i++) {
+            
+            // create element
+            var th = document.createElement('th');
+            th.scope = "col";
+
+            // set inner html
+            th.innerHTML = cols[i];
+
+            // add to tblh_tr
+            tblh_tr.appendChild(th);
+
+        };
+
+        // add the tblh_tr to tblh
+        tblh.appendChild(tblh_tr);
+        tbl.appendChild(tblh);
+
+        // create table body
+        var tbody = document.createElement('tbody');
+
+        // populate
+        for (r = 0; r < n_entries; r++) {
+
+            // create tr
+            var tr = document.createElement('tr');
+
+            for (c = 0; c < n_cols; c++) {
+
+                // create th
+                var th = document.createElement('th');
+
+                // add col name
+                th.innerHTML = data[cols[c]][r];
+
+                // append
+                tr.appendChild(th);
+            };
+
+            // append tr
+            tbody.appendChild(tr);
+        };
+
+        // append table body
+        tbl.appendChild(tbody)
+
+        return tbl
+
+    };
+
+    function populate_category_tables(data, element, is_category) {
+        /* Creates a product table
+
+        Creates a table based on the data and appends
+        it to the product table div.
+
+        params:
+        -------
+        data : json-object
+            The data to parse.
+                Format: 
+                    for product: {
+                        'category_name':{
+                            'product_name':[],
+                            'quantity':[],
+                            'cost':[]
+                        },
+                        'category_name':{
+                            ...
+                        },
+                        ...
+                    }
+                    for cateogry:{
+                        'product_name':[],
+                        'subcat_1:[],
+                        'subcat_2:[],
+                        'subcat_X:[],
+                        ...
+                    }
+        element : html element
+            Element to append to.
+        is_category : bool
+            if true the data belongs to category
+
+        returns:
+        --------
+        null
+
+        */ 
+                    // TBD: Das Datenobjekt hat jetzt mehr info. {order, mapping, data}
+                    // wir müssen the originalen werte als value hinzufügen..
+                    // brauchen wir fürs zurückspielen.
+                    //https://stackoverflow.com/questions/1557602/jquery-and-ajax-response-header
+                    // https://codepen.io/redmangospros/pen/POVmwQ/
+                    // https://stackoverflow.com/questions/14643617/create-table-using-javascript
+        
+        // check if it is_category
+        if (is_category) {
+
+            // create table
+            var tbl = create_table(data, false);
+
+            // append to element
+            element.appendChild(tbl);
+
+        } else {
+
+            // get columns (of the first product)
+            var cols = Object.keys(data[0]);
+
+            for (p = 0; p < cols.length; p++) {
+
+                // create table name
+                var h4 = document.createElement('h4');
+                h4.innerHTML = cols[p];
+                h4.classList.add("mt-4")
+
+                // add to element
+                element.appendChild(h4);
+
+                // create meta div for table-responsive
+                var div = document.createElement('div');
+                div.classList.add("table-responsive");
+
+                // create table for data
+                var tbl = create_table(data[cols[p]], false);
+
+                // append to element
+                div.appendChild(tbl);
+                element.appendChild(div);
+            };
+            
+        };
+
+        // make visible
+        element.classList.remove('hidden');
+
+        return
+    };
+
+    function fetch_report() {
+        /* fetches the report and populates the tables */
+
+        var url = "{{ url_for('to_api', ressource='delivery/create') }}";
+
+
+        // call server and get data
+        $.ajax({
+            type:'POST',
+            url:"{{ url_for('to_api', ressource='delivery/create') }}",
+            data:{}
+        }).done(function(response){
+
+            if (response.success) {
+
+                // populate product overview
+                populate_category_tables(
+                    response.data.overview_product, 
+                    product_table_palceholder,
+                    false
+                    );
+
+                // populate cateogry overview
+
+                // populate total earnings
+                total_earnings = response.data.total_earnings;
+                earnings_placeholder.innerHTML = total_earnings;
+
+                // populate product overview
+
+                // make product summary visible
+
+
+            } else {
+
+                // toast
+            };
+
+        })
+    }
+
+
     
 </script>
 {% endblock %}

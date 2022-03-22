@@ -21,6 +21,39 @@ import miniMoi.logic.helpers.excel as xlsx
 
 
 #region 'helpers (private) functions' ----------------------------
+def _create_mapping(data:dict, translation:dict) -> tuple:
+    """Creates column ordering & mapper
+
+    Needed for correct displaying of elements
+    in forntend.
+
+    params:
+    ------
+    data : dict
+        The data as dict to check.
+    translation : dict
+        The excel translation dict.
+
+    returns:
+    --------
+    tuple
+        (ordering, mapper)
+    
+    """
+
+    # get cols ordering
+    cols = [col for col in data.keys()]
+
+    # create empty mapper
+    mapper = []
+
+    # cycle through cols and try to get a translation
+    for element in cols:
+        if element in translation: mapper.append(translation[element])
+        else: mapper.append(element)
+
+    return (cols, mapper)
+
 def _product_overview(granular:pd.DataFrame, to_dict:bool=False) -> typing.Union[pd.DataFrame, dict]:
     """Produces the product overview
 
@@ -196,9 +229,12 @@ def create(language = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']
     
     """
 
+    # get language files
+    try: translation = language_files[language]['error_codes']
+    except: translation = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
+
     # get language errorcodes
-    try: errors = language_files[language]['error_codes']
-    except: errors = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
+    errors = translation['error_codes']
 
     # create session
     session = Session()
@@ -308,7 +344,7 @@ def create(language = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']
     df = pd.merge(df, cost_per_customer, how="left", left_on="customer_id", right_on="customer_id")
 
     # select only relevant information
-    df = df.loc[:, [
+    relevantCols = [
         'customer_approach', 
         'customer_street', 
         'customer_nr',
@@ -328,7 +364,8 @@ def create(language = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']
         'total_cost',
         'customer_notes',
         'id'
-        ]].sort_values(['customer_town', 'customer_approach', 'product_name'])
+        ]
+    df = df.loc[:, relevantCols].sort_values(['customer_town', 'customer_approach', 'product_name'])
 
     # turn into townbased dict
     townbased = {
@@ -337,15 +374,44 @@ def create(language = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']
 
     #endregion
 
+    # get xlsx table name mapping
+    xlsxNames = translation['xslx']
+
+    # create orders & mapping
+    townbasedOrder, townbasedMapping = _create_mapping(townbased, xlsxNames)
+    categoryOrder, categoryMapping = _create_mapping(overview_category, xlsxNames)
+
+    productOverview = {}
+    for p in overview_product.keys():
+
+        # get mapping
+        tmpOrder, tmpMapping = _create_mapping(overview_product[p], xlsxNames)
+
+        productOverview.update({
+            p:{
+                'data':overview_product[p],
+                'order':[c for c in tmpOrder],
+                'mapping':[c for c in tmpMapping]
+            }
+        })
+
     # did all work?
     return {
         'success':True,
         'error':"",
         'data':{
-            'overview_category':overview_category,
-            'overview_product':overview_product,
+            'overview_category':{
+                'data':overview_category,
+                'order':categoryOrder,
+                'mapping':categoryMapping
+                },
+            'overview_product':productOverview,
             'total_earnings':totalEarnings,
-            'town_based':townbased
+            'town_based':{
+                'data':townbased,
+                'mapping':townbasedMapping,
+                'order':townbasedOrder
+                }
         }
     }
 

@@ -66,7 +66,7 @@ print("DB PATH: ", dbPath)
 engine = create_engine(
     dbPath,
     echo = False,
-    future = True
+    future = False
 )
 
 # create session maker

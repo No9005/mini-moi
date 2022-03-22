@@ -143,6 +143,19 @@ mapping = {
             'delivery_download_tooltip':(
                 "Download the current (shown) report as excel."
                 ),
+            'delivery_category_table_name':"Product summary",
+            'delivery_orders_table_name':"Orders",
+            'delivery_product_overview':"Products",
+            'delivery_product_overview_description':(
+                "The quantity of products needed for the next delivery."
+                ),
+            'delivery_category_overview':"Categories",
+            'delivery_category_overview_description':(
+                "Total amount of needed products based on category."
+                ),
+            'delivery_total_earnings':"Earnings",
+            'delivery_total_earnings_description':"Your earnings after your tour tomorrow."
+
         }
 
     }

@@ -4,9 +4,11 @@ Initiate the database (if not already active)
 """
 
 # imports
-
 from miniMoi import engine, base
 from sqlalchemy_utils import database_exists, create_database
+
+# import models, else create all will fail!
+from miniMoi.models.Models import Customers, Orders, Abo, Category, Subcategory, Products, Log
 
 
 def run_creation(engine, base) -> None:
