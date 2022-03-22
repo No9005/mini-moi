@@ -24,7 +24,6 @@ class TestTime(unittest.TestCase):
         - utcnow()
         - parse_date_string()
         - to_string()
-        - utc_to_local()
         - local_to_utc()
 
     methods:
@@ -243,6 +242,20 @@ class TestTime(unittest.TestCase):
 
         #endregion
 
+    def test_utc_to_local(self):
+        """Tests utc to local """
+
+        # test without timedelta
+        today = datetime.datetime.strptime("2022.03.22 13:00", "%Y.%m.%d %H:%M")
+        result = time.utc_to_local(today, "Europe/Berlin")
+
+        self.assertEqual(result.strftime("%Y.%m.%d %H:%M"), "2022.03.22 14:00")
+
+        # test with timedelta
+        today = datetime.datetime.strptime("2022.03.22 13:00", "%Y.%m.%d %H:%M") + datetime.timedelta(days=1)
+        result = time.utc_to_local(today, "Europe/Berlin")
+
+        self.assertEqual(result.strftime("%Y.%m.%d %H:%M"), "2022.03.23 14:00")
 
     #endregion
 

@@ -4,10 +4,12 @@ Contains the handler logic for the api
 """
 
 # imports
+from flask import send_file
+
 from miniMoi import app
 from miniMoi.language import language_files
 from miniMoi.logic.helpers import tools
-from miniMoi.logic.functions import customer, products, categories, abo
+from miniMoi.logic.functions import customer, products, categories, abo, delivery
 
 #region 'handler'
 def api(request:dict) -> dict:
@@ -39,8 +41,259 @@ def api(request:dict) -> dict:
     try:
 
         #region 'delivery'
-        if ressource == "delivery/overview/create":
-            pass
+        if ressource == "delivery/create":
+            """Creates next days delivery overview
+
+            This function creates the overview for the
+            next days delivery.
+
+            params:
+            -------
+            None
+
+            returns:
+            --------
+            dict
+                success, error & data {
+                    'overview_category':{
+                        'category_name':[],
+                        'quantity':[],
+                        'cost':[]
+                        },
+                    'overview_product':{
+                        'category_name':{
+                            'product_name':[],
+                            'subcat_1:[],
+                            'subcat_2:[],
+                            'subcat_X:[],
+                            ...
+                        },
+                        'category_name2':{
+                            ...
+                        },
+                        ...
+                        
+                        },
+                    'total_earnigns':int,
+                    'town_based':{
+                        'townName':{
+                            'customer_approach':list[int], 
+                            'customer_street':list[str], 
+                            'customer_nr':list[int],
+                            'customer_town':list[str],
+                            'customer_name':list[str],
+                            'customer_surname':list[str],
+                            'customer_id':list[int],
+                            'customer_phone':list[str],
+                            'customer_mobile':list[str],
+                            'quantity':list[int], 
+                            'product_name':list[str],
+                            'product_id':list[int],
+                            'category_name':list[str],
+                            'subcategory_name':list[str],
+                            'product_selling_price':list[float],
+                            'cost':list[float],
+                            'total_cost':list[float],
+                            'notes':list[str]
+                            'id':list[int] # -> the abo_id
+                            },
+                        'townName':{
+                            ...
+                            },
+                        ...
+                    }
+
+                } 
+            
+            """
+
+            response = delivery.create(
+                language = app.config['DEFAULT_LANGUAGE'],
+                tz = app.config['TZ_INFO']
+            )
+
+            return response
+
+        elif ressource == "delivery/book":
+            """Books the manipulated data
+
+            This function takes the data and adds 
+            the provided info to the 'Orders' table.
+            It also calculates the next delivery
+            date.
+            In the end it returns the printed excel.
+
+            params:
+            -------
+            data : dict
+                The town based data for each abo.
+                    Format: {
+                            'customer_approach':list[int], 
+                            'customer_street':list[str], 
+                            'customer_nr':list[int],
+                            'customer_town':list[str],
+                            'customer_name':list[str],
+                            'customer_surname':list[str],
+                            'customer_id':list[int],
+                            'customer_phone':list[str],
+                            'customer_mobile':list[str],
+                            'quantity':list[int], 
+                            'product_name':list[str], 
+                            'product_id':list[int],
+                            'category_name':list[str],
+                            'subcategory_name':list[str],
+                            'product_selling_price':list[float],
+                            'cost':list[float],
+                            'total_cost':list[float],
+                            'notes':list[str]
+                            'id':list[int] # -> the abo_id
+                            }
+                    }
+        
+            returns:
+            -------
+            send_file | dict
+            
+            """
+
+            response = delivery.book(
+                data = request['data'],
+                language = app.config['DEFAULT_LANGUAGE']
+            )
+
+            if not response['success']: return response
+            else: 
+                
+                # reference: https://stackoverflow.com/questions/27337013/how-to-send-zip-files-in-the-python-flask-framework
+                return send_file(
+                    response['data']['zip'], 
+                    attachment_filename="miniMoi_overview_" + response['data']['date'] + ".zip",
+                    as_attachment=True
+                )
+
+        elif ressource == "delivery/cover":
+            """Create the cover excel sheet
+
+            Creates the excel cover and returns it.
+
+            params:
+            -------
+            data : dict
+                The town based data for each abo.
+                    Format: {
+                            'customer_approach':list[int], 
+                            'customer_street':list[str], 
+                            'customer_nr':list[int],
+                            'customer_town':list[str],
+                            'customer_name':list[str],
+                            'customer_surname':list[str],
+                            'customer_id':list[int],
+                            'customer_phone':list[str],
+                            'customer_mobile':list[str],
+                            'quantity':list[int], 
+                            'product_name':list[str], 
+                            'product_id':list[int],
+                            'category_name':list[str],
+                            'subcategory_name':list[str],
+                            'product_selling_price':list[float],
+                            'cost':list[float],
+                            'total_cost':list[float],
+                            'notes':list[str]
+                            'id':list[int] # -> the abo_id
+                            }
+                    }
+        
+            returns:
+            -------
+            send_file | dict
+                Format:
+                    File: send_file()
+                    Dict: {
+                        success, 
+                        error,
+                        data:{
+                            'file':io.BytesIO,
+                            'date':str
+                        }
+
+            """
+
+            response = delivery.print_cover(
+                data = request['data'],
+                language = app.config['DEFAULT_LANGUAGE']
+            )
+
+            if not response['success']: return response
+            else: 
+                
+                return send_file(
+                    response['data']['file'], 
+                    attachment_filename="miniMoi_cover_" + response['data']['date'] + ".xlsx",
+                    mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    as_attachment=True
+                )
+
+        elif ressource == "delivery/orderDetails":
+            """Create order details overview
+
+            Creates the excel overview and returns it.
+
+            params:
+            -------
+            data : dict
+                The town based data for each abo.
+                    Format: {
+                            'customer_approach':list[int], 
+                            'customer_street':list[str], 
+                            'customer_nr':list[int],
+                            'customer_town':list[str],
+                            'customer_name':list[str],
+                            'customer_surname':list[str],
+                            'customer_id':list[int],
+                            'customer_phone':list[str],
+                            'customer_mobile':list[str],
+                            'quantity':list[int], 
+                            'product_name':list[str], 
+                            'product_id':list[int],
+                            'category_name':list[str],
+                            'subcategory_name':list[str],
+                            'product_selling_price':list[float],
+                            'cost':list[float],
+                            'total_cost':list[float],
+                            'notes':list[str]
+                            'id':list[int] # -> the abo_id
+                            }
+                    }
+        
+            returns:
+            -------
+            send_file | dict
+                Format:
+                    File: send_file()
+                    Dict: {
+                        success, 
+                        error,
+                        data:{
+                            'file':io.BytesIO,
+                            'date':str
+                        }
+
+            """
+
+            response = delivery.print_order_details(
+                data = request['data'],
+                language = app.config['DEFAULT_LANGUAGE']
+            )
+
+            if not response['success']: return response
+            else: 
+                
+                return send_file(
+                    response['data']['file'], 
+                    attachment_filename="miniMoi_order_details_" + response['data']['date'] + ".xlsx",
+                    mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    as_attachment=True
+                )
 
         #endregion
 

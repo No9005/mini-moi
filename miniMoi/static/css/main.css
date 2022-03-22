@@ -1,0 +1,28 @@
+.no-link-underline {
+    text-decoration: none;
+}
+
+.no-link-underline:hover {
+    text-decoration: none;
+}
+
+.big-number {
+    font-size: 40pt;
+}
+
+.dot {
+    height:100px;
+    width:100px;
+    vertical-align: middle;
+    text-align:center;
+    background-color:antiquewhite;
+    border-radius:50%;
+}
+
+.hidden {
+    display:none;
+}
+
+.force-min-height {
+    min-height:200px;
+}

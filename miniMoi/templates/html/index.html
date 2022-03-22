@@ -1,0 +1,89 @@
+{% extends "html/base.html" %}
+
+{% block title %}
+    {{ index_title }}
+{% endblock %}
+
+{% block body %} 
+
+<div class="px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+    <h1 class="display-4">{{ index_hello }}</h1>
+    <p class="lead text-muted">{{ index_lead }}</p>
+</div>
+
+<div class="py-5">
+    <hr>
+
+    <div class="container py-4">
+
+        <!-- getting started -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <h2>{{ index_getting_started }}</h2>
+                <p class="text-muted">{{ index_steps }}</p>
+            </div>
+        </div>
+
+        <!-- Steps -->
+        <div class="row">
+
+            <div class="col-3">
+                <h3 class="big-number pl-5">1</h3>    
+            </div>
+
+            <div class="col-7">
+                <div class="card mb-4 box-shadow border-0">
+                <div class="card-body">
+                    <p class="card-text">{{ index_setup }} <a href="{{ url_for('settings') }}">{{ index_setup_link }}</a></p>
+                </div>
+                    <img class="card-img-top" data-src="" alt="Card image cap">
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row py-4">
+
+            <div class="col-3">
+                <h3 class="big-number pl-5">2</h3>    
+            </div>
+
+            <div class="col-7">
+                <div class="card mb-4 box-shadow border-0">
+                <div class="card-body">
+                    <p class="card-text">{{ index_enter_data|safe }}</p>
+                    <ul>
+                        <li>{{ index_data_customer|safe }}</li>
+                        <li>{{ index_data_categories|safe }}</li>
+                        <li>{{ index_data_products|safe }}</li>
+                        <li>{{ index_data_abos|safe }}</li>
+                    </ul>
+                </div>
+                    <img class="card-img-top" data-src="" alt="Card image cap">
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row py-4">
+
+            <div class="col-3">
+                <h3 class="big-number pl-5">3</h3>    
+            </div>
+
+            <div class="col-7">
+                <div class="card mb-4 box-shadow border-0">
+                <div class="card-body">
+                    <p class="card-text">{{ index_create_report }}</p>
+                </div>
+                    <img class="card-img-top" data-src="" alt="Card image cap">
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

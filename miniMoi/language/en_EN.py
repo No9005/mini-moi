@@ -19,6 +19,7 @@ mapping = {
         'notAllowed':"'{var}' needs to be one of the following '{available}'.",
         'weekdays':"Monday, Tuesday, Wendsday, Thursday, Friday, Saturday, Sunday",
         'cycleMismatch':"The 'interval' is not allowed to be None if the 'cycle_type' indicates a 'day' or 'interval'.",
+        'missingData':"There is data missing: {column}",
         '500':"An error occured: {c}: {m}",
         '404':"Endpoint '{ressource}' not found.",
     },
@@ -56,5 +57,94 @@ mapping = {
         'customer_mobile':"Mobile",
         'customer_notes':"Notes",
         'checkbox':"Check"
+    },
+    'html_text':{
+        'base_html':{
+            'site_content':"mini-moi app",
+            'base_app_name':"Mini Moi",
+            'base_delivery':"Delivery",
+            'base_tables':"Management",
+            'base_settings':"Settings",
+            'base_shutdown':"Shutdown",
+            'base_documentation':"Documentation",
+            'base_update':"Updates",
+            'base_releases':"Newest Release",
+            'base_version':"Version"
+        },
+        '/settings':{
+            'settings_title':"Settings",
+            'settings_lead':"Adjust your app by changing your settings.",
+            'settings_language':"Language",
+            'settings_language_description':"Set the app language.",
+            'settings_logging':"Logging",
+            'settings_logging_description':(
+                "This enables the logging of actions made by "
+                "the user. <br> "
+                "<span class='text-danger'>Disabling is not recommended!</span>"
+                ),
+            'settings_logging_on':"Activated",
+            'settings_logging_off':"Deactivated",
+            'settings_apply_button':"Apply settings"
+        },
+        '/':{
+            'index_title':"Home",
+            'index_hello':"Welcome, Mini Moi user!",
+            'index_lead':(
+                "A little assistent to get an overview of "
+                "the next days orders."
+            ),
+            'index_getting_started':"Getting started",
+            'index_steps':"Only 3 steps needed.",
+            'index_setup':"Setup your app ",
+            'index_setup_link':"click me!",
+            'index_enter_data':(
+                "Enter your customer data and add some products. <br>"
+                "You need set up the following data:"
+                ),
+            'index_data_customer':(
+                "Your consumers in the <span class='text-info'>Consumer Table</span>."
+                ),
+            'index_data_categories':(
+                "Supply your product categories and subcategories (e.g. 'cut', 'whole') in the "
+                "<span class='text-info'>Category Table</span> & <span class='text-info'>Subcategory Table</span>."
+                ),
+            'index_data_products':(
+                "Describe your products in the <span class='text-info'>Products Table</span>"
+                ),
+            'index_data_abos':(
+                "Last, but not least: Add the regular orders to the (consumer) abo's "
+                "(<span class='text-info'>Abo Table</span>)"
+                ),
+            'index_create_report':"Create the report for the next day deliveries!"
+        },
+        '/shutdown/app':{
+            'shutdown_title':"Ended app",
+            'shutdown_bye':"Goodby, User!",
+            'shutdown_lead':"See you soon for the next deliveries &#128513"
+        },
+        '/delivery':{
+            'delivery_title':"Delivery",
+            'delivery_lead':"Create the order report for the next day delivery.",
+            'delivery_create_report':"Create",
+            'delivery_download':"Redownload report",
+            'delivery_book':"Book",
+            'delivery_create_tooltip':(
+                "Creates the report for the next day. The results are shown below. "
+                "You can edit this report to customize your next delivery."
+                ),
+            'delivery_book_tooltip':(
+                "Book locks your current report and moves the products "
+                "to the 'Orders' table. Additionally the dates for the "
+                "next deliveries are calculated for "
+                "your customers (based on the set abos). CAUTION: "
+                "You can not undo or re-create the report once you have "
+                "'booked' your deliveries!!!"
+                ),
+            'delivery_download_tooltip':(
+                "Download the current (shown) report as excel."
+                ),
+        }
+
     }
+    
 }

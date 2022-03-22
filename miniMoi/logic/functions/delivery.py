@@ -6,6 +6,8 @@ Collection of function which handle the delivery
 # import
 import typing
 import datetime
+import zipfile
+import io
 
 import pandas as pd
 import xlsxwriter as xlsx
@@ -15,6 +17,8 @@ from miniMoi.models.Models import Abo, Customers, Products, Category, Subcategor
 from miniMoi.logic.helpers import tools
 from miniMoi.language import language_files
 import miniMoi.logic.helpers.time_module as time
+import miniMoi.logic.helpers.excel as xlsx
+
 
 #region 'helpers (private) functions' ----------------------------
 def _product_overview(granular:pd.DataFrame, to_dict:bool=False) -> typing.Union[pd.DataFrame, dict]:
@@ -57,7 +61,6 @@ def _product_overview(granular:pd.DataFrame, to_dict:bool=False) -> typing.Union
     }
 
     return overview_product
-
 
 def _category_overview(granular:pd.DataFrame, to_dict:bool=False) -> typing.Union[pd.DataFrame, dict]:
     """Produces the category overview
@@ -388,7 +391,10 @@ def book(data:dict, language = app.config['DEFAULT_LANGUAGE']) -> dict:
     returns:
     -------
     dict
-        success, error & data
+        success, error & data:{
+            'zip':io.BytesIO,
+            'date':str
+        }
 
     """
 
@@ -399,8 +405,41 @@ def book(data:dict, language = app.config['DEFAULT_LANGUAGE']) -> dict:
     # data empty?
     if not bool(data): return {'success':False, 'error':errors['noEntry'], 'data':{}}
 
+    # all relevant columns in the data?
+    relCols = [
+        'customer_approach',
+        'customer_street', 
+        'customer_nr',
+        'customer_town',
+        'customer_name',
+        'customer_surname',
+        'customer_id',
+        'customer_phone',
+        'customer_mobile',
+        'quantity', 
+        'product_name', 
+        'product_id',
+        'product_selling_price',
+        'subcategory_name',
+        'category_name',
+        'cost',
+        'total_cost',
+        'customer_notes',
+        'id'
+        ]
+    for col in relCols:
+
+        if col not in data.keys(): return {
+            'success':False, 
+            'error':errors['missingData'].format(column=str(col)), 
+            'data':{}
+            }
+
     # turn into pd.dataFrame
     df = pd.DataFrame(data)
+
+    # sort
+    df = df.sort_values(['customer_town', 'customer_approach', 'product_name'])
 
     # create session
     session = Session()
@@ -469,8 +508,62 @@ def book(data:dict, language = app.config['DEFAULT_LANGUAGE']) -> dict:
     # create product overview
     overview_product = _product_overview(granular, to_dict = True)
 
+    # build townbased
+    townbased = {
+            t:df[df['customer_town'] == t].to_dict("list") for t in df['customer_town'].unique().tolist()
+        } 
+
     # create excel
-    # TBD
+    cover = xlsx.print_cover(
+        category_overview = overview_category,
+        product_overview = overview_product,
+        path = None,
+        tomorrow = True,
+        language = language
+    )
+
+    orderDetails = xlsx.print_order_list(
+        townbased,
+        path = None,
+        tomorrow = True,
+        language = language
+    )
+
+    # zip the files
+    archive = io.BytesIO()
+
+    # get today
+    useDate = time.to_string(
+                time.utc_to_local(
+                    time.utcnow() + datetime.timedelta(days=1),
+                    tz = app.config['TZ_INFO']
+                    ), 
+                "%Y-%m-%d"
+                )
+
+    with zipfile.ZipFile(archive, "w") as zip_archive:
+
+        # add the files
+        with zip_archive.open("/cover_" + useDate + ".xlsx", "w") as file1:
+            file1.write(cover.read())
+        
+        with zip_archive.open("/order_details_" + useDate + ".xlsx", "w") as file2:
+            file2.write(orderDetails.read())
+
+    archive.seek(0)
+
+
+    if False: 
+        """
+        CAUTION:
+        Write the archive to disk by using the writing mode
+        'wb' for -> 'write binary'.
+
+        """
+
+        # write the buffer to the disk
+        with open(str(app.config['CWD'].parent/"vorlagen/archive.zip"), "wb") as f:
+            f.write(archive.getbuffer())
 
     # commit
     try: session.commit()
@@ -496,70 +589,250 @@ def book(data:dict, language = app.config['DEFAULT_LANGUAGE']) -> dict:
         'success':True,
         'error':"",
         'data':{
-            'excel':"TBD"
+            'zip':archive,
+            'date':useDate
         }
     }
 
-def print_overview():
-    """
+def print_order_details(
+        data:dict,
+        language = app.config['DEFAULT_LANGUAGE']
+    ) -> dict:
+    """Create order details overview
+
+    Creates the excel overview and returns it.
+
+    params:
+    -------
+    data : dict
+        The town based data for each abo.
+            Format: {
+                    'customer_approach':list[int], 
+                    'customer_street':list[str], 
+                    'customer_nr':list[int],
+                    'customer_town':list[str],
+                    'customer_name':list[str],
+                    'customer_surname':list[str],
+                    'customer_id':list[int],
+                    'customer_phone':list[str],
+                    'customer_mobile':list[str],
+                    'quantity':list[int], 
+                    'product_name':list[str], 
+                    'product_id':list[int],
+                    'category_name':list[str],
+                    'subcategory_name':list[str],
+                    'product_selling_price':list[float],
+                    'cost':list[float],
+                    'total_cost':list[float],
+                    'notes':list[str]
+                    'id':list[int] # -> the abo_id
+                    }
+            }
+    language : str, optional
+        language ISO code for the errors.
+        (default is app.config['DEFAULT_LANGUAGE])
+ 
+    returns:
+    -------
+    dict
+        success, error & data:{
+            'file':io.BytesIO,
+            'date':str
+            }
+
     """
 
-    return
+    # get language errorcodes
+    try: errors = language_files[language]['error_codes']
+    except: errors = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
+
+    # data empty?
+    if not bool(data): return {'success':False, 'error':errors['noEntry'], 'data':{}}
+
+    # all relevant columns in the data?
+    relCols = [
+        'customer_approach',
+        'customer_street', 
+        'customer_nr',
+        'customer_town',
+        'customer_name',
+        'customer_surname',
+        'customer_id',
+        'customer_phone',
+        'customer_mobile',
+        'quantity', 
+        'product_name', 
+        'product_id',
+        'product_selling_price',
+        'subcategory_name',
+        'category_name',
+        'cost',
+        'total_cost',
+        'customer_notes',
+        'id'
+        ]
+    for col in relCols:
+
+        if col not in data.keys(): return {
+            'success':False, 
+            'error':errors['missingData'].format(column=str(col)), 
+            'data':{}
+            }
+
+    # turn into pd.dataFrame
+    df = pd.DataFrame(data)
+
+    # sort
+    df = df.sort_values(['customer_town', 'customer_approach', 'product_name'])
+
+    # build townbased
+    townbased = {
+            t:df[df['customer_town'] == t].to_dict("list") for t in df['customer_town'].unique().tolist()
+        } 
+
+    orderDetails = xlsx.print_order_list(
+        townbased,
+        path = None,
+        tomorrow = True,
+        language = language
+    )
+
+    return {
+        'success':True,
+        'error':"",
+        'data':{
+            'file':orderDetails,
+            'date':time.to_string(
+                time.utc_to_local(
+                    time.utcnow() + datetime.timedelta(days=1),
+                    tz = app.config['TZ_INFO']
+                    ), 
+                "%Y-%m-%d"
+                )
+            }
+    }
+
+def print_cover(
+        data:dict,
+        language = app.config['DEFAULT_LANGUAGE']
+    ) -> dict:
+    """Create the cover excel sheet
+
+    Creates the excel cover and returns it.
+
+    params:
+    -------
+    data : dict
+        The town based data for each abo.
+            Format: {
+                    'customer_approach':list[int], 
+                    'customer_street':list[str], 
+                    'customer_nr':list[int],
+                    'customer_town':list[str],
+                    'customer_name':list[str],
+                    'customer_surname':list[str],
+                    'customer_id':list[int],
+                    'customer_phone':list[str],
+                    'customer_mobile':list[str],
+                    'quantity':list[int], 
+                    'product_name':list[str], 
+                    'product_id':list[int],
+                    'category_name':list[str],
+                    'subcategory_name':list[str],
+                    'product_selling_price':list[float],
+                    'cost':list[float],
+                    'total_cost':list[float],
+                    'notes':list[str]
+                    'id':list[int] # -> the abo_id
+                    }
+            }
+    language : str, optional
+        language ISO code for the errors.
+        (default is app.config['DEFAULT_LANGUAGE])
+ 
+    returns:
+    -------
+    dict
+        success, error & data:{
+            'file':io.BytesIO,
+            'date':str
+            }
+
+    """
+
+    # get language errorcodes
+    try: errors = language_files[language]['error_codes']
+    except: errors = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
+
+    # data empty?
+    if not bool(data): return {'success':False, 'error':errors['noEntry'], 'data':{}}
+
+    # all relevant columns in the data?
+    relCols = [
+        'customer_approach',
+        'customer_street', 
+        'customer_nr',
+        'customer_town',
+        'customer_name',
+        'customer_surname',
+        'customer_id',
+        'customer_phone',
+        'customer_mobile',
+        'quantity', 
+        'product_name', 
+        'product_id',
+        'product_selling_price',
+        'subcategory_name',
+        'category_name',
+        'cost',
+        'total_cost',
+        'customer_notes',
+        'id'
+        ]
+    for col in relCols:
+
+        if col not in data.keys(): return {
+            'success':False, 
+            'error':errors['missingData'].format(column=str(col)), 
+            'data':{}
+            }
+
+    # turn into pd.dataFrame
+    df = pd.DataFrame(data)
+
+    # create product overviews
+    # group on granularest level
+    granular = _prepare_granular(df)
+
+    # create category overview
+    overview_category = _category_overview(granular, to_dict=True)
+
+    # create product overview
+    overview_product = _product_overview(granular, to_dict = True)
+
+    # create excel
+    cover = xlsx.print_cover(
+        category_overview = overview_category,
+        product_overview = overview_product,
+        path = None,
+        tomorrow = True,
+        language = language
+    )
+
+    return {
+        'success':True,
+        'error':"",
+        'data':{
+            'file':cover,
+            'date':time.to_string(
+                time.utc_to_local(
+                    time.utcnow() + datetime.timedelta(days=1),
+                    tz = app.config['TZ_INFO']
+                    ), 
+                "%Y-%m-%d"
+                )
+            }
+    }
 
 #endregion
 
-"""
-Plan:
-
-
-- Query Abos mit utcnow +-1 in next delivery
-- Convert UTC now to local & kill alles was != delivery morgen
-- Fetch Customers|Category|Products based on list of ids (-> .filter(Customers.id.in_(list)).all() )
-- Kombinieren zu einem df.
-- value counts product | category (-> Mengenübersicht für startseite)
-- groupen der customer by Town & sort by anfahrt.
-    - summe quantity * productpreis
-    - totale summe pro consument
-
-ans frontend.
-
-Frontend besitzt zwei buttons:
-- Print (zum download der excel)
-- book (zum buchen der werte).
-- Man kann die Werte noch ändern, sodass die
-geänderten werde zum buchen übernommen werden!
-
-sobald bestätigt wird muss die info noch geschrieben werden.
-Am besten sendet das Frontend das ganze als json zurück
-
-{
-    'overview':{
-        'note':-> Notiz,
-        'catgory_total':{pd.Series},
-        'product_total':{pd.Series}
-    },
-    'delivery':{
-        'town':{
-            'order':pd.DataFrame({
-                'customer_id':[],
-                'street':[],
-                'nr':[],
-                'quantity':[],
-                'product':[],
-                'cost':[],
-                'note':[],
-                'check':None
-            }),
-            'total':{pd.DataFrame()}
-        },
-        'town':{},
-        ....
-    }
-}
-
-Wir schreiben dann die Zeile für jede Stadt.
-Sobald innerhalb einer stadt die letzte Zeile eines teilnehmers geschrieben wurde,
-fügen wir den noch im total dazu
-
-
-"""

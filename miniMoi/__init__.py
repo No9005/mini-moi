@@ -9,7 +9,7 @@ import os
 import sys
 import json
 from pathlib import Path
-from tzlocal import get_localzone
+from tzlocal import get_localzone_name
 
 from flask import Flask
 
@@ -38,9 +38,14 @@ with open(cwd/"settings/settings.json", "r") as file:
 app.config['VERSION'] = version.__version__
 app.config['DEFAULT_LANGUAGE'] = settings['default_language']
 app.config['ACTION_LOGGING'] = settings['action_logging'] == "True"
+app.config['CWD'] = cwd
 
-app.config['TZ_INFO'] = get_localzone()
-print("TIMEZONE: ", get_localzone())
+app.config['TZ_INFO'] = get_localzone_name()
+print("TIMEZONE: ", get_localzone_name())
+
+# add available languages
+from miniMoi.language import language_files
+app.config['AVAILABLE_LANGUAGES'] = [lang for lang in language_files.keys()]
 
 #endregion
 

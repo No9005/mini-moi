@@ -641,10 +641,18 @@ def print_order_list(
 
     #endregion
 
+#endregion
 
-def test():
-    """
-    """
+
+#region 'CAUTION: visual inspection'
+"""
+CAUTION:
+Not for production, only for testing!
+
+"""
+
+def test_cover():
+    """Prints a cover to the 'vorlagen' directory. """
 
     cwd = Path().cwd()
     print("CWD:", cwd)
@@ -669,16 +677,11 @@ def test():
         }
 
     response = print_cover(testCategories, testProducts, path = str(cwd/"vorlagen/print_test.xlsx"), tomorrow = True, language = "EN")
-
-    """with open(str(cwd/"vorlagen/print_test.xlsx"), "w") as f:
-        bw = io.TextIOWrapper(response)
-        f.write(bw)
-        #f.write(response.read().decode("utf-8"))"""
     
     print("DONE")
 
-def test_town():
-    """ """
+def test_details():
+    """Prints order details to 'vorlagne' directory """
 
     testData = {
         'Entenhausen':{

@@ -1,6 +1,8 @@
-v.0.3.1: Xlsx bugfixing. Frontend needed.
+v.0.4.0: First html added.
 
 ------------ old versions ----------------------------------
+v.0.3.1: Xlsx bugfixing. Frontend needed.
+
 v.0.3.0: Added xlsx writing. Frontend needed.
 
 v.0.2.0: Added test + tables + delivery. See changelog.

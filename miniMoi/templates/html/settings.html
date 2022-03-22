@@ -1,0 +1,194 @@
+{% extends "html/base.html" %}
+
+{% block title %} {{ settings_title }} {% endblock %}
+
+{% block body %}
+
+<!-- Header -->
+<div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+    <h1 class="display-4">{{ settings_title }}</h1>
+    <p class="lead">{{ settings_lead }}</p>
+</div>
+
+<!-- settings -->
+<div class="card-deck mb-3 text-center">
+    
+    <!-- language settings -->
+    <div class="card mb-4 box-shadow">
+    <div class="card-header">
+        <h4 class="my-0 font-weight-normal">{{ settings_language }}</h4>
+    </div>
+    <div class="card-body">
+        <p class="mt-3 mb-4">{{ settings_language_description }}</p>
+        <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownLanguageButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              {{ selected_language }}
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownLanguageButton">
+                {% for element in available_languages %}
+                    <li class="dropdown-item" value="{{ element }}" onClick="set_language(this)"> {{ element }}</li>
+                {% endfor %}
+            </div>
+          </div>
+    </div>
+    </div>
+    
+    <!-- logging -->
+    <div class="card mb-4 box-shadow">
+    <div class="card-header">
+        <h4 class="my-0 font-weight-normal">{{ settings_logging }}</h4>
+    </div>
+    <div class="card-body">
+        <p class="mt-3 mb-4">{{ settings_logging_description|safe }}</p>
+
+        <div class="form-check" id="loggingRadio">
+            <input class="form-check-input loggingRadio" type="radio" name="flexRadioLogging" id="flexRadioLoggingOn" value="True" onClick="update_logging(this)" checked>
+            <label class="form-check-label" for="flexRadioLoggingOn">
+            {{ settings_logging_on }}
+            </label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input loggingRadio" type="radio" name="flexRadioLogging" id="flexRadioLoggingOff" value="False" onClick="update_logging(this)">
+            <label class="form-check-label" for="flexRadioLoggingOff">
+                {{ settings_logging_off }}
+            </label>
+        </div>
+
+
+    </div>
+    </div>
+    
+
+</div>
+
+<button type="button" class="btn btn-lg btn-block btn-success" onClick="apply_settings()"> {{ settings_apply_button }}</button>
+
+{% endblock %}
+
+{% block script %}
+<script>
+
+    // define language variable
+    var language = "{{ selected_language }}";
+    var logging = "{{ action_logging }}";
+
+
+    function update_interface() {
+        /* updates the interface
+
+        params:
+        -------
+        none
+
+        returns:
+        --------
+        none
+
+        */
+
+        // grab relevant elements
+        var lang_selector = document.getElementById('dropdownLanguageButton');
+        var logging_selector = document.getElementsByClassName('loggingRadio');
+
+        // update inner htmls
+        lang_selector.innerHTML = language;
+
+        // update radios
+        for (i = 0; i < logging_selector.length; i++) {
+            if (logging_selector[i].value == logging) {
+                logging_selector[i].checked = true;
+            };
+        };
+
+        return
+    };
+
+    function update_logging(element) {
+        /* updates the 'logging' var
+
+        params:
+        -------
+        element : this
+            The html element
+        
+        returns:
+        -------
+        none
+
+        */
+
+        // update
+        logging = element.getAttribute('value');
+
+        // interface refreshing
+        update_interface();
+
+        return
+
+    };
+
+    function apply_settings() {
+        /* Sends the new settings to the server */
+
+        $.ajax({
+            type:'POST',
+            url:"{{ url_for('settings') }}",
+            data: {
+                'language':language,
+                'logging':logging
+            }
+        }).done(function(data){
+            if (data.success) {
+                
+                // re direct to index
+                window.location.href = data.data;
+            }
+            else {
+                
+                Toastify({
+                    text: data.error,
+                    duration: 5000,
+                    close: true,
+                    gravity: "top", // `top` or `bottom`
+                    position: "right", // `left`, `center` or `right`
+                    backgroundColor: "linear-gradient(to right, #d9534f, #D1504B)", // alternative: #592220
+                    stopOnFocus: true, // Prevents dismissing of toast on hover
+                    onClick: function(){} // Callback after click
+                }).showToast();
+
+            };
+        });
+
+        return
+    };
+
+    function set_language(element) {
+        /* updates the 'language' var & ui
+
+        params:
+        -------
+        element : this
+            The html element.
+        
+        returns:
+        -------
+        none
+
+        */
+
+        // grab the value
+        language = element.getAttribute('value');
+
+        // change interface
+        update_interface();
+
+        return
+
+    };
+
+    $(document).ready(function() {
+        update_interface();
+    });
+    
+</script> 
+{% endblock %}
