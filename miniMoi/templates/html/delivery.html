@@ -140,52 +140,13 @@
 
             </div>
 
-            <div class="" id="ordersTablePlaceholder">
+            <div class="col-12" id="ordersTablePlaceholder">
                             
                 <!-- table generation -->
 
             </div>
 
-            <div class="col-12">
-                <table class="table" id="testTable">
-                    <span class="table-add fa-solid fa-circle-plus fa-xl"></span>
-                    <thead class="thead-dark">
-                    <tr class="head">
-                        <th scope="col" headers="#" >#</th>
-                        <th scope="col" headers="First">First</th>
-                        <th scope="col" headers="Last">Last</th>
-                        <th scope="col" headers="NoHandle">Handle</th>
-                        <th scope="col" style="width:5%"></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td scope="row">1</td>
-                        <td contenteditable="true">Larry</td>
-                        <td contenteditable="true">the Bird</td>
-                        <td contenteditable="true">@twitter</td>
-                        <td><i class="fa-solid fa-circle-minus fa-lg table-remove"></i></td>
-                    </tr>
-                    <tr>
-                        <td scope="row">2</td>
-                        <td contenteditable="true">Larry</td>
-                        <td contenteditable="true">the Bird</td>
-                        <td contenteditable="true">@twitter</td>
-                        <td><i class="fa-solid fa-circle-minus fa-lg table-remove"></i></td>
-                    </tr>
-                    <tr>
-                        <td scope="row">3</td>
-                        <td contenteditable="true">Larry</td>
-                        <td contenteditable="true">the Bird</td>
-                        <td contenteditable="true">@twitter</td>
-                        <td><i class="fa-solid fa-circle-minus fa-lg table-remove"></i></td>
-                    </tr>
-                    </tbody>
-                </table>
-                
-                
-
-            </div>
+            
             
         </div>
     </div>
@@ -322,37 +283,78 @@
             // set inner html
             th.innerHTML = cols_names[i];
 
-            // add to tblh_tr
+            // check if col contains underscores -> indicatdes to hide
+            if (cols_names[i].includes("_") || cols_names[i] == "id") {
+                th.classList.add("hidden");
+            };
+
+            // add to table-head-row
             tblh_tr.appendChild(th);
 
         };
 
-        // add the tblh_tr to tblh
+        // add col for remover
+        if (editable) {
+            var th = document.createElement('th');
+            th.scope = "col";
+            th.setAttribute('style', "width:5%");
+            //th.headers = "remover_remover";
+
+            // append
+            tblh_tr.appendChild(th);
+        }
+
+        // add the table-head-row to table-head
         tblh.appendChild(tblh_tr);
         tbl.appendChild(tblh);
 
         // create table body
         var tbody = document.createElement('tbody');
 
-        // populate
+        // populate body
         for (r = 0; r < n_entries; r++) {
 
-            // create tr
+            // create table row
             var tr = document.createElement('tr');
 
             for (c = 0; c < n_cols; c++) {
 
-                // create th
-                var th = document.createElement('th');
+                // create table cell
+                if (c == 0) {
+                    var th = document.createElement('th');
+                } else {
+                    var th = document.createElement('td');
+                };
+
+                // should be invisible?
+                if (cols_names[c].includes("_") || cols_names[c] == "id") {
+                    th.classList.add("hidden");
+                };
+
+                // editable?
+                if (editable) {
+                    th.setAttribute('contenteditable', "true");
+                };
 
                 // add col name
                 th.innerHTML = values[cols[c]][r];
 
-                // append
+                // append to table-row
                 tr.appendChild(th);
             };
 
-            // append tr
+            // add remover cell
+            if (editable) {
+                
+                // create cell
+                var th = document.createElement('td');
+                th.innerHTML = "<i class='fa-solid fa-circle-minus fa-lg table-remove'></i>";
+
+                // add to row
+                tr.appendChild(th);
+            };
+
+            // append table row to table body
             tbody.appendChild(tr);
         };
 
@@ -363,7 +365,7 @@
 
     };
 
-    function populate_category_tables(data, element, is_category) {
+    function populate_category_tables(data, element, is_category, is_editable) {
         /* Creates a product table
 
         Creates a table based on the data and appends
@@ -422,7 +424,7 @@
         if (is_category) {
 
             // create table
-            var tbl = create_table(data, false);
+            var tbl = create_table(data, is_editable);
 
             // append to element
             element.appendChild(tbl);
@@ -447,11 +449,24 @@
                 div.classList.add("table-responsive");
 
                 // create table for data
-                var tbl = create_table(data[products[p]], false);
+                var tbl = create_table(data[products[p]], is_editable);
 
                 // append to element
                 div.appendChild(tbl);
+
+                // add table adder (if editable)
+                if (is_editable) {
+                    var tbl_adder = document.createElement('div');
+                    //div.classList.add("col-12");
+                    tbl_adder.classList.add("text-center");
+                    tbl_adder.innerHTML = "<i class='table-add fa-solid fa-circle-plus fa-xl'></i>";
+
+                    div.appendChild(tbl_adder);
+                };
+
                 element.appendChild(div);
+
+
             };
             
         };
@@ -500,14 +515,18 @@
                 spendings_placeholder.innerHTML = total_spendings;
 
                 // populate product overview
+                populate_category_tables(
+                    data = response.data.town_based, 
+                    element = ordersTablePlaceholder,
+                    is_category = false,
+                    is_editable = true
+                );
 
 
                 // make other buttons & product summary visible
                 document.getElementById('downloadReport').classList.remove("hidden");
                 document.getElementById('bookReport').classList.remove("hidden");
                 document.getElementById('summarySection').classList.remove("hidden");
-
-
 
             } else {
 
@@ -520,29 +539,43 @@
     function download_report() {
         /* just downloads the report */
 
-        book(checkout=false, table_id="#testTable");
+        book(checkout=false, table_id="#ordersTablePlaceholder");
 
         return
     };
 
-    // like above only for dynamically generated
-    $('#testTable').on("click", '.table-remove', function() {
-        
-        // detach the parent tr
+    // add on click remover for dynamically added elements
+    $('#ordersTablePlaceholder').on("click", '.table-remove', function () {
+        //detach the parent tr
         $(this).parents('tr').detach();
     });
 
-    $('.table-add').click(function() {
+    $('#ordersTablePlaceholder').on("click", ".table-add", function() {
 
-        // create empty row
-        var tr = empty_tr(n_orders_cols, true);
-        
-        // attach to the table
-        $('#testTable').children('tbody').append(tr);
-    
+        // get the table
+        var tbl = $(this).parents().children('table');
+
+        // get number of columns
+        var n_cols = 0;
+
+        tbl.find('thead').children('tr').children().each(function() {
+            if (!$(this).text().includes("_") && $(this).text() != "id"){
+                n_cols++;
+            };
+        });
+
+        // subtract 1 because of the remover
+        n_cols--
+
+        // generate empty row
+        var tr = empty_tr(n_cols, true);
+
+        // attach
+        tbl.children('tbody').append(tr);
+
     });
 
-    function book(checkout, table_id ="#ordersTable") {
+    function book(checkout, table_collection_id ="#ordersTablePlaceholder") {
         /* Books or just creates tables 
         
         This function handles the table parsing
@@ -563,8 +596,119 @@
         
         */
 
+        //downloads_path = str(Path.home() / "Downloads")
+        
         // grab table
-        var TABLE = $(table_id);
+        var collection = $(table_collection_id);
+
+        // create array for data
+        var data = []
+
+        // cycle through each table
+        collection.find('table').each(function() {
+
+            //get table data
+            data.push(get_table_values($(this)));
+
+        });
+
+        // concat data
+        data = [].concat(...data);
+
+        // ajax call for the correct method
+        if (checkout) {
+
+            // call book
+
+        } else {
+
+            // call excel 1
+            $.ajax({
+                type:'POST',
+                url:"{{ url_for('to_api', ressource='delivery/cover') }}",
+                data:{
+                    'data':JSON.stringify(data)
+                }
+            }).done(function(response, textStatus, request) {
+
+                if (response.success) {
+
+                    var blob = new Blob([string_to_array_buffer(window.atob(response.data.content))], {type:""})
+                    var blobURL = URL.createObjectURL(blob);
+                
+                    const a = document.createElement('a')
+                    a.href = blobURL;
+                    a.download = response.data.name;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    //window.navigator.msSaveBlob(blob, response.data.name)
+
+                } else {
+
+
+                    // check if response is object or string
+                    if (typeof response == "object") {
+
+                        console.log(response);
+                        // its a json -> toast the error
+
+                        } else {
+
+                        console.log(typeof response.error);
+
+
+                        // create text decoder
+                        var enc = new TextDecoder("utf-8");
+
+                        // create blob & add decoded bytestring
+                        //var blob = new Blob([enc.decode(response)]);
+                        var ab = string_to_array_buffer(response);
+                        var bytes = enc.decode(ab);
+                        console.log(bytes)
+                        var blob = new Blob([string_to_array_buffer(response)])
+
+                        var blobURL = URL.createObjectURL(blob);
+                        //window.location.replace(blobURL);
+
+
+                        response.blob()
+
+                        }
+
+                }
+
+
+
+                
+            })
+
+        };
+
+        
+
+
+    };
+
+    function get_table_values(table) {
+        /* Grabs all table values 
+        
+        Grabs all values from a table and returns
+        an array containing json-objects for each row.
+
+        params:
+        -------
+        table : html element
+            the table to parse
+
+        returns:
+        --------
+        array
+        
+        */
+        
+        // grab table
+        var TABLE = table
 
         // grab headers
         var cols = [];
@@ -585,11 +729,13 @@
         // create flat data & iterate
         // see: https://stackoverflow.com/questions/2448051/how-can-i-select-all-elements-without-a-given-class-in-jquery
         TABLE.find('tr:not(.head').each(function () {
+
             // find all 'td's for row
-            var tmp_td = $(this).find('td:not(.table-remove)');
+            var tmp_td = $(this).children();
             var h = {};
 
             // cycle through headers and apply to h
+            // CAUTION: automatically kills the last col (-> no idx for it!)
             cols.forEach(function (col, c) {
 
                 // add key:text at idx[c]
@@ -601,13 +747,26 @@
 
         });
 
-        // show in logs
-        console.log(data);
+        return data
+    };
 
+    // create string to array buffer function
+    // see here https://stackoverflow.com/questions/34993292/how-to-save-xlsx-data-to-file-as-a-blob
+    function string_to_array_buffer(s) {
+
+        /* converst the strint to array buffer */
+
+        var buf = new ArrayBuffer(s.length);
+        var view = new Uint8Array(buf);
+
+        for (var i=0; i!=s.length; i++) {
+            view[i] = s.charCodeAt(i) & 0xFF;
+        }
+
+        return buf;
+    };
         
 
-
-    };
 
 
 

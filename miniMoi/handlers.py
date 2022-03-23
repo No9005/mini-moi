@@ -4,7 +4,9 @@ Contains the handler logic for the api
 """
 
 # imports
-from flask import send_file
+import json
+import base64
+from flask import send_file, make_response
 
 from miniMoi import app
 from miniMoi.language import language_files
@@ -218,20 +220,44 @@ def api(request:dict) -> dict:
 
             """
 
+            # got jsonified data. turn into json
+            data = json.loads(request['data']['data'])
+
             response = delivery.print_cover(
-                data = request['data'],
+                data = data,
                 language = app.config['DEFAULT_LANGUAGE']
             )
 
             if not response['success']: return response
             else: 
+
+                newResponse = {
+                    'success':True,
+                    'data':{
+                        'content':base64.b64encode(response['data']['file'].getvalue()).decode(),
+                        'name':"miniMoi_cover_" + response['data']['date'] + ".xlsx"
+                    }
+                    
+                }
+
+                #https://stackoverflow.com/questions/63921787/display-image-from-flask-send-file-ajax-response-into-the-image-tag
+                #newResponse = make_response(
+                #    base64.b64encode(response['data']['file']))
+                #newResponse.headers['Content-Type'] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                #newResponse.headers.set(
+                #    'Content-Disposition', 
+                #    'attachment', 
+                #    filename="miniMoi_cover_" + response['data']['date'] + ".xlsx"
+                #    )
+
+                return newResponse
                 
-                return send_file(
+                """return send_file(
                     response['data']['file'], 
                     attachment_filename="miniMoi_cover_" + response['data']['date'] + ".xlsx",
                     mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     as_attachment=True
-                )
+                )"""
 
         elif ressource == "delivery/orderDetails":
             """Create order details overview

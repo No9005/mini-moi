@@ -64,9 +64,6 @@
 .table-add {
     color: #070;
     cursor: pointer;
-    position: absolute;
-    bottom: -10px;
-    right: 52%;
 }
 
 .table-add:hover {

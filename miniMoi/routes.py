@@ -156,7 +156,7 @@ def to_api(ressource) -> dict:
     """
 
     # grab the body
-    payload = request.json
+    payload = request.form
 
     # pass it to the handler
     response = handlers.api({

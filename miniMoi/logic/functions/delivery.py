@@ -348,15 +348,13 @@ def create(language = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']
 
     # select only relevant information
     relevantCols = [
+        'customer_street',
         'customer_approach', 
-        'customer_street', 
         'customer_nr',
         'customer_town',
         'customer_name',
         'customer_surname',
         'customer_id',
-        'customer_phone',
-        'customer_mobile',
         'quantity', 
         'product_name',
         'product_id',
@@ -365,8 +363,10 @@ def create(language = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']
         'category_name',
         'cost',
         'total_cost',
+        'customer_phone',
+        'customer_mobile',
         'customer_notes',
-        'id'
+        'id',
         ]
     df = df.loc[:, relevantCols].sort_values(['customer_town', 'customer_approach', 'product_name'])
 
@@ -380,10 +380,11 @@ def create(language = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']
     # get xlsx table name mapping
     xlsxNames = translation['xlsx']
 
-    # create orders & mapping
-    townbasedOrder, townbasedMapping = _create_mapping(townbased, xlsxNames)
+    #region 'create orders & mapping'
+    # category
     categoryOrder, categoryMapping = _create_mapping(overview_category, xlsxNames)
 
+    # product
     productOverview = {}
     for p in overview_product.keys():
 
@@ -398,6 +399,23 @@ def create(language = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']
             }
         })
 
+    # townbased
+    townBasedOverview = {}
+    for t in townbased.keys():
+
+        # get mapper
+        tmpOrder, tmpMapping = _create_mapping(townbased[t], xlsxNames)
+
+        townBasedOverview.update({
+            t:{
+                'data':townbased[t],
+                'order':[c for c in tmpOrder],
+                'mapping':[c for c in tmpMapping]
+            }
+        })
+    
+    #endregion
+
     # did all work?
     return {
         'success':True,
@@ -411,11 +429,7 @@ def create(language = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']
             'overview_product':productOverview,
             'total_earnings':totalEarnings,
             'total_spendings':totalSpendings,
-            'town_based':{
-                'data':townbased,
-                'mapping':townbasedMapping,
-                'order':townbasedOrder
-                }
+            'town_based':townBasedOverview,
         }
     }
 
@@ -477,6 +491,7 @@ def book(data:dict, language = app.config['DEFAULT_LANGUAGE']) -> dict:
 
     # all relevant columns in the data?
     relCols = [
+        'id',
         'customer_approach',
         'customer_street', 
         'customer_nr',
@@ -495,7 +510,6 @@ def book(data:dict, language = app.config['DEFAULT_LANGUAGE']) -> dict:
         'cost',
         'total_cost',
         'customer_notes',
-        'id'
         ]
     for col in relCols:
 
@@ -837,6 +851,11 @@ def print_cover(
     # data empty?
     if not bool(data): return {'success':False, 'error':errors['noEntry'], 'data':{}}
 
+    # turn into pd.dataFrame
+    df = pd.DataFrame(data)
+
+    print(df)
+
     # all relevant columns in the data?
     relCols = [
         'customer_approach',
@@ -861,14 +880,11 @@ def print_cover(
         ]
     for col in relCols:
 
-        if col not in data.keys(): return {
+        if col not in df.columns: return {
             'success':False, 
             'error':errors['missingData'].format(column=str(col)), 
             'data':{}
             }
-
-    # turn into pd.dataFrame
-    df = pd.DataFrame(data)
 
     # create product overviews
     # group on granularest level
