@@ -74,6 +74,7 @@ def inject_to_all_templates():
     # pass dict!
     return contextDict
 
+
 #endregion
 
 #region 'views'

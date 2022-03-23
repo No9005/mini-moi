@@ -1,3 +1,5 @@
+/*@import "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.css";*/
+
 .no-link-underline {
     text-decoration: none;
 }
@@ -25,4 +27,48 @@
 
 .force-min-height {
     min-height:200px;
+}
+
+/* table manipulation */
+.table-editable {
+    position: relative;
+}
+  
+.table-remove {
+    color: #700;
+    cursor: pointer;
+}
+
+.table-remove:hover {
+    color: #f00;
+}
+
+.table-check {
+    color: #070;
+    cursor: pointer;
+}
+
+.table-check:hover {
+    color: #0b0;
+}
+
+.table-up, .table-down {
+    color: #007;
+    cursor: pointer;
+}
+
+.table-up:hover, .table-down:hover{
+    color: #00f;
+}
+
+.table-add {
+    color: #070;
+    cursor: pointer;
+    position: absolute;
+    bottom: -10px;
+    right: 52%;
+}
+
+.table-add:hover {
+    color: #0b0;
 }

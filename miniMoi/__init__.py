@@ -92,3 +92,6 @@ run_creation(engine, base)
 from miniMoi import routes
 
 #endregion
+
+#test import! TBD:DELETE
+from miniMoi.logic.db.generate_testdata import generate as generate_test

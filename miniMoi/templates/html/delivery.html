@@ -70,6 +70,8 @@
                 <div class="card-body">
                     <p class="mt-3 mb-4 text-muted">{{ delivery_product_overview_description }}</p>
                     
+                    <hr>
+                    
                     <div class="" id="productTablePlaceholder">
                         
                         <!-- table generation -->
@@ -86,14 +88,16 @@
                     </div>
                 <div class="card-body">
                     <p class="mt-3 mb-4 text-muted">{{ delivery_category_overview_description }}</p>
-                    
+
+                    <hr>
+
+                    <h4 class="mt-4">{{ delivery_category_table_section_name }}</h4>
+
                     <div class="table-responsive" id="categoryTablePlaceholder">
                         
                         <!-- table generation -->
 
                     </div>
-                    
-                    
                 </div>
                 </div>
             
@@ -102,12 +106,23 @@
                     <div class="card-header">
                         <h4 class="my-0 font-weight-normal">{{ delivery_total_earnings }}</h4>
                     </div>
-                <div class="card-body">
-                    <p class="mt-3 mb-4 text-muted">{{ delivery_total_earnings_description }}</p>
-                    
-                    <h1 class="card-title earnings-card-title"><span id="earningsPlaceholder">0</span>€</h1>
-                    
-                </div>
+                    <div class="card-body">
+                        <p class="mt-3 mb-4 text-muted">{{ delivery_total_earnings_description }}</p>
+                        
+                        <h1 class="card-title earnings-card-title"><span id="earningsPlaceholder">0</span>€</h1>
+                        
+                    </div>
+
+                    <div class="card-header">
+                        <h4 class="my-0 font-weight-normal">{{ delivery_total_spendings }}</h4>
+                    </div>
+                    <div class="card-body">
+                        <p class="mt-3 mb-4 text-muted">{{ delivery_total_spendings_description }}</p>
+                        
+                        <h1 class="card-title earnings-card-title"><span id="spendingsPlaceholder">0</span>€</h1>
+                        
+                    </div>
+
                 </div>
             </div>
 
@@ -118,7 +133,7 @@
     </div>
 
     <!-- orders -->
-    <div class="row mt-3 mb-5">
+    <div class="row mt-3" style="margin-bottom:100px">
 
         <div class="col-12">
             <h2>{{ delivery_orders_table_name }}</h2>
@@ -126,43 +141,55 @@
         </div>
 
         <div class="col-12">
-
             <table class="table">
+                <span class="table-add fa-solid fa-circle-plus fa-xl"></span>
                 <thead class="thead-dark">
                   <tr>
                     <th scope="col">#</th>
                     <th scope="col">First</th>
                     <th scope="col">Last</th>
                     <th scope="col">Handle</th>
+                    <th scope="col" style="width:5%"></th>
+                    <th scope="col" style="width:5%"></th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
                     <th scope="row">1</th>
-                    <td>Mark</td>
-                    <td>Otto</td>
-                    <td>@mdo</td>
-                  </tr>
+                    <td contenteditable="true">Larry</td>
+                    <td contenteditable="true">the Bird</td>
+                    <td contenteditable="true">@twitter</td>
+                    <td><i class="fa-solid fa-circle-minus fa-lg table-remove"></i></td>
+                    <td><i class="fa-solid fa-circle-check fa-lg table-check"></i></td>
+                </tr>
                   <tr>
                     <th scope="row">2</th>
-                    <td>Jacob</td>
-                    <td>Thornton</td>
-                    <td>@fat</td>
+                    <td contenteditable="true">Larry</td>
+                    <td contenteditable="true">the Bird</td>
+                    <td contenteditable="true">@twitter</td>
+                    <td><i class="fa-solid fa-circle-minus fa-lg table-remove"></i></td>
+                    <td><i class="fa-solid fa-circle-check fa-lg table-check"></i></td>
                   </tr>
                   <tr>
                     <th scope="row">3</th>
-                    <td>Larry</td>
-                    <td>the Bird</td>
-                    <td>@twitter</td>
+                    <td contenteditable="true">Larry</td>
+                    <td contenteditable="true">the Bird</td>
+                    <td contenteditable="true">@twitter</td>
+                    <td><i class="fa-solid fa-circle-minus fa-lg table-remove"></i></td>
+                    <td><i class="fa-solid fa-circle-check fa-lg table-check"></i></td>
                   </tr>
                 </tbody>
               </table>
+              
+              
 
         </div>
         
     </div>
 
 </div>
+
+<i class="fa-solid fa-arrow-up table-up"></i><i class="fa fa-solid fa-arrow-down table-down"></i>
 
 {% endblock %}
 
@@ -171,6 +198,7 @@
 
     // create vars
     var total_earnings = 0;
+    var total_spendings = 0;
     var product_overview_raw = null;
     var category_overview_raw = null;
     var orders_overview_raw = null;
@@ -180,6 +208,7 @@
 
     // get html elements
     var earnings_placeholder = document.getElementById('earningsPlaceholder');
+    var spendings_placeholder = document.getElementById('spendingsPlaceholder');
     var category_table_palceholder = document.getElementById('categoryTablePlaceholder');
     var product_table_palceholder = document.getElementById('productTablePlaceholder');
     var product_summary = document.getElementById('productSummary');
@@ -239,10 +268,14 @@
         data : json-object
             The data to use for the population.
                 Format: {
-                    col:[values],
-                    col:[values],
-                    col:[values],
-                    ....
+                    'data':{
+                        col:[values],
+                        col:[values],
+                        col:[values],
+                        ....
+                    },
+                    'order':[],
+                    'mapping':[]
                 }
         editable : bool
             if true, the rows are editable
@@ -255,11 +288,13 @@
         */
 
         // get col names
-        var cols = Object.keys(data);
+        var cols = data.order;
         var n_cols = cols.length;
+        var cols_names = data.mapping;
+        var values = data.data;
 
         // get the length of the table
-        var n_entries = data[cols[0]].length;
+        var n_entries = values[cols[0]].length;
 
         // create table element
         var tbl = document.createElement('table');
@@ -276,9 +311,10 @@
             // create element
             var th = document.createElement('th');
             th.scope = "col";
+            th.headers = cols[i];
 
             // set inner html
-            th.innerHTML = cols[i];
+            th.innerHTML = cols_names[i];
 
             // add to tblh_tr
             tblh_tr.appendChild(th);
@@ -304,7 +340,7 @@
                 var th = document.createElement('th');
 
                 // add col name
-                th.innerHTML = data[cols[c]][r];
+                th.innerHTML = values[cols[c]][r];
 
                 // append
                 tr.appendChild(th);
@@ -334,9 +370,13 @@
                 Format: 
                     for product: {
                         'category_name':{
-                            'product_name':[],
-                            'quantity':[],
-                            'cost':[]
+                            'data':{
+                                'product_name':[],
+                                'quantity':[],
+                                'cost':[]
+                            },
+                            'order':[],
+                            'mapping':[],
                         },
                         'category_name':{
                             ...
@@ -344,11 +384,15 @@
                         ...
                     }
                     for cateogry:{
-                        'product_name':[],
-                        'subcat_1:[],
-                        'subcat_2:[],
-                        'subcat_X:[],
-                        ...
+                        'data': {
+                            'product_name':[],
+                            'subcat_1:[],
+                            'subcat_2:[],
+                            'subcat_X:[],
+                            ...
+                        },
+                        'order':[],
+                        'mapping':[]
                     }
         element : html element
             Element to append to.
@@ -366,7 +410,8 @@
                     //https://stackoverflow.com/questions/1557602/jquery-and-ajax-response-header
                     // https://codepen.io/redmangospros/pen/POVmwQ/
                     // https://stackoverflow.com/questions/14643617/create-table-using-javascript
-        
+
+
         // check if it is_category
         if (is_category) {
 
@@ -379,13 +424,13 @@
         } else {
 
             // get columns (of the first product)
-            var cols = Object.keys(data[0]);
+            var products = Object.keys(data);
 
-            for (p = 0; p < cols.length; p++) {
+            for (p = 0; p < products.length; p++) {
 
                 // create table name
                 var h4 = document.createElement('h4');
-                h4.innerHTML = cols[p];
+                h4.innerHTML = products[p];
                 h4.classList.add("mt-4")
 
                 // add to element
@@ -396,7 +441,7 @@
                 div.classList.add("table-responsive");
 
                 // create table for data
-                var tbl = create_table(data[cols[p]], false);
+                var tbl = create_table(data[products[p]], false);
 
                 // append to element
                 div.appendChild(tbl);
@@ -434,15 +479,26 @@
                     );
 
                 // populate cateogry overview
+                populate_category_tables(
+                    response.data.overview_category, 
+                    category_table_palceholder,
+                    true
+                    );
 
                 // populate total earnings
                 total_earnings = response.data.total_earnings;
                 earnings_placeholder.innerHTML = total_earnings;
 
+                // populate total spendings
+                total_spendings = response.data.total_spendings;
+                spendings_placeholder.innerHTML = total_spendings;
+
                 // populate product overview
+
 
                 // make product summary visible
 
+                // make other buttons visible
 
             } else {
 
@@ -450,7 +506,30 @@
             };
 
         })
-    }
+    };
+
+    $('.table-remove').click(function() {
+        $(this).parents('tr').detach();
+    });
+
+    $('.table-check').click(function() {
+
+        
+        var parent = $(this).parents('tr').children();
+
+        for (i=0; i< parent.length; i++) {
+            console.log(parent[i])
+        }
+
+        $(this).parents('tr').children().each(function () {
+            console.log($(this).text())
+        })
+        
+        console.log(typeof $(this).parents('tr'))
+        //alert($(this).parents('tr').text());
+    });
+
+
 
 
     

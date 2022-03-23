@@ -197,6 +197,7 @@ def create(language = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']
                 
                 },
             'total_earnigns':int,
+            'total_spendings':int,
             'town_based':{
                 'townName':{
                     'customer_approach':list[int], 
@@ -230,8 +231,8 @@ def create(language = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']
     """
 
     # get language files
-    try: translation = language_files[language]['error_codes']
-    except: translation = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
+    try: translation = language_files[language]
+    except: translation = language_files[app.config['DEFAULT_LANGUAGE']]
 
     # get language errorcodes
     errors = translation['error_codes']
@@ -323,6 +324,7 @@ def create(language = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']
     #region 'create overview' ----------------------------------
     # calculate cost & total for each participant
     df['cost'] = df.loc[:, 'product_selling_price'] * df.loc[:, 'quantity']
+    df['spendings'] = df.loc[:, 'product_purchase_price'] * df.loc[:, 'quantity']
 
     # group on granularest level
     granular = _prepare_granular(df)
@@ -335,6 +337,7 @@ def create(language = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']
 
     # get total earned price
     totalEarnings = df['cost'].sum()
+    totalSpendings = df['spendings'].sum()
 
     # sort for town based userlist
     cost_per_customer = df.groupby('customer_id').apply(lambda x: x['cost'].sum()).reset_index()
@@ -375,7 +378,7 @@ def create(language = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']
     #endregion
 
     # get xlsx table name mapping
-    xlsxNames = translation['xslx']
+    xlsxNames = translation['xlsx']
 
     # create orders & mapping
     townbasedOrder, townbasedMapping = _create_mapping(townbased, xlsxNames)
@@ -407,6 +410,7 @@ def create(language = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']
                 },
             'overview_product':productOverview,
             'total_earnings':totalEarnings,
+            'total_spendings':totalSpendings,
             'town_based':{
                 'data':townbased,
                 'mapping':townbasedMapping,
