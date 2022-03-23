@@ -39,6 +39,7 @@ app.config['VERSION'] = version.__version__
 app.config['DEFAULT_LANGUAGE'] = settings['default_language']
 app.config['ACTION_LOGGING'] = settings['action_logging'] == "True"
 app.config['CWD'] = cwd
+app.config['HOME'] = Path().home()
 
 app.config['TZ_INFO'] = get_localzone_name()
 print("TIMEZONE: ", get_localzone_name())

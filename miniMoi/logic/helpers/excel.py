@@ -89,9 +89,14 @@ def print_cover(
     else: output = str(path)
     
     # create workbook & worksheet
-    workbook = xlsx.Workbook(output)
+    workbook = xlsx.Workbook(output, {'nan_inf_to_errors': True})
     worksheet = workbook.add_worksheet("overview")
 
+    # set header image
+    worksheet.set_margins(top=1.3)
+    worked = worksheet.set_header('&L&G', {'image-left': Path().cwd()/"miniMoi/static/img/miniMoi_logo.png"})
+
+    print(worked)
     #region 'format cells'
     highlight = "b2b2b2"
     offwhite = "eeeeee"
@@ -408,9 +413,13 @@ def print_order_list(
     else: output = str(path)
     
     # create workbook & worksheet
-    workbook = xlsx.Workbook(output)
+    workbook = xlsx.Workbook(output, {'nan_inf_to_errors': True})
     worksheet = workbook.add_worksheet("overview")
     worksheet.set_landscape()
+
+    # set header image
+    worksheet.set_margins(top=1.3)
+    worksheet.set_header('&L&G', {'image-left': Path().cwd()/"miniMoi/static/img/miniMoi_logo.png"})
 
     #region 'format cells'
     #region 'set width'

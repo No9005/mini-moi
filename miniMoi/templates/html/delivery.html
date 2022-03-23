@@ -29,7 +29,7 @@
         </div>
 
         <div class="col-4 hidden" id="bookReport">
-            <button type="button" class="btn btn-lg btn-block btn-warning" data-toggle="tooltip" data-placement="bottom" title="{{ delivery_book_tooltip|safe }}" onClick=""> 
+            <button type="button" class="btn btn-lg btn-block btn-warning" onClick="book_report()" data-toggle="tooltip" data-placement="bottom" title="{{ delivery_book_tooltip|safe }}" onClick=""> 
                 {{ delivery_book }}
             </button>
             
@@ -161,12 +161,10 @@
     // create vars
     var total_earnings = 0;
     var total_spendings = 0;
-    var product_overview_raw = null;
-    var category_overview_raw = null;
-    var orders_overview_raw = null;
-    var n_product_cols = 0;
-    var n_category_cols = 0;
-    var n_orders_cols = 4;
+
+    const not_editable_cols = [
+        'id', 'customer_id', 'product_id'
+    ]
 
     // get html elements
     var earnings_placeholder = document.getElementById('earningsPlaceholder');
@@ -225,7 +223,7 @@
         return tr
     };
 
-    function create_table(data, editable) {
+    function create_table(data, editable, relevant_columns) {
         /* creates a table and returns it
 
         params:
@@ -243,7 +241,11 @@
                     'mapping':[]
                 }
         editable : bool
-            if true, the rows are editable
+            if true, the rows are editable.
+        relevant_columns : array | null
+            If not null, the array is used as
+            selector and order indicator for the
+            columns.
 
         returns:
         --------
@@ -257,6 +259,27 @@
         var n_cols = cols.length;
         var cols_names = data.mapping;
         var values = data.data;
+
+        // check if we have a relevant_columns array
+        if (relevant_columns != null) {
+
+            var new_col_names = [];
+
+            // get corresponding display names
+            relevant_columns.forEach(function(col, c) {
+                
+                // get idx of the col in 'cols'
+                var idx = cols.indexOf(col);
+
+                if (idx != -1) { new_col_names.push(cols_names[idx]) }
+            });
+
+            // overwrite cols, n_cols & col_names
+            cols = relevant_columns;
+            cols_names = new_col_names;
+            n_cols = cols.length;
+            
+        };
 
         // get the length of the table
         var n_entries = values[cols[0]].length;
@@ -295,6 +318,7 @@
 
         // add col for remover
         if (editable) {
+
             var th = document.createElement('th');
             th.scope = "col";
             th.setAttribute('style', "width:5%");
@@ -320,24 +344,20 @@
             for (c = 0; c < n_cols; c++) {
 
                 // create table cell
-                if (c == 0) {
-                    var th = document.createElement('th');
-                } else {
-                    var th = document.createElement('td');
-                };
+                if (c == 0) { var th = document.createElement('th'); }
+                else { var th = document.createElement('td'); };
 
                 // should be invisible?
-                if (cols_names[c].includes("_") || cols_names[c] == "id") {
-                    th.classList.add("hidden");
-                };
+                if (cols_names[c].includes("_") || cols_names[c] == "id") { th.classList.add("hidden"); };
 
                 // editable?
-                if (editable) {
-                    th.setAttribute('contenteditable', "true");
-                };
+                if (editable & !not_editable_cols.includes(cols[c])) { th.setAttribute('contenteditable', "true"); };
 
                 // add col name
                 th.innerHTML = values[cols[c]][r];
+
+                // add coordinates
+                th.classList.add("col_" + c.toString(), "row_" + r.toString());
 
                 // append to table-row
                 tr.appendChild(th);
@@ -349,6 +369,7 @@
                 // create cell
                 var th = document.createElement('td');
                 th.innerHTML = "<i class='fa-solid fa-circle-minus fa-lg table-remove'></i>";
+                th.classList.add("col_remover", "row_remover");
 
                 // add to row
                 tr.appendChild(th);
@@ -365,7 +386,7 @@
 
     };
 
-    function populate_category_tables(data, element, is_category, is_editable) {
+    function populate_category_tables(data, element, is_category, is_editable, relevant_columns) {
         /* Creates a product table
 
         Creates a table based on the data and appends
@@ -406,6 +427,10 @@
             Element to append to.
         is_category : bool
             if true the data belongs to category
+        relevant_columns : array | null, optional
+            If not null, the table uses the relevant
+            columns as selector and order indicator.
+            (default is null)
 
         returns:
         --------
@@ -424,7 +449,7 @@
         if (is_category) {
 
             // create table
-            var tbl = create_table(data, is_editable);
+            var tbl = create_table(data, is_editable, relevant_columns);
 
             // append to element
             element.appendChild(tbl);
@@ -449,7 +474,7 @@
                 div.classList.add("table-responsive");
 
                 // create table for data
-                var tbl = create_table(data[products[p]], is_editable);
+                var tbl = create_table(data[products[p]], is_editable, relevant_columns);
 
                 // append to element
                 div.appendChild(tbl);
@@ -480,8 +505,13 @@
     function fetch_report() {
         /* fetches the report and populates the tables */
 
-        var url = "{{ url_for('to_api', ressource='delivery/create') }}";
+        // clean tables
+        $(category_table_palceholder).empty();
+        $(product_table_palceholder).empty();
+        $(orders_table_placeholder).empty();
 
+        // set url
+        const url = "{{ url_for('to_api', ressource='delivery/create') }}";
 
         // call server and get data
         $.ajax({
@@ -490,6 +520,7 @@
             data:{}
         }).done(function(response){
 
+            // on success
             if (response.success) {
 
                 // populate product overview
@@ -528,9 +559,20 @@
                 document.getElementById('bookReport').classList.remove("hidden");
                 document.getElementById('summarySection').classList.remove("hidden");
 
-            } else {
+            } 
+            else {
 
-                // toast
+                console.log(response.error);
+                
+                Toastify({
+                        text: response.error,
+                        duration: 3000,
+                        position:'right',
+                        gravity:'top',
+                        style: {
+                            background: "linear-gradient(to right, #e74c3c, #c0392b)",
+                        },
+                    }).showToast();
             };
 
         })
@@ -540,6 +582,14 @@
         /* just downloads the report */
 
         book(checkout=false, table_id="#ordersTablePlaceholder");
+
+        return
+    };
+
+    function book_report() {
+        /* books & downloads the report */
+
+        book(checkout=true, table_id="#ordersTablePlaceholder");
 
         return
     };
@@ -557,11 +607,19 @@
 
         // get number of columns
         var n_cols = 0;
+        var cols = []
 
+        /*
         tbl.find('thead').children('tr').children().each(function() {
             if (!$(this).text().includes("_") && $(this).text() != "id"){
                 n_cols++;
             };
+        });
+        */
+
+        tbl.find('thead').children('tr').children().each(function() {
+            n_cols++; 
+            cols.push($(this).text());
         });
 
         // subtract 1 because of the remover
@@ -569,6 +627,16 @@
 
         // generate empty row
         var tr = empty_tr(n_cols, true);
+
+        $(tr).find('td').each(function() {
+            if ($(this).text() == null) {
+                $(this).addClass("hidden");
+            } else {
+                if ($(this).text().includes("_") || $(this).text() == "id") {
+                    $(this).addClass("hidden");
+                };
+            };
+        });
 
         // attach
         tbl.children('tbody').append(tr);
@@ -596,7 +664,8 @@
         
         */
 
-        //downloads_path = str(Path.home() / "Downloads")
+        // grab town names
+        var raw_town_names = Object.keys(overview_raw);
         
         // grab table
         var collection = $(table_collection_id);
@@ -605,9 +674,8 @@
         var data = []
 
         // cycle through each table
-        collection.find('table').each(function() {
-
-            //get table data
+        collection.find('table').each(function(idx) {
+            
             data.push(get_table_values($(this)));
 
         });
@@ -615,73 +683,90 @@
         // concat data
         data = [].concat(...data);
 
+        console.log(data);
+
         // ajax call for the correct method
         if (checkout) {
 
             // call book
-
-        } else {
-
-            // call excel 1
             $.ajax({
                 type:'POST',
-                url:"{{ url_for('to_api', ressource='delivery/cover') }}",
+                url:"{{ url_for('to_api', ressource='delivery/book') }}",
                 data:{
                     'data':JSON.stringify(data)
                 }
-            }).done(function(response, textStatus, request) {
+            }).done(function(response) {
 
                 if (response.success) {
 
-                    var blob = new Blob([string_to_array_buffer(window.atob(response.data.content))], {type:""})
-                    var blobURL = URL.createObjectURL(blob);
-                
-                    const a = document.createElement('a')
-                    a.href = blobURL;
-                    a.download = response.data.name;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    //window.navigator.msSaveBlob(blob, response.data.name)
+                    Toastify({
+                        text: response.data.msg,
+                        duration: 3000,
+                        position:'right',
+                        gravity:'top'
+                    }).showToast();
+
+                    // hide elements
+                    document.getElementById('summarySection').classList.add("hidden");
+                    document.getElementById('downloadReport').classList.add("hidden");
+                    document.getElementById('bookReport').classList.add("hidden");
 
                 } else {
 
+                    console.log(response.error);
 
-                    // check if response is object or string
-                    if (typeof response == "object") {
-
-                        console.log(response);
-                        // its a json -> toast the error
-
-                        } else {
-
-                        console.log(typeof response.error);
-
-
-                        // create text decoder
-                        var enc = new TextDecoder("utf-8");
-
-                        // create blob & add decoded bytestring
-                        //var blob = new Blob([enc.decode(response)]);
-                        var ab = string_to_array_buffer(response);
-                        var bytes = enc.decode(ab);
-                        console.log(bytes)
-                        var blob = new Blob([string_to_array_buffer(response)])
-
-                        var blobURL = URL.createObjectURL(blob);
-                        //window.location.replace(blobURL);
-
-
-                        response.blob()
-
-                        }
+                    Toastify({
+                        text: response.error,
+                        duration: 3000,
+                        position:'right',
+                        gravity:'top',
+                        style: {
+                            background: "linear-gradient(to right, #e74c3c, #c0392b)",
+                        },
+                    }).showToast();
 
                 }
-
-
-
                 
-            })
+            });
+            
+
+        } else {
+
+            // call excel saver
+            $.ajax({
+                type:'POST',
+                url:"{{ url_for('to_api', ressource='delivery/saveData') }}",
+                data:{
+                    'data':JSON.stringify(data)
+                }
+            }).done(function(response) {
+
+                if (response.success) {
+
+                    Toastify({
+                        text: response.data.msg,
+                        duration: 3000,
+                        position:'right',
+                        gravity:'top'
+                    }).showToast();
+
+                } else {
+
+                    console.log(response.error);
+
+                    Toastify({
+                        text: response.error,
+                        duration: 3000,
+                        position:'right',
+                        gravity:'top',
+                        style: {
+                            background: "linear-gradient(to right, #e74c3c, #c0392b)",
+                        },
+                    }).showToast();
+
+                }
+                
+            });
 
         };
 
@@ -749,23 +834,6 @@
 
         return data
     };
-
-    // create string to array buffer function
-    // see here https://stackoverflow.com/questions/34993292/how-to-save-xlsx-data-to-file-as-a-blob
-    function string_to_array_buffer(s) {
-
-        /* converst the strint to array buffer */
-
-        var buf = new ArrayBuffer(s.length);
-        var view = new Uint8Array(buf);
-
-        for (var i=0; i!=s.length; i++) {
-            view[i] = s.charCodeAt(i) & 0xFF;
-        }
-
-        return buf;
-    };
-        
 
 
 

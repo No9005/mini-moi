@@ -57,7 +57,14 @@ mapping = {
         'customer_phone':"Phone",
         'customer_mobile':"Mobile",
         'customer_notes':"Notes",
-        'checkbox':"Check"
+        'checkbox':"Check",
+        'customer_approach':"Approach",
+        'customer_town':"City",
+        'product_selling_price':"selling price",
+        'product_id':"Product id",
+        'customer_id':"Customer id",
+        'id':"Abo"
+
     },
     'html_text':{
         'base_html':{
@@ -164,9 +171,11 @@ mapping = {
 
             'delivery_total_spendings':"Spendings",
             'delivery_total_spendings_description':"Purchase price for all products.",
-
         }
 
+    },
+    'notification':{
+        'save_path':"Your file was saved at: {path}",
     }
     
 }

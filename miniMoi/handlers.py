@@ -119,11 +119,9 @@ def api(request:dict) -> dict:
         elif ressource == "delivery/book":
             """Books the manipulated data
 
-            This function takes the data and adds 
-            the provided info to the 'Orders' table.
-            It also calculates the next delivery
-            date.
-            In the end it returns the printed excel.
+            Function takes the orders data,
+            adds it to the Orders table and
+            saves a excel file to disk.
 
             params:
             -------
@@ -154,29 +152,25 @@ def api(request:dict) -> dict:
         
             returns:
             -------
-            send_file | dict
+            dict
+                success, error & data {
+                    'msg':str
+                }
             
             """
 
+            # got jsonified data. turn into json
+            data = json.loads(request['data']['data'])
+
             response = delivery.book(
-                data = request['data'],
+                data = data,
                 language = app.config['DEFAULT_LANGUAGE']
             )
 
-            if not response['success']: return response
-            else: 
-                
-                # reference: https://stackoverflow.com/questions/27337013/how-to-send-zip-files-in-the-python-flask-framework
-                return send_file(
-                    response['data']['zip'], 
-                    attachment_filename="miniMoi_overview_" + response['data']['date'] + ".zip",
-                    as_attachment=True
-                )
+            return response
 
-        elif ressource == "delivery/cover":
-            """Create the cover excel sheet
-
-            Creates the excel cover and returns it.
+        elif ressource == "delivery/saveData":
+            """Creates the cover & overview and saves it.
 
             params:
             -------
@@ -204,60 +198,33 @@ def api(request:dict) -> dict:
                             'id':list[int] # -> the abo_id
                             }
                     }
+            save_cover : bool, optional
+                If true, the excel cover is printed.
+                (default is True)
+            save_overview : bool, optional
+                If true, the excel overview is printed.
+                (default is True)
         
             returns:
             -------
-            send_file | dict
-                Format:
-                    File: send_file()
-                    Dict: {
-                        success, 
-                        error,
-                        data:{
-                            'file':io.BytesIO,
-                            'date':str
-                        }
+            dict
+                success, error & data {
+                    'msg':str
+                }
 
             """
 
             # got jsonified data. turn into json
             data = json.loads(request['data']['data'])
 
-            response = delivery.print_cover(
+            response = delivery.save_data(
                 data = data,
+                save_cover = True,
+                save_overview = True,
                 language = app.config['DEFAULT_LANGUAGE']
             )
 
-            if not response['success']: return response
-            else: 
-
-                newResponse = {
-                    'success':True,
-                    'data':{
-                        'content':base64.b64encode(response['data']['file'].getvalue()).decode(),
-                        'name':"miniMoi_cover_" + response['data']['date'] + ".xlsx"
-                    }
-                    
-                }
-
-                #https://stackoverflow.com/questions/63921787/display-image-from-flask-send-file-ajax-response-into-the-image-tag
-                #newResponse = make_response(
-                #    base64.b64encode(response['data']['file']))
-                #newResponse.headers['Content-Type'] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                #newResponse.headers.set(
-                #    'Content-Disposition', 
-                #    'attachment', 
-                #    filename="miniMoi_cover_" + response['data']['date'] + ".xlsx"
-                #    )
-
-                return newResponse
-                
-                """return send_file(
-                    response['data']['file'], 
-                    attachment_filename="miniMoi_cover_" + response['data']['date'] + ".xlsx",
-                    mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    as_attachment=True
-                )"""
+            return response
 
         elif ressource == "delivery/orderDetails":
             """Create order details overview
@@ -1102,7 +1069,13 @@ def api(request:dict) -> dict:
 
         #endregion
 
-        else: return {'success':False, 'error':errors['404'].format(ressource=ressource), 'data':{}}
+        else: 
+            
+            # grab the language files
+            try: errors = language_files[request['language']]['error_codes']
+            except: errors = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
+
+            return {'success':False, 'error':errors['404'].format(ressource=ressource), 'data':{}}
 
 
     except Exception as e: 

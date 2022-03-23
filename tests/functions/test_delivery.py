@@ -10,6 +10,7 @@ from unittest.mock import patch
 import datetime
 
 from sqlalchemy.orm import scoped_session, sessionmaker, Session
+import numpy as np
 
 from miniMoi import base
 from miniMoi.models.Models import Abo, Customers, Products, Category, Subcategory, Orders
@@ -32,6 +33,8 @@ class TestDelivery(unittest.TestCase):
         - _prepare_granular()
         - _category_overview()
         - _product_overview()
+        - _process_received()
+        - _process_excel()
     are tested with integration tests.
     
     methods:
@@ -353,74 +356,116 @@ class TestDelivery(unittest.TestCase):
 
         # check town 'Dreamland'
         self.assertEqual(result['data']['town_based']['Dreamland'], {
-            'customer_approach':[1], 
-            'customer_street':["Castlestreet"], 
-            'customer_nr':[5],
-            'customer_town':["Dreamland"],
-            'customer_name':["Zorg"],
-            'customer_surname':["King"],
-            'customer_id':[3],
-            'customer_phone':["+83 phone"],
-            'customer_mobile':["+83 mobile"],
-            'quantity':[10], 
-            'product_name':["Doppelweck"],
-            'product_id':[5],
-            'product_selling_price':[.5],
-            'subcategory_name':["Geschnitten"],
-            'category_name':["Semmel"],
-            'cost':[5.00],
-            'total_cost':[5.00],
-            'customer_notes':["First boy, again"],
-            'id':[8]
+            'data':{
+                'customer_approach':[1], 
+                'customer_street':["Castlestreet"], 
+                'customer_nr':[5],
+                'customer_town':["Dreamland"],
+                'customer_name':["Zorg"],
+                'customer_surname':["King"],
+                'customer_id':[3],
+                'customer_phone':["+83 phone"],
+                'customer_mobile':["+83 mobile"],
+                'quantity':[10], 
+                'product_name':["Doppelweck"],
+                'product_id':[5],
+                'product_selling_price':[.5],
+                'subcategory_name':["Geschnitten"],
+                'category_name':["Semmel"],
+                'cost':[5.00],
+                'total_cost':[5.00],
+                'customer_notes':["First boy, again"],
+                'id':[8]
+            },
+            'order':[
+                'customer_street', 'customer_approach', 'customer_nr', 'customer_town',
+                'customer_name', 'customer_surname', 'customer_id', 'quantity', 'product_name',
+                'product_id', 'product_selling_price', 'subcategory_name', 'category_name',
+                'cost', 'total_cost', 'customer_phone', 'customer_mobile', 'customer_notes',
+                'id'
+                ],
+            'mapping':[
+                'Street', 'customer_approach', 'Nr.', 'customer_town', 'Name', 'Surname', 
+                'customer_id', 'Qnt.', 'Product', 'product_id', 'product_selling_price', 
+                'Type', 'Category', 'Cost', 'Total', 'Phone', 'Mobile', 'Notes', 'id'
+            ]
         })
 
         # check town 'Entenhausen'
         self.assertEqual(result['data']['town_based']['Entenhausen'], {
-            'customer_approach':[1,1,3,3,3], 
-            'customer_street':["Quickhausen", "Quickhausen", "Elmstreet", "Elmstreet", "Elmstreet"], 
-            'customer_nr':[5,5,5,5,5],
-            'customer_town':["Entenhausen", "Entenhausen", "Entenhausen", "Entenhausen", "Entenhausen"],
-            'customer_name':["Hans", "Hans", "Fritz", "Fritz", "Fritz"],
-            'customer_surname':["Peter", "Peter", "Meier", "Meier", "Meier"],
-            'customer_id':[2,2,1,1,1],
-            'customer_phone':["+83 phone", "+83 phone", "+83 phone", "+83 phone", "+83 phone"],
-            'customer_mobile':["+83 mobile", "+83 mobile", "+83 mobile", "+83 mobile", "+83 mobile"],
-            'quantity':[10,5,10,5,2], 
-            'product_name':["Doppelweck", "Sonnenkernbrot", "Fitnessbrot", "Kaisersemmel", "Sonnenkernbrot"], 
-            'product_id':[5, 1, 2, 4, 1],
-            'product_selling_price':[0.5, 3.5, 5.0, 0.5, 3.5],
-            'subcategory_name':["Geschnitten", "Ganz", "Geschnitten", "Ganz", "Ganz"],
-            'category_name':["Semmel", "Brot", "Brot", "Semmel", "Brot"],
-            'cost':[5.00, 17.50, 50.0, 2.50,7.0],
-            'total_cost':[22.50, 22.50, 59.50, 59.50, 59.50],
-            'customer_notes':["First boy", "First boy", "idx 1", "idx 1", "idx 1"],
-            'id':[5, 6, 1, 3, 2]
+                'data':{
+                    'customer_approach':[1,1,3,3,3], 
+                    'customer_street':["Quickhausen", "Quickhausen", "Elmstreet", "Elmstreet", "Elmstreet"], 
+                    'customer_nr':[5,5,5,5,5],
+                    'customer_town':["Entenhausen", "Entenhausen", "Entenhausen", "Entenhausen", "Entenhausen"],
+                    'customer_name':["Hans", "Hans", "Fritz", "Fritz", "Fritz"],
+                    'customer_surname':["Peter", "Peter", "Meier", "Meier", "Meier"],
+                    'customer_id':[2,2,1,1,1],
+                    'customer_phone':["+83 phone", "+83 phone", "+83 phone", "+83 phone", "+83 phone"],
+                    'customer_mobile':["+83 mobile", "+83 mobile", "+83 mobile", "+83 mobile", "+83 mobile"],
+                    'quantity':[10,5,10,5,2], 
+                    'product_name':["Doppelweck", "Sonnenkernbrot", "Fitnessbrot", "Kaisersemmel", "Sonnenkernbrot"], 
+                    'product_id':[5, 1, 2, 4, 1],
+                    'product_selling_price':[0.5, 3.5, 5.0, 0.5, 3.5],
+                    'subcategory_name':["Geschnitten", "Ganz", "Geschnitten", "Ganz", "Ganz"],
+                    'category_name':["Semmel", "Brot", "Brot", "Semmel", "Brot"],
+                    'cost':[5.00, 17.50, 50.0, 2.50,7.0],
+                    'total_cost':[22.50, 22.50, 59.50, 59.50, 59.50],
+                    'customer_notes':["First boy", "First boy", "idx 1", "idx 1", "idx 1"],
+                    'id':[5, 6, 1, 3, 2]
+                },
+                'order':[
+                    'customer_street', 'customer_approach', 'customer_nr', 'customer_town',
+                    'customer_name', 'customer_surname', 'customer_id', 'quantity', 'product_name',
+                    'product_id', 'product_selling_price', 'subcategory_name', 'category_name',
+                    'cost', 'total_cost', 'customer_phone', 'customer_mobile', 'customer_notes',
+                    'id'
+                    ],
+                'mapping':[
+                    'Street', 'customer_approach', 'Nr.', 'customer_town', 'Name', 'Surname', 
+                    'customer_id', 'Qnt.', 'Product', 'product_id', 'product_selling_price', 
+                    'Type', 'Category', 'Cost', 'Total', 'Phone', 'Mobile', 'Notes', 'id'
+                ]
         })
 
         # check 'overview_category'
         self.assertEqual(result['data']['overview_category'], {
-            'category_name':["Brot", "Semmel"],
-            'quantity':[17,25],
-            'cost':[74.50, 12.50]
+            'data':{
+                'category_name':["Brot", "Semmel"],
+                'quantity':[17,25],
+                'cost':[74.50, 12.50]
+            },
+            'order':["category_name", "quantity", "cost"],
+            'mapping':['Category', 'Qnt.', 'Cost'],
         })
 
         # check 'overview_product'
         self.assertEqual(result['data']['overview_product'], {
             'Brot':{
-                'product_name':["Fitnessbrot", "Sonnenkernbrot"],
-                'total':[10,7],
-                'Geschnitten':[10,0],
-                'Ganz':[0,7]
+                'data':{
+                    'product_name':["Fitnessbrot", "Sonnenkernbrot"],
+                    'total':[10,7],
+                    'Geschnitten':[10,0],
+                    'Ganz':[0,7]
+                    },
+                'order':["product_name", "Ganz", "Geschnitten", "total"],
+                'mapping':['Product', 'Ganz', 'Geschnitten', 'total']
             },
             'Semmel':{
-                'product_name':["Doppelweck", "Kaisersemmel"],
-                'total':[20,5],
-                'Geschnitten':[20,0],
-                'Ganz':[0,5]
+                'data':{
+                    'product_name':["Doppelweck", "Kaisersemmel"],
+                    'total':[20,5],
+                    'Geschnitten':[20,0],
+                    'Ganz':[0,5]
+                    },
+                'order':["product_name", "Ganz", "Geschnitten", "total"],
+                'mapping':['Product', 'Ganz', 'Geschnitten', 'total']
             }
         })
 
-    def test_book(self):
+    @patch('miniMoi.logic.functions.delivery.xlsx.print_cover')
+    @patch('miniMoi.logic.functions.delivery.xlsx.print_order_list')
+    def test_book(self, mock_order, mock_cover):
         """Tests the order booking """
 
         #region 'success'
@@ -537,7 +582,9 @@ class TestDelivery(unittest.TestCase):
 
         #endregion
 
-    def test_print_order_details(self):
+    @patch('miniMoi.logic.functions.delivery.xlsx.print_cover')
+    @patch('miniMoi.logic.functions.delivery.xlsx.print_order_list')
+    def test_save_data(self, mock_order, mock_cover):
         """Tests the order details printer"""
 
         #region 'success'
@@ -565,7 +612,7 @@ class TestDelivery(unittest.TestCase):
         }
 
         # run
-        result = delivery.print_order_details(test, "EN")
+        result = delivery.save_data(test, True, True, "EN")
 
         # assert
         self.assertTrue(result['success'])
@@ -596,7 +643,7 @@ class TestDelivery(unittest.TestCase):
         }
 
         # run
-        result = delivery.print_order_details(test, "EN")
+        result = delivery.save_data(test, "EN")
 
         # assert
         self.assertEqual(result['error'], "There is data missing: customer_town")
@@ -608,89 +655,78 @@ class TestDelivery(unittest.TestCase):
         test = {}
 
         # run
-        result = delivery.print_order_details(test, "EN")
+        result = delivery.save_data(test, "EN")
 
         # assert
         self.assertEqual(result['error'], "You did not enter/change anything.")
 
         #endregion
     
-    def test_print_cover(self):
-        """Tests the cover printer"""
-
-        #region 'success'
+        #region 'not ints'
         # test data
         test = {
-            'customer_approach':[1,1,3,3,3], 
-            'customer_street':["Quickhausen", "Quickhausen", "Elmstreet", "Elmstreet", "Elmstreet"], 
-            'customer_nr':[5,5,5,5,5],
-            'customer_town':["Entenhausen", "Entenhausen", "Entenhausen", "Entenhausen", "Entenhausen"],
-            'customer_name':["Hans", "Hans", "Fritz", "Fritz", "Fritz"],
-            'customer_surname':["Peter", "Peter", "Meier", "Meier", "Meier"],
-            'customer_id':[2,2,1,1,1],
-            'customer_phone':["+83 phone", "+83 phone", "+83 phone", "+83 phone", "+83 phone"],
-            'customer_mobile':["+83 mobile", "+83 mobile", "+83 mobile", "+83 mobile", "+83 mobile"],
-            'quantity':[10,5,10,5,2], 
-            'product_name':["Doppelweck", "Sonnenkernbrot", "Fitnessbrot", "Kaisersemmel", "Sonnenkernbrot"], 
-            'product_id':[5, 1, 2, 4, 1],
-            'product_selling_price':[0.5, 3.5, 5.0, 0.5, 3.5],
-            'subcategory_name':["Geschnitten", "Ganz", "Geschnitten", "Ganz", "Ganz"],
-            'category_name':["Semmel", "Brot", "Brot", "Semmel", "Brot"],
-            'cost':[5.00, 17.50, 50.0, 2.50,7.0],
-            'total_cost':[22.50, 22.50, 59.50, 59.50, 59.50],
-            'customer_notes':["First boy", "First boy", "idx 1", "idx 1", "idx 1"],
-            'id':[5, 6, 1, 3, 2]
+            'customer_approach':[1,1,3,3,3, np.nan], 
+            'customer_street':["Quickhausen", "Quickhausen", "Elmstreet", "Elmstreet", "Elmstreet", None], 
+            'customer_nr':[5,5,5,5,5, None],
+            'customer_town':["Entenhausen", "Entenhausen", "Entenhausen", "Entenhausen", "Entenhausen", "Zicke"],
+            'customer_name':["Hans", "Hans", "Fritz", "Fritz", "Fritz", "Fritz"],
+            'customer_surname':["Peter", "Peter", "Meier", "Meier", "Meier", "Fritz"],
+            'customer_id':[2,2,1,1,1, 10],
+            'customer_phone':["+83 phone", "+83 phone", "+83 phone", "+83 phone", "+83 phone", None],
+            'customer_mobile':["+83 mobile", "+83 mobile", "+83 mobile", "+83 mobile", "+83 mobile", ""],
+            'quantity':[10,5,10,5,2,'3'], 
+            'product_name':["Doppelweck", "Sonnenkernbrot", "Fitnessbrot", "Kaisersemmel", "Sonnenkernbrot", None], 
+            'product_id':[5, 1, 2, 4, 1, None],
+            'product_selling_price':[0.5, 3.5, 5.0, 0.5, 3.5, None],
+            'subcategory_name':["Geschnitten", "Ganz", "Geschnitten", "Ganz", "Ganz", None],
+            'category_name':["Semmel", "Brot", "Brot", "Semmel", "Brot", None],
+            'cost':[5.00, 17.50, 50.0, 2.50,7.0, None],
+            'total_cost':[22.50, 22.50, 59.50, 59.50, 59.50, None],
+            'customer_notes':["First boy", "First boy", "idx 1", "idx 1", "idx 1", None],
+            'id':[5, 6, 1, 3, 2, None]
         }
 
         # run
-        result = delivery.print_cover(test, "EN")
+        result = delivery.save_data(test, True, True, "EN")
 
         # assert
         self.assertTrue(result['success'])
 
         #endregion
 
-        #region 'missing data'
+    def test_process_received(self):
+        """Tests the processing """
+
+        #region 'not ints'
         # test data
         test = {
-            'customer_approach':[1,1,3,3,3], 
-            'customer_street':["Quickhausen", "Quickhausen", "Elmstreet", "Elmstreet", "Elmstreet"], 
-            'customer_nr':[5,5,5,5,5],
-            'customer_name':["Hans", "Hans", "Fritz", "Fritz", "Fritz"],
-            'customer_surname':["Peter", "Peter", "Meier", "Meier", "Meier"],
-            'customer_id':[2,2,1,1,1],
-            'customer_phone':["+83 phone", "+83 phone", "+83 phone", "+83 phone", "+83 phone"],
-            'customer_mobile':["+83 mobile", "+83 mobile", "+83 mobile", "+83 mobile", "+83 mobile"],
-            'quantity':[10,5,10,5,2], 
-            'product_name':["Doppelweck", "Sonnenkernbrot", "Fitnessbrot", "Kaisersemmel", "Sonnenkernbrot"], 
-            'product_id':[5, 1, 2, 4, 1],
-            'product_selling_price':[0.5, 3.5, 5.0, 0.5, 3.5],
-            'subcategory_name':["Geschnitten", "Ganz", "Geschnitten", "Ganz", "Ganz"],
-            'category_name':["Semmel", "Brot", "Brot", "Semmel", "Brot"],
-            'cost':[5.00, 17.50, 50.0, 2.50,7.0],
-            'total_cost':[22.50, 22.50, 59.50, 59.50, 59.50],
-            'customer_notes':["First boy", "First boy", "idx 1", "idx 1", "idx 1"],
-            'id':[5, 6, 1, 3, 2]
+            'customer_approach':[1,1,3,3,3, np.nan], 
+            'customer_street':["Quickhausen", "Quickhausen", "Elmstreet", "Elmstreet", "Elmstreet", None], 
+            'customer_nr':[5,5,5,5,5, None],
+            'customer_town':["Entenhausen", "Entenhausen", "Entenhausen", "Entenhausen", "Entenhausen", "Zicke"],
+            'customer_name':["Hans", "Hans", "Fritz", "Fritz", "Fritz", "Fritz"],
+            'customer_surname':["Peter", "Peter", "Meier", "Meier", "Meier", "Fritz"],
+            'customer_id':[2,2,1,1,1, 10],
+            'customer_phone':["+83 phone", "+83 phone", "+83 phone", "+83 phone", "+83 phone", None],
+            'customer_mobile':["+83 mobile", "+83 mobile", "+83 mobile", "+83 mobile", "+83 mobile", ""],
+            'quantity':[10,5,10,5,2,'3'], 
+            'product_name':["Doppelweck", "Sonnenkernbrot", "Fitnessbrot", "Kaisersemmel", "Sonnenkernbrot", None], 
+            'product_id':[5, 1, 2, 4, 1, None],
+            'product_selling_price':[0.5, 3.5, 5.0, 0.5, 3.5, None],
+            'subcategory_name':["Geschnitten", "Ganz", "Geschnitten", "Ganz", "Ganz", None],
+            'category_name':["Semmel", "Brot", "Brot", "Semmel", "Brot", None],
+            'cost':[5.00, 17.50, 50.0, 2.50,7.0, None],
+            'total_cost':[22.50, 22.50, 59.50, 59.50, 59.50, None],
+            'customer_notes':["First boy", "First boy", "idx 1", "idx 1", "idx 1", None],
+            'id':[5, 6, 1, 3, 2, None]
         }
 
         # run
-        result = delivery.print_cover(test, "EN")
+        result = delivery._process_received(test, {})
 
         # assert
-        self.assertEqual(result['error'], "There is data missing: customer_town")
+        self.assertTrue(result['success'])
 
         #endregion
 
-        #region 'empty data'
-        # test data
-        test = {}
-
-        # run
-        result = delivery.print_cover(test, "EN")
-
-        # assert
-        self.assertEqual(result['error'], "You did not enter/change anything.")
-
-        #endregion
-  
     #endregion
