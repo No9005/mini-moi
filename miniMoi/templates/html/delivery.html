@@ -16,19 +16,19 @@
     <!-- buttons row -->
     <div class="row force-min-height">
 
-        <div class="col-4">
+        <div class="col-4" id="fetchReport">
             <button type="button" class="btn btn-lg btn-block btn-info" onClick="fetch_report()" data-toggle="tooltip" data-placement="bottom" title="{{ delivery_create_tooltip|safe }}" onClick=""> 
                 {{ delivery_create_report }}
             </button>
         </div>
 
-        <div class="col-4">
-            <button type="button" class="btn btn-lg btn-block btn-secondary" data-toggle="tooltip" data-placement="bottom" title="{{ delivery_download_tooltip|safe }}"onClick=""> 
+        <div class="col-4 hidden" id="downloadReport">
+            <button type="button" class="btn btn-lg btn-block btn-secondary" onClick="download_report()" data-toggle="tooltip" data-placement="bottom" title="{{ delivery_download_tooltip|safe }}"onClick=""> 
                 {{ delivery_download }}
             </button>
         </div>
 
-        <div class="col-4 ">
+        <div class="col-4 hidden" id="bookReport">
             <button type="button" class="btn btn-lg btn-block btn-warning" data-toggle="tooltip" data-placement="bottom" title="{{ delivery_book_tooltip|safe }}" onClick=""> 
                 {{ delivery_book }}
             </button>
@@ -44,152 +44,153 @@
             </div>
             
         </div>
-
-        
         
     </div>
 
-    <hr class="py-2">
 
     <!-- product summary -->
-    <div class="row" id="productSummary">
+    <div class="hidden" id="summarySection">
+        <hr class="py-2">
+        
+        <div class="row" id="productSummary">
 
-        <div class="col-12">
-            <h3>{{ delivery_category_table_name }}</h3>
-        </div>
-
-        <div class="col-12">
-
-            <div class="card-deck my-3 text-center">
-    
-                <!-- products -->
-                <div class="card mb-4 box-shadow">
-                    <div class="card-header">
-                        <h4 class="my-0 font-weight-normal">{{ delivery_product_overview }}</h4>
-                    </div>
-                <div class="card-body">
-                    <p class="mt-3 mb-4 text-muted">{{ delivery_product_overview_description }}</p>
-                    
-                    <hr>
-                    
-                    <div class="" id="productTablePlaceholder">
-                        
-                        <!-- table generation -->
-
-                    </div>
-                      
-                </div>
-                </div>
-
-                <!-- categories -->
-                <div class="card mb-4 box-shadow">
-                    <div class="card-header">
-                        <h4 class="my-0 font-weight-normal">{{ delivery_category_overview }}</h4>
-                    </div>
-                <div class="card-body">
-                    <p class="mt-3 mb-4 text-muted">{{ delivery_category_overview_description }}</p>
-
-                    <hr>
-
-                    <h4 class="mt-4">{{ delivery_category_table_section_name }}</h4>
-
-                    <div class="table-responsive" id="categoryTablePlaceholder">
-                        
-                        <!-- table generation -->
-
-                    </div>
-                </div>
-                </div>
-            
-                <!-- total earnings -->
-                <div class="card mb-4 box-shadow">
-                    <div class="card-header">
-                        <h4 class="my-0 font-weight-normal">{{ delivery_total_earnings }}</h4>
-                    </div>
-                    <div class="card-body">
-                        <p class="mt-3 mb-4 text-muted">{{ delivery_total_earnings_description }}</p>
-                        
-                        <h1 class="card-title earnings-card-title"><span id="earningsPlaceholder">0</span>€</h1>
-                        
-                    </div>
-
-                    <div class="card-header">
-                        <h4 class="my-0 font-weight-normal">{{ delivery_total_spendings }}</h4>
-                    </div>
-                    <div class="card-body">
-                        <p class="mt-3 mb-4 text-muted">{{ delivery_total_spendings_description }}</p>
-                        
-                        <h1 class="card-title earnings-card-title"><span id="spendingsPlaceholder">0</span>€</h1>
-                        
-                    </div>
-
-                </div>
+            <div class="col-12">
+                <h3>{{ delivery_category_table_name }}</h3>
             </div>
 
-        </div>
+            <div class="col-12">
+
+                <div class="card-deck my-3 text-center">
         
+                    <!-- products -->
+                    <div class="card mb-4 box-shadow">
+                        <div class="card-header">
+                            <h4 class="my-0 font-weight-normal">{{ delivery_product_overview }}</h4>
+                        </div>
+                    <div class="card-body">
+                        <p class="mt-3 mb-4 text-muted">{{ delivery_product_overview_description }}</p>
+                        
+                        <hr>
+                        
+                        <div class="" id="productTablePlaceholder">
+                            
+                            <!-- table generation -->
 
-        
-    </div>
+                        </div>
+                        
+                    </div>
+                    </div>
 
-    <!-- orders -->
-    <div class="row mt-3" style="margin-bottom:100px">
+                    <!-- categories -->
+                    <div class="card mb-4 box-shadow">
+                        <div class="card-header">
+                            <h4 class="my-0 font-weight-normal">{{ delivery_category_overview }}</h4>
+                        </div>
+                    <div class="card-body">
+                        <p class="mt-3 mb-4 text-muted">{{ delivery_category_overview_description }}</p>
 
-        <div class="col-12">
-            <h2>{{ delivery_orders_table_name }}</h2>
+                        <hr>
 
+                        <h4 class="mt-4">{{ delivery_category_table_section_name }}</h4>
+
+                        <div class="table-responsive" id="categoryTablePlaceholder">
+                            
+                            <!-- table generation -->
+
+                        </div>
+                    </div>
+                    </div>
+                
+                    <!-- total earnings -->
+                    <div class="card mb-4 box-shadow">
+                        <div class="card-header">
+                            <h4 class="my-0 font-weight-normal">{{ delivery_total_earnings }}</h4>
+                        </div>
+                        <div class="card-body">
+                            <p class="mt-3 mb-4 text-muted">{{ delivery_total_earnings_description }}</p>
+                            
+                            <h1 class="card-title earnings-card-title"><span id="earningsPlaceholder">0</span>€</h1>
+                            
+                        </div>
+
+                        <div class="card-header">
+                            <h4 class="my-0 font-weight-normal">{{ delivery_total_spendings }}</h4>
+                        </div>
+                        <div class="card-body">
+                            <p class="mt-3 mb-4 text-muted">{{ delivery_total_spendings_description }}</p>
+                            
+                            <h1 class="card-title earnings-card-title"><span id="spendingsPlaceholder">0</span>€</h1>
+                            
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+            
+
+            
         </div>
 
-        <div class="col-12">
-            <table class="table">
-                <span class="table-add fa-solid fa-circle-plus fa-xl"></span>
-                <thead class="thead-dark">
-                  <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">First</th>
-                    <th scope="col">Last</th>
-                    <th scope="col">Handle</th>
-                    <th scope="col" style="width:5%"></th>
-                    <th scope="col" style="width:5%"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th scope="row">1</th>
-                    <td contenteditable="true">Larry</td>
-                    <td contenteditable="true">the Bird</td>
-                    <td contenteditable="true">@twitter</td>
-                    <td><i class="fa-solid fa-circle-minus fa-lg table-remove"></i></td>
-                    <td><i class="fa-solid fa-circle-check fa-lg table-check"></i></td>
-                </tr>
-                  <tr>
-                    <th scope="row">2</th>
-                    <td contenteditable="true">Larry</td>
-                    <td contenteditable="true">the Bird</td>
-                    <td contenteditable="true">@twitter</td>
-                    <td><i class="fa-solid fa-circle-minus fa-lg table-remove"></i></td>
-                    <td><i class="fa-solid fa-circle-check fa-lg table-check"></i></td>
-                  </tr>
-                  <tr>
-                    <th scope="row">3</th>
-                    <td contenteditable="true">Larry</td>
-                    <td contenteditable="true">the Bird</td>
-                    <td contenteditable="true">@twitter</td>
-                    <td><i class="fa-solid fa-circle-minus fa-lg table-remove"></i></td>
-                    <td><i class="fa-solid fa-circle-check fa-lg table-check"></i></td>
-                  </tr>
-                </tbody>
-              </table>
-              
-              
+        <!-- orders -->
+        <div class="row mt-3" style="margin-bottom:100px">
 
+            <div class="col-12">
+                <h2>{{ delivery_orders_table_name }}</h2>
+
+            </div>
+
+            <div class="" id="ordersTablePlaceholder">
+                            
+                <!-- table generation -->
+
+            </div>
+
+            <div class="col-12">
+                <table class="table" id="testTable">
+                    <span class="table-add fa-solid fa-circle-plus fa-xl"></span>
+                    <thead class="thead-dark">
+                    <tr class="head">
+                        <th scope="col" headers="#" >#</th>
+                        <th scope="col" headers="First">First</th>
+                        <th scope="col" headers="Last">Last</th>
+                        <th scope="col" headers="NoHandle">Handle</th>
+                        <th scope="col" style="width:5%"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td scope="row">1</td>
+                        <td contenteditable="true">Larry</td>
+                        <td contenteditable="true">the Bird</td>
+                        <td contenteditable="true">@twitter</td>
+                        <td><i class="fa-solid fa-circle-minus fa-lg table-remove"></i></td>
+                    </tr>
+                    <tr>
+                        <td scope="row">2</td>
+                        <td contenteditable="true">Larry</td>
+                        <td contenteditable="true">the Bird</td>
+                        <td contenteditable="true">@twitter</td>
+                        <td><i class="fa-solid fa-circle-minus fa-lg table-remove"></i></td>
+                    </tr>
+                    <tr>
+                        <td scope="row">3</td>
+                        <td contenteditable="true">Larry</td>
+                        <td contenteditable="true">the Bird</td>
+                        <td contenteditable="true">@twitter</td>
+                        <td><i class="fa-solid fa-circle-minus fa-lg table-remove"></i></td>
+                    </tr>
+                    </tbody>
+                </table>
+                
+                
+
+            </div>
+            
         </div>
-        
     </div>
 
 </div>
-
-<i class="fa-solid fa-arrow-up table-up"></i><i class="fa fa-solid fa-arrow-down table-down"></i>
 
 {% endblock %}
 
@@ -204,7 +205,7 @@
     var orders_overview_raw = null;
     var n_product_cols = 0;
     var n_category_cols = 0;
-    var n_orders_cols = 0;
+    var n_orders_cols = 4;
 
     // get html elements
     var earnings_placeholder = document.getElementById('earningsPlaceholder');
@@ -212,8 +213,10 @@
     var category_table_palceholder = document.getElementById('categoryTablePlaceholder');
     var product_table_palceholder = document.getElementById('productTablePlaceholder');
     var product_summary = document.getElementById('productSummary');
+    var orders_table_placeholder = document.getElementById('ordersTablePlaceholder');
 
-    function append_empty_tr(n_cols, element, editable) {
+
+    function empty_tr(n_cols, editable) {
         /* creates a empty table row
         
         params:
@@ -227,23 +230,25 @@
             
         returns:
         --------
-        null
+        html
+            The empty row
 
         */
 
         // create table row tag
-        var tr = document.createElement('td');
+        var tr = document.createElement('tr');
 
         // append cells to it
-        for (var i = 0; i <= n_cols; i++) {
+        for (var i = 0; i < n_cols; i++) {
+
+            var td = document.createElement('td');
+            td.innerHTML="";
 
             // create cell
             if (editable) {
-                var td = document.createElement('td', {editable:true});
-            } else {
-                var td = document.createElement('td');
+                td.contentEditable = "true";
             };
-            
+
             // append as child
             tr.appendChild(td);
 
@@ -251,13 +256,12 @@
 
         // add remove icon
         var td = document.createElement('td');
-        td.appendChild(document.createElement('span', {class:"table-remove glyphicon glyphicon-remove"}));
+        var icon = document.createElement('i');
+        icon.classList.add("fa-solid", "fa-circle-minus", "fa-lg", "table-remove")
+        td.appendChild(icon);
         tr.append(td);
 
-        // append to element
-        element.appendChild(tr);
-
-        return
+        return tr
     };
 
     function create_table(data, editable) {
@@ -304,6 +308,8 @@
         var tblh = document.createElement('thead');
         tblh.classList.add("thead-dark");
         var tblh_tr = document.createElement('tr');
+        // only for the 'head' columns: to identify during book!
+        tblh_tr.classList.add("head");
         
         // populate thead
         for (i = 0; i < n_cols; i++) {
@@ -496,9 +502,12 @@
                 // populate product overview
 
 
-                // make product summary visible
+                // make other buttons & product summary visible
+                document.getElementById('downloadReport').classList.remove("hidden");
+                document.getElementById('bookReport').classList.remove("hidden");
+                document.getElementById('summarySection').classList.remove("hidden");
 
-                // make other buttons visible
+
 
             } else {
 
@@ -508,26 +517,99 @@
         })
     };
 
-    $('.table-remove').click(function() {
+    function download_report() {
+        /* just downloads the report */
+
+        book(checkout=false, table_id="#testTable");
+
+        return
+    };
+
+    // like above only for dynamically generated
+    $('#testTable').on("click", '.table-remove', function() {
+        
+        // detach the parent tr
         $(this).parents('tr').detach();
     });
 
-    $('.table-check').click(function() {
+    $('.table-add').click(function() {
 
+        // create empty row
+        var tr = empty_tr(n_orders_cols, true);
         
-        var parent = $(this).parents('tr').children();
-
-        for (i=0; i< parent.length; i++) {
-            console.log(parent[i])
-        }
-
-        $(this).parents('tr').children().each(function () {
-            console.log($(this).text())
-        })
-        
-        console.log(typeof $(this).parents('tr'))
-        //alert($(this).parents('tr').text());
+        // attach to the table
+        $('#testTable').children('tbody').append(tr);
+    
     });
+
+    function book(checkout, table_id ="#ordersTable") {
+        /* Books or just creates tables 
+        
+        This function handles the table parsing
+        and sends it to the backend to either
+        book or just download the excel.
+
+        params:
+        -------
+        checkout : bool
+            If true, the current state is booked,
+            else it just generates the excel.
+        table_id : str
+            The id of the table to parse
+
+        returns:
+        --------
+        excel | json
+        
+        */
+
+        // grab table
+        var TABLE = $(table_id);
+
+        // grab headers
+        var cols = [];
+
+        TABLE.find('thead').children('tr').children().each(function() {
+            
+            // get headers value
+            var headers = $(this).attr('headers');
+
+            if (headers != null) {
+                cols.push(headers);
+            };
+        });
+
+        // create data array
+        var data = [];
+
+        // create flat data & iterate
+        // see: https://stackoverflow.com/questions/2448051/how-can-i-select-all-elements-without-a-given-class-in-jquery
+        TABLE.find('tr:not(.head').each(function () {
+            // find all 'td's for row
+            var tmp_td = $(this).find('td:not(.table-remove)');
+            var h = {};
+
+            // cycle through headers and apply to h
+            cols.forEach(function (col, c) {
+
+                // add key:text at idx[c]
+                h[col] = tmp_td.eq(c).text();
+            });
+
+            // add to data
+            data.push(h);
+
+        });
+
+        // show in logs
+        console.log(data);
+
+        
+
+
+    };
+
+
 
 
 
