@@ -1,6 +1,8 @@
-v.0.4.6: Small fix of missing assignment & unittest changes.
+v.0.4.7: Added auto create db directory.
 
 ------------ old versions ----------------------------------
+v.0.4.6: Small fix of missing assignment & unittest changes.
+
 v.0.4.5: Table non editable check... See changelog.
     For the sake of my sanity, I just added the complete
     relevant information to the table in the delivery section.

@@ -22,6 +22,9 @@ from . import version
 # grab cwd
 cwd = Path().cwd() / "miniMoi"
 
+# create db directory
+(cwd/"db").mkdir(exist_ok=True)
+
 # init python app
 app = Flask(
     __name__,
