@@ -378,16 +378,15 @@ class TestDelivery(unittest.TestCase):
                 'id':[8]
             },
             'order':[
-                'customer_street', 'customer_approach', 'customer_nr', 'customer_town',
-                'customer_name', 'customer_surname', 'customer_id', 'quantity', 'product_name',
-                'product_id', 'product_selling_price', 'subcategory_name', 'category_name',
-                'cost', 'total_cost', 'customer_phone', 'customer_mobile', 'customer_notes',
-                'id'
+                'customer_approach', 'customer_street', 'customer_nr', 'customer_town', 'customer_name',
+                'customer_surname', 'product_name', 'quantity', 'subcategory_name', 'category_name',
+                'product_selling_price', 'cost', 'total_cost', 'customer_phone', 'customer_mobile',
+                'customer_notes', 'product_id', 'customer_id', 'id',
                 ],
             'mapping':[
-                'Street', 'customer_approach', 'Nr.', 'customer_town', 'Name', 'Surname', 
-                'customer_id', 'Qnt.', 'Product', 'product_id', 'product_selling_price', 
-                'Type', 'Category', 'Cost', 'Total', 'Phone', 'Mobile', 'Notes', 'id'
+                'Approach', 'Street', 'Nr.', 'City', 'Name', 'Surname', 'Product', 'Qnt.', 
+                'Type', 'Category', 'selling price', 'Cost', 'Total', 'Phone', 'Mobile', 
+                'Notes', 'Product id', 'Customer id', 'Abo'
             ]
         })
 
@@ -415,17 +414,16 @@ class TestDelivery(unittest.TestCase):
                     'id':[5, 6, 1, 3, 2]
                 },
                 'order':[
-                    'customer_street', 'customer_approach', 'customer_nr', 'customer_town',
-                    'customer_name', 'customer_surname', 'customer_id', 'quantity', 'product_name',
-                    'product_id', 'product_selling_price', 'subcategory_name', 'category_name',
-                    'cost', 'total_cost', 'customer_phone', 'customer_mobile', 'customer_notes',
-                    'id'
+                    'customer_approach', 'customer_street', 'customer_nr', 'customer_town', 'customer_name',
+                    'customer_surname', 'product_name', 'quantity', 'subcategory_name', 'category_name',
+                    'product_selling_price', 'cost', 'total_cost', 'customer_phone', 'customer_mobile',
+                    'customer_notes', 'product_id', 'customer_id', 'id',
                     ],
                 'mapping':[
-                    'Street', 'customer_approach', 'Nr.', 'customer_town', 'Name', 'Surname', 
-                    'customer_id', 'Qnt.', 'Product', 'product_id', 'product_selling_price', 
-                    'Type', 'Category', 'Cost', 'Total', 'Phone', 'Mobile', 'Notes', 'id'
-                ]
+                    'Approach', 'Street', 'Nr.', 'City', 'Name', 'Surname', 'Product', 'Qnt.', 
+                    'Type', 'Category', 'selling price', 'Cost', 'Total', 'Phone', 'Mobile', 
+                    'Notes', 'Product id', 'Customer id', 'Abo'
+                    ]
         })
 
         # check 'overview_category'

@@ -1,10 +1,12 @@
+v.0.4.6: Small fix of missing assignment & unittest changes.
+
+------------ old versions ----------------------------------
 v.0.4.5: Table non editable check... See changelog.
     For the sake of my sanity, I just added the complete
     relevant information to the table in the delivery section.
     Have to test if the non-editable elements are actualy non
     editable.
 
------------- old versions ----------------------------------
 v.0.4.4: Hoops for excel sending... gotta change this.
 
 v.0.4.3: Table add/delete + fetch.
