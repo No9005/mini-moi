@@ -67,9 +67,15 @@ def get(
 
     """
 
+    # get language files
+    try: translation = language_files[language]
+    except: translation = language_files[app.config['DEFAULT_LANGUAGE']]
+
     # get language errorcodes
-    try: errors = language_files[language]['error_codes']
-    except: errors = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
+    errors = translation['error_codes']
+
+    # get language mapping for columns
+    mappedCols = translation['column_mapping']['categories']
 
     # create session
     session = Session()
@@ -81,7 +87,7 @@ def get(
     if amount is not None: result = result.limit(amount)
 
     # result is None?
-    if result is None: return{'success':True, 'error':"", 'data':{'result':[]}}
+    if result.first() is None: return{'success':True, 'error':"", 'data':{'data':[], 'category_type':category_type}}
 
     # turn into list
     fetched = []
@@ -89,13 +95,25 @@ def get(
 
         fetched.append({col.name:getattr(row, col.name) for col in row.__table__.columns})
 
+    if len(fetched) == 0: return{'success':True, 'error':"", 'data':{'data':[], 'category_type':category_type}}
+
+    # create order
+    ordering = []
+    mapping = []
+
+    for col in fetched[0].keys():
+        ordering.append(col)
+        mapping.append(mappedCols[col])
+        
     # turn into dict & return
     return {
         'success':True,
         'error':"",
         'data':{
-            'result':fetched,
-            'category_type':category_type
+            'data':fetched,
+            'category_type':category_type,
+            'order':ordering,
+            'mapping':mapping
         }
     }
 
@@ -133,9 +151,12 @@ def update(
     
     """
 
+    # get language
+    try: translation = language_files[language]
+    except: translation = language_files[app.config['DEFAULT_LANGUAGE']]
+
     # get language errorcodes
-    try: errors = language_files[language]['error_codes']
-    except: errors = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
+    errors = translation['error_codes']
 
     # check if the name is a string
     if not isinstance(name, str): return {'success':False, 'error':errors['wrongType'].format(
@@ -176,8 +197,12 @@ def update(
                 e=str(code),
                 m=str(msg)
             ),
-            'data':{}
+            'data':{
+                'msg':translation['notification']['update_to_db'].format(
+                element=translation['table_mapping'][category_type]
+            )
             }
+        }
 
     # add logs
     if app.config['ACTION_LOGGING']: tools._update_logs(session, 'miniMoi.logic.functions.categories.update', str(locals()))
@@ -201,8 +226,8 @@ def add(categories:list, category_type:str = "category", language:str = app.conf
         A list containing every single new
         category.
             Format: [
-                'name',
-                'name',
+                {"name":'name'},
+                {"name":'name'},
                 ...
             ]
     category_type : str, optional
@@ -225,9 +250,12 @@ def add(categories:list, category_type:str = "category", language:str = app.conf
 
     """
 
+    # get language
+    try: translation = language_files[language]
+    except: translation = language_files[app.config['DEFAULT_LANGUAGE']]
+
     # get language errorcodes
-    try: errors = language_files[language]['error_codes']
-    except: errors = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
+    errors = translation['error_codes']
 
     # check if the list is not empty
     if not bool(categories): return {'success':False, 'error':errors['noEntry'].format(
@@ -246,7 +274,7 @@ def add(categories:list, category_type:str = "category", language:str = app.conf
         try:
 
             toAdd.append(mapper[category_type](
-                name = name
+                name = name['name']
             ))
 
         except Exception as e:
@@ -296,7 +324,11 @@ def add(categories:list, category_type:str = "category", language:str = app.conf
     return {
         'success':True,
         'error':"",
-        'data':{}
+        'data':{
+            'msg':translation['notification']['added_to_db'].format(
+                element=translation['table_mapping'][category_type]
+            )
+        }
     }
 
 def delete(category_id:int, category_type:str = "category", language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
@@ -326,9 +358,12 @@ def delete(category_id:int, category_type:str = "category", language:str = app.c
 
     """
 
+    # get language
+    try: translation = language_files[language]
+    except: translation = language_files[app.config['DEFAULT_LANGUAGE']]
+
     # get language errorcodes
-    try: errors = language_files[language]['error_codes']
-    except: errors = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
+    errors = translation['error_codes']
 
     # create session
     session = Session()
@@ -369,7 +404,11 @@ def delete(category_id:int, category_type:str = "category", language:str = app.c
     return {
         'success':True,
         'error':"",
-        'data':{}
+        'data':{
+            'msg':translation['notification']['deleted_from_db'].format(
+                element=translation['table_mapping'][category_type]
+            )
+        }
     }
 
 #endregion

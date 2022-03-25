@@ -15,13 +15,13 @@
         {% block title %}{% endblock %}
     </title>
 
-    {%block thirdParty %}{% endblock %}
-
     <!-- jQuery, Bootstrap & toastify -->
     <script type="application/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    
+    {%block thirdParty %}{% endblock %}
     
     <!-- custom Stylesheet-->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
@@ -43,7 +43,7 @@
       </h5>
         <nav class="my-2 my-md-0 mr-md-3">
           <a class="p-2 text-dark" href="{{ url_for('delivery') }}">{{ base_delivery }}</a>
-          <a class="p-2 text-dark" href="#">{{ base_tables }}</a>
+          <a class="p-2 text-dark" href="{{ url_for('management') }}">{{ base_tables }}</a>
           <a class="p-2 text-dark" href="{{ url_for('settings') }}">{{ base_settings }}</a>
         </nav>
         <a class="btn btn-outline-danger" href="{{ url_for('shutdown') }}">{{ base_shutdown }}</a>

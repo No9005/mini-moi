@@ -12,10 +12,12 @@ mapping = {
         'wrongSubcategory':"Selected subcategory not available.",
         'noEntry':"You did not enter/change anything.",
         'notFound':"The {element} was not found.",
+        'noElementInDB':"There was no {element} in the database. Please add some first.",
         'noDelivery':"There is no marked delivery for tomorrow.",
         'wrongFilter':"The applied filter needs to be one of the following: {f}",
         'uknownFilter':"The applied filter is not known.",
         'wrongType':"'{var}' needs to be a(n) {dtype}.",
+        'wrongFormat':"'{var}' needs to be in the format '{format}'.",
         'notAllowed':"'{var}' needs to be one of the following '{available}'.",
         'weekdays':"Monday, Tuesday, Wendsday, Thursday, Friday, Saturday, Sunday",
         'cycleMismatch':"The 'interval' is not allowed to be None if the 'cycle_type' indicates a 'day' or 'interval'.",
@@ -64,7 +66,6 @@ mapping = {
         'product_id':"Product id",
         'customer_id':"Customer id",
         'id':"Abo"
-
     },
     'html_text':{
         'base_html':{
@@ -171,11 +172,72 @@ mapping = {
 
             'delivery_total_spendings':"Spendings",
             'delivery_total_spendings_description':"Purchase price for all products.",
-        }
+        },
+        '/management':{
+            'management_title':"Management",
+            'management_lead':"Organize your data.",
+            'management_customers_btn':"Customers",
+            'management_category_btn':"Categories",
+            'management_subcategory_btn':"Subcategories",
+            'management_products_btn':"Products",
+            'management_abo_btn':"Abos",
+            'managment_abo_btn_label':"abo",
+            'management_tbl_col_remover':"Remove",
+            'management_tbl_col_updater':"Update",
+            'management_tbl_col_special':"Special",
+            'management_auto_text':"Auto.",
+            'management_auto_text':"Auto.",
+        },
 
     },
     'notification':{
         'save_path':"Your file was saved at: {path}",
+        'added_to_db':"'{element}' was successfully added! Please refresh the data.",
+        'deleted_from_db':"'{element}' was successfully deleted!",
+        'update_to_db':"'{element}' was successfully updated!"
+    },
+    'column_mapping':{
+        'customers':{
+            'id':"id",
+            'date':"Date",
+            'name':"Name",
+            'surname':"Surname",
+            'street':"Street",
+            'nr':"Nr",
+            'postal':"Postal",
+            'town':"City",
+            'phone':"Phone",
+            'mobile':"Mobile",
+            'birthdate':"Birthdate",
+            'approach':"Approach",
+            'notes':"Notes"
+            },
+        'categories':{
+            'id':"id",
+            'name':"Name"
+        },
+        'products':{
+            'id':"id",
+            'name':"Name",
+            'category':"Category",
+            'purchase_price':"Purchase price",
+            'selling_price':"Selling price",
+            'margin':"Margin",
+            'store':"Store",
+            'phone':"Phone",
+        }
+    },
+    'table_mapping': {
+        'customers':"Customers",
+        'customer':"Customer",
+        'categories':"Categories",
+        'category':"Category",
+        'subcategories':"Subcategories",
+        'subcategory':"Subcategory",
+        'products':"Products",
+        'product':"Product",
+        'abos':"Abos",
+        'abos':"Abo"
     }
     
 }

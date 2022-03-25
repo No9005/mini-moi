@@ -147,7 +147,7 @@ class TestCategories(unittest.TestCase):
             'success': True,
             'error': '',
             'data': {
-                'result': [
+                'data': [
                     {
                         'id': 1, 
                         'name':"Brot",
@@ -157,7 +157,10 @@ class TestCategories(unittest.TestCase):
                         'name':"Weißwaren",
                     },
                     ],
-                'category_type':"category"
+                'category_type':"category",
+                'order': ['id', 'name'], 
+                'mapping': ['id', 'Name']
+                
                 }
         })
 
@@ -169,7 +172,7 @@ class TestCategories(unittest.TestCase):
             language = "EN"
         )
 
-        self.assertEqual(result, {'success':True, 'error':"", 'data':{'result':[], 'category_type':"category"}})
+        self.assertEqual(result, {'success':True, 'error':"", 'data':{'data':[], 'category_type':"category"}})
 
         #endregion
 
@@ -180,13 +183,15 @@ class TestCategories(unittest.TestCase):
         )
 
         self.assertEqual(result, {'success':True, 'error':"", 'data':{
-            'result': [
+            'data': [
                      {
                         'id': 1, 
                         'name':"Brot",
                     },
                     ],
-            'category_type':"category"
+            'category_type':"category",
+            'order': ['id', 'name'], 
+            'mapping': ['id', 'Name']
             }
             })
 
@@ -202,7 +207,7 @@ class TestCategories(unittest.TestCase):
             'success': True,
             'error': '',
             'data': {
-                'result': [
+                'data': [
                     {
                         'id': 1, 
                         'name':"Sub1",
@@ -212,8 +217,9 @@ class TestCategories(unittest.TestCase):
                         'name':"Sub2",
                     },
                     ],
-                'category_type':"subcategory"
-                
+                'category_type':"subcategory",
+                'order': ['id', 'name'], 
+                'mapping': ['id', 'Name']
                 }
         })
 
@@ -323,7 +329,8 @@ class TestCategories(unittest.TestCase):
         """
 
         result = categories.add(
-            categories = ["Semmelbrösel", "Noobkanone"]
+            categories = [{"name":"Semmelbrösel"}, {"name":"Noobkanone"}],
+            language = "EN"
         )
 
         # assert
@@ -355,7 +362,7 @@ class TestCategories(unittest.TestCase):
         """
 
         result = categories.add(
-            categories = ["Sub4", "Sub5"],
+            categories = [{"name":"Sub4"}, {"name":"Sub5"}],
             category_type="subcategory"
         )
 

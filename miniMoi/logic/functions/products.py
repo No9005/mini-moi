@@ -69,9 +69,15 @@ def get(
 
     """
 
+    # get language files
+    try: translation = language_files[language]
+    except: translation = language_files[app.config['DEFAULT_LANGUAGE']]
+
     # get language errorcodes
-    try: errors = language_files[language]['error_codes']
-    except: errors = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
+    errors = translation['error_codes']
+
+    # get language mapping for columns
+    mappedCols = translation['column_mapping']['products']
 
     # check if the filter is one of the allowed keywords
     allowedFilter = [None, "product", "category"]
@@ -87,6 +93,8 @@ def get(
 
     # create session
     session = Session()
+
+    print("here")
 
     #region 'query'
     # is filter & what both none? -> return first x elements
@@ -129,7 +137,7 @@ def get(
     if amount is not None: result = result.limit(amount)
 
     # result is None?
-    if result is None: return{'success':True, 'error':"", 'data':{'result':[]}}
+    if result.first() is None: return{'success':True, 'error':"", 'data':{'result':[]}}
 
     # turn into list
     fetched = []
@@ -137,12 +145,40 @@ def get(
 
         fetched.append({col.name:getattr(row, col.name) for col in row.__table__.columns})
 
+    # create order
+    ordering = []
+    mapping = []
+
+    for col in fetched[0].keys():
+        ordering.append(col)
+        mapping.append(mappedCols[col])
+
+    #region 'fetch category names'
+    categories = session.query(Category)
+    if categories.first() is None: return {
+        'success':False, 
+        'error':errors['noElementInDB'].format(
+            element = translation['table_mapping']['category']
+        ),
+        'data':{}
+        }
+
+    # parse all elements to dict
+    dropdown_category = {cat.id:cat.name for cat in categories.all()}
+
+    #endregion
+
     # turn into dict & return
     return {
         'success':True,
         'error':"",
         'data':{
-            'result':fetched
+            'data':fetched,
+            'order':ordering,
+            'mapping':mapping,
+            'dropdown':{
+                'category':dropdown_category
+            }
         }
     }
     

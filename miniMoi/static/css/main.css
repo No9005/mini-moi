@@ -43,6 +43,11 @@
     color: #f00;
 }
 
+.table-check-inactive {
+    color: rgb(87, 107, 87);
+    opacity:50%;
+}
+
 .table-check {
     color: #070;
     cursor: pointer;
@@ -50,6 +55,15 @@
 
 .table-check:hover {
     color: #0b0;
+}
+
+.table-upload {
+    color:#e67e22;
+    cursor:pointer;
+}
+
+.table-upload:hover {
+    color: #f39c12;
 }
 
 .table-up, .table-down {

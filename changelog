@@ -1,6 +1,16 @@
-v.0.4.7: Added auto create db directory.
+v.0.4.8: Tables. See changelog.
+    Still working on the data fetching from the server.
+    The basic tables are implemented. Adding & updating
+    possible.
+    There is still the option to bulk import missing
+    (strg+c -> strg+v).
+    The products & abos need also additional dropdown
+    menus, so the user can select the product by name
+    in the ui.
 
 ------------ old versions ----------------------------------
+v.0.4.7: Added auto create db directory.
+
 v.0.4.6: Small fix of missing assignment & unittest changes.
 
 v.0.4.5: Table non editable check... See changelog.

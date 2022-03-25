@@ -18,14 +18,6 @@ from miniMoi.language import language_files
 def base():
     return render_template("html/base.html")
 
-@app.route("/blue")
-def blue():
-    return render_template("html/blueprint.html")
-
-@app.route("/blue2")
-def blue2():
-    return render_template("html/blueprint2.html")
-
 #endregion
 
 #region 'cleanup, shutdown & context'
@@ -52,6 +44,7 @@ def shutdown():
 
 @app.context_processor
 def inject_to_all_templates():
+    """Creates the basic app context """
     
     # get html text
     htmlText = language_files[app.config['DEFAULT_LANGUAGE']]['html_text']
@@ -73,7 +66,6 @@ def inject_to_all_templates():
 
     # pass dict!
     return contextDict
-
 
 #endregion
 
@@ -130,6 +122,12 @@ def delivery():
     """Displays the delivery page """
 
     return render_template("html/delivery.html")
+
+@app.route("/management", methods=["GET"])
+def management():
+    """Displays the management page """
+
+    return render_template("html/management.html")
     
 #endregion
 
@@ -156,7 +154,10 @@ def to_api(ressource) -> dict:
     """
 
     # grab the body
-    payload = request.form
+    try:
+        if request.headers['Content-Type'] == "application/json": payload = request.json
+        else: payload = request.form
+    except: payload = request.form
 
     # pass it to the handler
     response = handlers.api({

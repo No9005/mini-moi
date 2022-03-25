@@ -381,20 +381,27 @@ def create(language = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']
     dict
         success, error & data {
             'overview_category':{
-                'category_name':[],
-                'quantity':[],
-                'cost':[]
+                'data':{
+                    'category_name':[],
+                    'quantity':[],
+                    'cost':[]
+                },
+                'order':[],
+                'mapping':[]
                 },
             'overview_product':{
                 'category_name':{
-                    'product_name':[],
-                    'subcat_1:[],
-                    'subcat_2:[],
-                    'subcat_X:[],
-                    ...
+                    'data':{
+                        'product_name':[],
+                        'subcat_1:[],
+                        'subcat_2:[],
+                        'subcat_X:[],
+                        ...},
+                    'order':[],
+                    'mapping':[]
                 },
                 'category_name2':{
-                    ...
+                   { ...}
                 },
                 ...
                 
@@ -403,32 +410,34 @@ def create(language = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']
             'total_spendings':int,
             'town_based':{
                 'townName':{
-                    'customer_approach':list[int], 
-                    'customer_street':list[str], 
-                    'customer_nr':list[int],
-                    'customer_town':list[str],
-                    'customer_name':list[str],
-                    'customer_surname':list[str],
-                    'customer_id':list[int],
-                    'customer_phone':list[str],
-                    'customer_mobile':list[str],
-                    'quantity':list[int], 
-                    'product_name':list[str],
-                    'product_id':list[int],
-                    'category_name':list[str],
-                    'subcategory_name':list[str],
-                    'product_selling_price':list[float],
-                    'cost':list[float],
-                    'total_cost':list[float],
-                    'notes':list[str]
-                    'id':list[int] # -> the abo_id
-                    },
+                    'data':{
+                        'customer_approach':list[int], 
+                        'customer_street':list[str], 
+                        'customer_nr':list[int],
+                        'customer_town':list[str],
+                        'customer_name':list[str],
+                        'customer_surname':list[str],
+                        'customer_id':list[int],
+                        'customer_phone':list[str],
+                        'customer_mobile':list[str],
+                        'quantity':list[int], 
+                        'product_name':list[str],
+                        'product_id':list[int],
+                        'category_name':list[str],
+                        'subcategory_name':list[str],
+                        'product_selling_price':list[float],
+                        'cost':list[float],
+                        'total_cost':list[float],
+                        'notes':list[str]
+                        'id':list[int] # -> the abo_id}
+                        },
+                    'order':[],
+                    'mapping':[]
                 'townName':{
                     ...
                     },
                 ...
             }
-
         }
     
     """
