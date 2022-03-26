@@ -12,6 +12,7 @@ mapping = {
         'wrongSubcategory':"Selected subcategory not available.",
         'noEntry':"You did not enter/change anything.",
         'notFound':"The {element} was not found.",
+        'notFoundWithId':"The {element} was not found (id = '{id}').",
         'noElementInDB':"There was no {element} in the database. Please add some first.",
         'noDelivery':"There is no marked delivery for tomorrow.",
         'wrongFilter':"The applied filter needs to be one of the following: {f}",
@@ -186,7 +187,7 @@ mapping = {
             'management_tbl_col_updater':"Update",
             'management_tbl_col_special':"Special",
             'management_auto_text':"Auto.",
-            'management_auto_text':"Auto.",
+            'management_no_data':"No data available!",
         },
 
     },
@@ -215,7 +216,7 @@ mapping = {
         'categories':{
             'id':"id",
             'name':"Name"
-        },
+            },
         'products':{
             'id':"id",
             'name':"Name",
@@ -225,6 +226,17 @@ mapping = {
             'margin':"Margin",
             'store':"Store",
             'phone':"Phone",
+            },
+        'abo':{
+            'id':"id",
+            'customer_id':"Customer id",
+            'update_date':"Update date",
+            'cycle_type':"Cycle type",
+            'interval':"Interval",
+            'next_delivery':"Next delivery",
+            'product':"Product",
+            'subcategory':"Subcategory",
+            'quantity':"Qnt."
         }
     },
     'table_mapping': {
@@ -237,7 +249,22 @@ mapping = {
         'products':"Products",
         'product':"Product",
         'abos':"Abos",
-        'abos':"Abo"
+        'abo':"Abo"
+    },
+    'cycle_type_mapping':{
+        'None':"None",
+        'day':"Weekday",
+        'interval':"Interval"
+    },
+    'weekday_mapping':{
+        0:"Monday",
+        1:"Tuesday",
+        2:"Wendsday",
+        3:"Thursday",
+        4:"Friday",
+        5:"Saturday",
+        6:"Sunday",
+
     }
     
 }

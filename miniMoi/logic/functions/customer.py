@@ -134,8 +134,24 @@ def get(
     # limit the amount?
     if amount is not None: result = result.limit(amount)
 
+    #region 'create empty result return'
+    intendedOrder = [
+            'id', 'date', 'name', 'surname', 'street',
+            'nr', 'postal', 'town',
+            'phone', 'mobile', 'birthdate', 'approach',
+            'notes'
+        ]
+
+    emptyResult = {
+        'data':[],
+        'order':intendedOrder,
+        'mapping':[mappedCols[col] for col in intendedOrder],
+    }
+
+    #endregion
+
     # result is None?
-    if result.first() is None: return{'success':True, 'error':"", 'data':{'data':[]}}
+    if result.first() is None: return{'success':True, 'error':"", 'data':emptyResult}
 
     # turn into list
     fetched = []
@@ -160,23 +176,16 @@ def get(
 
         fetched.append(copy.deepcopy(tmp))
 
-    # create order
-    ordering = []
-    mapping = []
+    if len(fetched) == 0: return{'success':True, 'error':"", 'data':emptyResult}
 
-    for col in fetched[0].keys():
-        ordering.append(col)
-        mapping.append(mappedCols[col])
+    # update empty result
+    emptyResult.update({'data':fetched})
 
     # turn into dict & return
     return {
         'success':True,
         'error':"",
-        'data':{
-            'data':fetched,
-            'order':ordering,
-            'mapping':mapping,
-        }
+        'data':emptyResult
     }
 
 def update(customer_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']) -> dict:

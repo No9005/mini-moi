@@ -75,6 +75,10 @@
     color: #00f;
 }
 
+.table-add-inactive {
+    color: rgb(87, 107, 87);
+}
+
 .table-add {
     color: #070;
     cursor: pointer;

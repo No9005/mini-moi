@@ -1,3 +1,19 @@
+v.0.4.9: Ui with good progress. See changelog.
+    The management ui works so far for all but abos.
+    This table needs the overhaul based on the json
+    input changes.
+    Also need to updaten and add new unittests
+    to all functions (test_abo to test_products;
+    the getter changed everywhere).
+    Other to-dos are a full interface check.
+    Some integration tests.
+    Maybe we add also a bulk adder.
+    We have to add a backup function for the db too.
+    If everything goes well, I am going to add a basic
+    reporting tool too.
+
+
+------------ old versions ----------------------------------
 v.0.4.8: Tables. See changelog.
     Still working on the data fetching from the server.
     The basic tables are implemented. Adding & updating
@@ -8,7 +24,6 @@ v.0.4.8: Tables. See changelog.
     menus, so the user can select the product by name
     in the ui.
 
------------- old versions ----------------------------------
 v.0.4.7: Added auto create db directory.
 
 v.0.4.6: Small fix of missing assignment & unittest changes.

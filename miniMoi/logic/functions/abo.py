@@ -75,9 +75,15 @@ def get(
 
     """
 
+    # get language
+    try: translation = language_files[language]
+    except: translation = language_files[app.config['DEFAULT_LANGUAGE']]
+
     # get language errorcodes
-    try: errors = language_files[language]['error_codes']
-    except: errors = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
+    errors = translation['error_codes']
+
+    # get language mapping for columns
+    mappedCols = translation['column_mapping']['abo']
 
     # check if the filter is one of the allowed keywords
     allowedFilter = [None, "abo", "customer"]
@@ -118,38 +124,83 @@ def get(
     # limit the amount?
     if amount is not None: result = result.limit(amount)
 
-    # is result none?
-    if result is None: return{'success':True, 'error':"", 'data':{'result':[]}}
+    #region 'create dropdown options'
+    # products
+    products = session.query(Products)
+    if products.first() is None: return {
+        'success':False, 
+        'error':errors['noElementInDB'].format(
+            element = translation['table_mapping']['products']
+        ),
+        'data':{}
+        }
+    dropdown_products = {el.id:el.name for el in products.all()}
 
-    #region 'fetch all products'
-    products = pd.read_sql_query(
-        session.query(Products).statement,
-        session.bind
-    )
+    # subcategory
+    subcategories = session.query(Subcategory)
+    if subcategories.first() is None: return {
+        'success':False, 
+        'error':errors['noElementInDB'].format(
+            element = translation['table_mapping']['subcategories']
+        ),
+        'data':{}
+        }
+    dropdown_subcateogry = {el.id:el.name for el in subcategories.all()}
+
     #endregion
 
-    # turn result into list of dicts
-    resultList = []
-    for r in result.all():
+    #region 'create empty result return'
+    intendedOrder = [
+            'id', 'customer_id', 'update_date', 'cycle_type',
+            'interval', 'next_delivery', 'product', 'subcategory',
+            'quantity'
+        ]
 
-        resultList.append({
-                'id':r.id,
-                'customer_id':r.customer_id,
-                'update_date':time.to_string(time.utc_to_local(r.update_date, tz), "%Y.%m.%d %H:%M"),
-                'cycle_type':r.cycle_type,
-                'interval':r.interval,
-                'next_delivery':time.to_string(time.utc_to_local(r.next_delivery, tz), "%Y.%m.%d"),
-                'product_id':r.product,
-                'product_name':products.loc[products['id'] == r.product, "name"].values.tolist()[0]
-            })
+    emptyResult = {
+        'data':[],
+        'order':intendedOrder,
+        'mapping':[mappedCols[col] for col in intendedOrder],
+        'dropdown':{
+            'cycle_type':translation['cycle_type_mapping'],
+            'weekday_interval':translation['weekday_mapping'],
+            'product':dropdown_products,
+            'subcategory':dropdown_subcateogry
+        }
+    }
+
+    #endregion
+
+    # is result none?
+    if result.first() is None: return{'success':True, 'error':"", 'data':emptyResult}
+
+    # turn result into list of dicts
+    fetched = []
+    for row in result.all():
+
+        fetched.append(
+            {
+              'id':row.id,
+              'customer_id':row.customer_id,
+              'update_date':time.to_string(time.utc_to_local(row.next_delivery), "%Y.%m.%d %H:%M"),
+              'cycle_type':row.cycle_type,
+              'interval':row.interval,
+              'next_delivery':time.to_string(time.utc_to_local(row.next_delivery), "%Y.%m.%d"),
+              'product':row.product,
+              'subcategory':row.subcategory,
+              'quantity':row.quantity  
+            }
+        )
+
+    if len(fetched) == 0: return{'success':True, 'error':"", 'data':emptyResult}    
+
+    # update empty result
+    emptyResult.update({'data':fetched})
 
     # turn into dict & return
     return {
         'success':True,
         'error':"",
-        'data':{
-            'result':resultList
-        }
+        'data':emptyResult
     }
 
 def update(abo_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']) -> dict:
@@ -185,9 +236,12 @@ def update(abo_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE'],
     
     """
 
+    # get language
+    try: translation = language_files[language]
+    except: translation = language_files[app.config['DEFAULT_LANGUAGE']]
+
     # get language errorcodes
-    try: errors = language_files[language]['error_codes']
-    except: errors = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
+    errors = translation['error_codes']
 
     # check if the list is not empty
     if not bool(data): return {'success':False, 'error':errors['noEntry'], 'data':{}}
@@ -204,6 +258,7 @@ def update(abo_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE'],
 
         return {'success':False, 'error':errors['notFound'].format(element="abo"), 'data':{}}
 
+    #region 'fetch additional info'
     # fetch all available products
     products = pd.read_sql_query(
         session.query(Products).statement,
@@ -213,8 +268,85 @@ def update(abo_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE'],
     # get unique ids
     availableProducts = products['id'].unique().tolist()
 
+    # fetch all available subcategories
+    subcategories = pd.read_sql_query(
+        session.query(Subcategory).statement,
+        session.bind
+    )
+
+    # get unique ids
+    availableSubcategory = subcategories['id'].unique().tolist()
+
+    #endregion
+
+    #region 'parse input'
+    # check ints
+    int_values = []
+    for val in ['customer_id', 'product', 'subcategory', 'quantity']:
+
+        try: int_values.update({val:int(abo[val])})
+        except ValueError as e: return {
+            'success':False, 
+            'error':errors['wrongType'].format(
+                var = translation['column_mapping']['abo'][val],
+                dtype="int"
+            ), 
+            'data':{}
+        }
+
+    # parse cycle type
+    cycle_type = data['cycle_type']
+    if cycle_type == "None": cycle_type = None
+
+    # parse interval
+    interval = data['interval']
+
+    if cycle_type is None: interval = None
+    else:
+        try: interval = int(interval)
+        except ValueError as e: return {
+            'success':False, 
+            'error':errors['wrongType'].format(
+                var = translation['column_mapping']['abo']['interval'],
+                dtype="int"
+            ), 
+            'data':{}
+        }
+
+    # parse next_delivery
+    next_delivery = None
+
+    if data['next_delivery'] != "":
+        try: 
+            # parse delivery into correct format
+            next_delivery = "-".join(abo['next_delivery'].split("."))
+
+            # parse to datetime
+            next_delivery = time.local_to_utc(
+                time.parse_date_string(next_delivery),
+                tz
+                )
+
+        except: return {'success':False, 'error':errors['wrongFormat'].format(
+            var=translation['column_mapping']['abo']['next_delivery'],
+            format="Year.Month.Day"
+        )}
+
+    else:
+
+        # calculate next delivery based on today
+            today = time.today()
+            next_delivery = time.calculate_next_delivery(
+                date = today,
+                cycle_type = cycle_type,
+                interval = interval,
+                language = language
+            )
+
+    #endregion
+
     # selected product available?
-    if not data['product'] in availableProducts: 
+    if not int_values['product'] in availableProducts: 
         
         # close session
         session.close()
@@ -225,15 +357,8 @@ def update(abo_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE'],
             'data':{}
         }
 
-    # fetch all available subcategories
-    subcategories = pd.read_sql_query(
-        session.query(Subcategory).statement,
-        session.bind
-    )
-
-    # get unique ids
-    availableSubcategory = subcategories['id'].unique().tolist()
-    if not data['subcategory'] in availableSubcategory:
+    # selected subcategory available?
+    if not int_values['subcategory'] in availableSubcategory:
 
         # close session
         session.close()
@@ -241,46 +366,6 @@ def update(abo_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE'],
         return {
             'success':False,
             'error':errors['wrongSubcategory'],
-            'data':{}
-        }
-
-    # grab interval & cycle_type
-    interval = data['interval']
-    cycle_type = data['cycle_type']
-
-    try:
-        # calculate next delivery
-        if data['next_delivery'] is None:
-
-            # calculate next delivery based on today
-            today = time.today()
-            next_delivery = time.calculate_next_delivery(
-                date = today,
-                cycle_type = cycle_type,
-                interval = interval,
-                language = language
-            )
-            
-        # set the custom next delivery date
-        else: next_delivery = time.local_to_utc(
-            time.parse_date_string(data['next_delivery']),
-            tz
-            )
-    
-    except Exception as e:
-        code, msg = tools._convert_exception(e)
-        
-        session.close()
-
-        return {
-            'success':False,
-            'error':errors['unableOperation'].format(
-                operation = "update",
-                element = "abo",
-                c = "",
-                e=str(code),
-                m=str(msg)
-            ),
             'data':{}
         }
 
@@ -321,10 +406,14 @@ def update(abo_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE'],
     return {
         'success':True,
         'error':"",
-        'data':{}
+        'data':{
+            'msg':translation['notification']['update_to_db'].format(
+                element=translation['table_mapping']['abo']
+            )
+        }
     }
 
-def add(customer_id:int, abos:list, language:str = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']) -> dict:
+def add(abos:list, language:str = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']) -> dict:
     """Adds abos to a customer
 
     This function adds one or
@@ -333,9 +422,6 @@ def add(customer_id:int, abos:list, language:str = app.config['DEFAULT_LANGUAGE'
 
     params:
     -------
-    customer_id : int
-        The id of the customer to add
-        the abo to.
     abos : list
         A list containing every single new
         abo for the customer.
@@ -365,9 +451,12 @@ def add(customer_id:int, abos:list, language:str = app.config['DEFAULT_LANGUAGE'
 
     """
 
+    # get language
+    try: translation = language_files[language]
+    except: translation = language_files[app.config['DEFAULT_LANGUAGE']]
+
     # get language errorcodes
-    try: errors = language_files[language]['error_codes']
-    except: errors = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
+    errors = translation['error_codes']
 
     # check if the list is not empty
     if not bool(abos): return {'success':False, 'error':errors['noEntry'].format(
@@ -376,14 +465,6 @@ def add(customer_id:int, abos:list, language:str = app.config['DEFAULT_LANGUAGE'
 
     # create session
     session = Session()
-
-    # check if customer is available
-    customer = session.query(Customers).filter_by(id = customer_id).first()
-    if customer is None: return {
-        'success':False, 
-        'error':errors['notFound'].format(element="customer"), 
-        'data':{}
-        }
 
     # fetch all available products
     products = pd.read_sql_query(
@@ -409,11 +490,37 @@ def add(customer_id:int, abos:list, language:str = app.config['DEFAULT_LANGUAGE'
     # create the new products
     for abo in abos:
 
+        # parse the int values
+        int_values = {}
+        for val in ['customer_id', 'product', 'subcategory', 'quantity']:
+
+            try: int_values.update({val:int(abo[val])})
+            except ValueError as e: return {
+                'success':False, 
+                'error':errors['wrongType'].format(
+                    var = translation['column_mapping']['abo'][val],
+                    dtype="int"
+                ), 
+                'data':{}
+            }            
+
         try:
+
+            # check if customer is available
+            customer = session.query(Customers).filter_by(id = int_values['customer_id']).first()
+            if customer is None: return {
+                'success':False, 
+                'error':errors['notFoundWithId'].format(
+                    element="customer",
+                    id = int_values['customer_id']
+                    ), 
+                'data':{}
+                }
+
 
             #region 'check if abo settings are valid'
             # selected product?
-            if not abo['product'] in availableProducts: 
+            if not int_values['product'] in availableProducts: 
                 
                 # close session
                 session.close()
@@ -425,7 +532,7 @@ def add(customer_id:int, abos:list, language:str = app.config['DEFAULT_LANGUAGE'
                 }
 
             # selected subcategory?
-            if not abo['subcategory'] in availableSubcategory:
+            if not int_values['subcategory'] in availableSubcategory:
 
                 # close session
                 session.close()
@@ -434,20 +541,55 @@ def add(customer_id:int, abos:list, language:str = app.config['DEFAULT_LANGUAGE'
                     'success':False,
                     'error':errors['wrongSubcategory'],
                     'data':{}
-        }
+                    }
 
             # get today
             today = time.today()
 
+            # parse cycle type
+            cycle_type = abo['cycle_type']
+            if cycle_type == "None": cycle_type = None
+
             # get interval
             interval = abo['interval']
 
-            # get cycle_type
-            cycle_type = abo['cycle_type']
+            # parse interval
+            if cycle_type is None: interval = None
+            else: 
+                
+                try: interval = int(interval)
+                except ValueError as e: return {
+                    'success':False, 
+                    'error':errors['wrongType'].format(
+                        var = translation['column_mapping']['abo']['interval'],
+                        dtype="int"
+                    ), 
+                    'data':{}
+                }     
 
+            #region 'parse next delivery'
+            next_delivery = None
+
+            if abo['next_delivery'] != "":
+                try: 
+                    # parse delivery into correct format
+                    next_delivery = "-".join(abo['next_delivery'].split("."))
+
+                    # parse to datetime
+                    next_delivery = time.local_to_utc(
+                        time.parse_date_string(next_delivery),
+                        tz
+                        )
+
+                except: return {'success':False, 'error':errors['wrongFormat'].format(
+                    var=translation['column_mapping']['abo']['next_delivery'],
+                    format="Year.Month.Day"
+                )}
+
+            # endregion
 
             # calculate next delivery (if next_delivery is None)
-            if abo['next_delivery'] is None:
+            else:
                 next_delivery = time.calculate_next_delivery(
                     date = today,
                     cycle_type = cycle_type,
@@ -455,22 +597,16 @@ def add(customer_id:int, abos:list, language:str = app.config['DEFAULT_LANGUAGE'
                     language = language
                 )
 
-            # else set the custom next delivery date
-            else: next_delivery = time.local_to_utc(
-                time.parse_date_string(abo['next_delivery']),
-                tz
-                )
-            
             #endregion
 
             toAdd.append(Abo(
-                customer_id = customer_id,
+                customer_id = int_values['customer_id'],
                 cycle_type = cycle_type,
                 interval = interval,
                 next_delivery = next_delivery,
-                product = abo['product'],
-                quantity = int(abo['quantity']),
-                subcategory = int(abo['subcategory'])
+                product = int_values['product'],
+                quantity = int_values['quantity'],
+                subcategory = int_values['subcategory']
             ))
 
         except Exception as e:
@@ -520,7 +656,11 @@ def add(customer_id:int, abos:list, language:str = app.config['DEFAULT_LANGUAGE'
     return {
         'success':True,
         'error':"",
-        'data':{}
+        'data':{
+            'msg':translation['notification']['added_to_db'].format(
+                element=translation['table_mapping']['abo']
+            )
+        }
     }
 
 def delete(abo_id:int, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
@@ -542,9 +682,12 @@ def delete(abo_id:int, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
     
     """
 
+    # get language
+    try: translation = language_files[language]
+    except: translation = language_files[app.config['DEFAULT_LANGUAGE']]
+
     # get language errorcodes
-    try: errors = language_files[language]['error_codes']
-    except: errors = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
+    errors = translation['error_codes']
 
     # create session
     session = Session()
@@ -585,7 +728,11 @@ def delete(abo_id:int, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
     return {
         'success':True,
         'error':"",
-        'data':{}
+        'data':{
+            'msg':translation['notification']['deleted_from_db'].format(
+                element=translation['table_mapping']['abo']
+            )
+        }
     }
 
 #endregion

@@ -149,7 +149,7 @@ class TestProducts(unittest.TestCase):
             'success': True,
             'error': '',
             'data': {
-                'result': [
+                'data': [
                     {
                         'id':1,
                         'name':"Brot",
@@ -170,7 +170,16 @@ class TestProducts(unittest.TestCase):
                         'store':"MeinLaden",
                         'phone':"+50 phone"
                     }
-                    ]
+                    ],
+                'order': [
+                    'id', 'name', 'category', 'purchase_price', 'selling_price', 
+                    'margin', 'store', 'phone'],
+                'mapping': [
+                    'id', 'Name', 'Category', 'Purchase price', 'Selling price', 
+                    'Margin', 'Store', 'Phone'
+                    ],
+                'dropdown': {'category': {1: 'Brot', 2: 'Weißwaren'}}
+
                 }
         })
 
@@ -183,7 +192,7 @@ class TestProducts(unittest.TestCase):
             language = "EN"
         )
 
-        self.assertEqual(result, {'success':True, 'error':"", 'data':{'result':[]}})
+        self.assertEqual(result, {'success':True, 'error':"", 'data':{'data':[]}})
 
         #endregion
 
@@ -196,7 +205,7 @@ class TestProducts(unittest.TestCase):
         )
 
         self.assertEqual(result, {'success':True, 'error':"", 'data':{
-            'result': [
+            'data': [
                     {
                         'id':2,
                         'name':"Baguette",
@@ -207,7 +216,15 @@ class TestProducts(unittest.TestCase):
                         'store':"MeinLaden",
                         'phone':"+50 phone"
                         }
-                    ]
+                    ],
+            'order': [
+                'id', 'name', 'category', 'purchase_price', 'selling_price', 
+                'margin', 'store', 'phone'],
+            'mapping': [
+                'id', 'Name', 'Category', 'Purchase price', 'Selling price', 
+                'Margin', 'Store', 'Phone'
+                ],
+            'dropdown': {'category': {1: 'Brot', 2: 'Weißwaren'}}
             }})
 
         #endregion
@@ -236,7 +253,7 @@ class TestProducts(unittest.TestCase):
         )
 
         self.assertEqual(result, {'success':True, 'error':"", 'data':{
-            'result': [
+            'data': [
                     {
                         'id':1,
                         'name':"Brot",
@@ -257,7 +274,15 @@ class TestProducts(unittest.TestCase):
                         'store':"MeinLaden",
                         'phone':"+50 phone"
                         }
-                    ]
+                    ],
+            'order': [
+                'id', 'name', 'category', 'purchase_price', 'selling_price', 
+                'margin', 'store', 'phone'],
+            'mapping': [
+                'id', 'Name', 'Category', 'Purchase price', 'Selling price', 
+                'Margin', 'Store', 'Phone'
+                ],
+            'dropdown': {'category': {1: 'Brot', 2: 'Weißwaren'}}
             }})
 
         #endregion
@@ -270,7 +295,7 @@ class TestProducts(unittest.TestCase):
             language = "EN",
         )
         
-        self.assertEqual(result, {'success':True, 'error':"", 'data':{'result':[]}})
+        self.assertEqual(result, {'success':True, 'error':"", 'data':{'data':[]}})
 
         #endregion
 

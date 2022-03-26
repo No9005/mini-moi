@@ -612,7 +612,7 @@ def api(request:dict) -> dict:
     
             """
 
-            response = customer.update(
+            response = products.update(
                 product_id = int(request['data']['id']),
                 data = request['data'],
                 language = app.config['DEFAULT_LANGUAGE'],
@@ -880,10 +880,6 @@ def api(request:dict) -> dict:
             amount : int | None, optional
                 The number of entries to query.
                 (default is None).
-            language : str, optional
-                the language iso code. Needed for the
-                error msg.
-                (default is app.config['DEFAULT_LANGUAGE'])
 
             returns:
             --------
@@ -907,11 +903,10 @@ def api(request:dict) -> dict:
             """
 
             response = abo.get(
-                filter_type = request['filer_type'],
-                what = request['what'],
-                amount = request['amount'],
-                language = request['language'],
-                tz = app.config['TZ_INFO']
+                filter_type = request['data']['filter_type'],
+                what = request['data']['what'],
+                amount = request['data']['amount'],
+                language = app.config['DEFAULT_LANGUAGE']
             )
 
             return response
@@ -925,25 +920,19 @@ def api(request:dict) -> dict:
 
             params:
             -------
-            customer_id : int
-                The id of the customer to add
-                the abo to.
-            abos : list
+            to_add : list
                 A list containing every single new
                 abo for the customer.
                     Format: [
                         {
+                            'customer_id':int,
                             'cycle_type':str,
                             'interval':int,
                             'product':int,
                         },
                         ...
                     ]
-            language : str, optional
-                The language iso. Needed for the error
-                msg.
-                (default is app.config['DEFAULT_LANGUAGE])
-
+            
             returns:
             --------
             dict
@@ -952,10 +941,8 @@ def api(request:dict) -> dict:
             """
 
             response = abo.add(
-                customer_id = request['customer_id'],
-                abos = request['abos'],
-                language = request['language'],
-                tz = app.config['TZ_INFO']
+                abos = request['data']['to_add'],
+                language = app.config['DEFAULT_LANGUAGE']
             )
 
             return response
@@ -967,11 +954,7 @@ def api(request:dict) -> dict:
             -------
             abo_id : int
                 the abo unique id.
-            language : str, optional
-                The language iso. Needed for the error
-                msg.
-                (default is app.config['DEFAULT_LANGUAGE])
-            
+
             returns:
             -------
             dict
@@ -980,8 +963,8 @@ def api(request:dict) -> dict:
             """
 
             response = abo.delete(
-                abo_id = request['abo_id'],
-                language = request['language'],
+                abo_id = int(request['data']['id']),
+                language = app.config['DEFAULT_LANGUAGE'],
             )
 
             return response
@@ -1002,10 +985,6 @@ def api(request:dict) -> dict:
                         'product':int,
                         'custom_next_delivery':str | None
                     }
-            language : str, optional
-                the language iso code. Needed for the
-                error msg.
-                (default is app.config['DEFAULT_LANGUAGE])
 
             returns:
             -------
@@ -1015,10 +994,9 @@ def api(request:dict) -> dict:
             """
 
             response = abo.update(
-                abo_id = request['abo_id'],
+                abo_id = int(request['data']['id']),
                 data = request['data'],
-                language = request['language'],
-                tz = app.config['TZ_INFO']
+                language = app.config['DEFAULT_LANGUAGE']
             )
 
             return response

@@ -24,31 +24,31 @@
     <div class="row force-min-height flex justify-content-center">
 
         <div class="col-2" id="">
-            <button type="button" class="btn btn-lg btn-block btn-secondary" onClick="get_costumers()" data-toggle="tooltip" data-placement="bottom"> 
+            <button type="button" class="btn btn-lg btn-block btn-secondary" onClick="get_data('customers')" data-toggle="tooltip" data-placement="bottom"> 
                 {{ management_customers_btn }}
             </button>
         </div>
 
         <div class="col-2" id="">
-            <button type="button" class="btn btn-lg btn-block btn-secondary" onClick="get_categories()" data-toggle="tooltip" data-placement="bottom"> 
+            <button type="button" class="btn btn-lg btn-block btn-secondary" onClick="get_data('category')" data-toggle="tooltip" data-placement="bottom"> 
                 {{ management_category_btn }}
             </button>
         </div>
 
         <div class="col-2" id="">
-            <button type="button" class="btn btn-lg btn-block btn-secondary" onClick="get_categories(null, 'subcategory')" data-toggle="tooltip" data-placement="bottom"> 
+            <button type="button" class="btn btn-lg btn-block btn-secondary" onClick="get_data('subcategory')" data-toggle="tooltip" data-placement="bottom"> 
                 {{ management_subcategory_btn }}
             </button>
         </div>
 
         <div class="col-2" id="">
-            <button type="button" class="btn btn-lg btn-block btn-secondary" onClick="get_products()" data-toggle="tooltip" data-placement="bottom" > 
+            <button type="button" class="btn btn-lg btn-block btn-secondary" onClick="get_data('products')" data-toggle="tooltip" data-placement="bottom" > 
                 {{ management_products_btn }}
             </button>
         </div>
 
         <div class="col-2" id="">
-            <button type="button" class="btn btn-lg btn-block btn-secondary" onClick="" data-toggle="tooltip" data-placement="bottom" > 
+            <button type="button" class="btn btn-lg btn-block btn-secondary" onClick="get_data('abo')" data-toggle="tooltip" data-placement="bottom" > 
                 {{ management_abo_btn }}
             </button>
         </div>
@@ -58,7 +58,7 @@
 
     <!-- tables -->
 
-    <div class="hidden" id="tablesSection">
+    <div class="" id="tablesSection">
         <hr class="py-2">
 
         <!-- table name -->
@@ -80,11 +80,11 @@
 
         </div>
 
-        <!-- table + sign -->
+        <!-- table '+'' sign -->
         <div class="row" style="margin-bottom:100px;">
         
             <div class="col-12 text-center" id="createNewTableRow">
-                <i class='table-add fa-solid fa-circle-plus fa-xl'></i>
+                <i class='table-add-inactive fa-solid fa-circle-plus fa-xl' id="plusSign"></i>
             </div>
             <div class="col-6 text-center hidden" id="uploadNewRows">
                 <i class='fa-solid fa-cloud fa-xl table-upload'></i>
@@ -111,6 +111,274 @@
 
     // create status variable to track current table type
     var tbl_type = null;
+
+    // save table meta info (cols order, mapping & dropdown)
+    var cols = []; // --> db names
+    var n_cols = null;
+    var col_names = []; // --> display names
+    var dropdown = {}; // --> dropdown columns & their option
+    const non_editable = ['id', 'date', 'margin', 'update_date'];
+    const special_handling = ['cycle_type'];
+
+
+    // table creation
+    function create_dropdown_element(available_options, row_value = "", col="") {
+        /* Creates a dropdown menu html element
+        
+        Creates an 'select' html element and 
+        fills it with all possible options.
+        If the row value fits one of the options
+        it sets the option as selected.
+
+        params:
+        -------
+        available_options : object
+            json-object containing the options.
+            The object keys are the <option values>
+            and the object values are the display
+            texts.
+                Format: {
+                    'option value':'display name',
+                    'option value':'display name',
+                    ...
+                }
+        row_value : str | int, optional
+            The row value. It is basically the database
+            entry (aka selection of the user) and gets
+            compared to the available_option keys.
+            If one fits, it gets selected.
+            (default is "")
+        col : str, optional
+            Name of the column.
+            (default is "")
+
+        returns:
+        --------
+        html element
+        
+        */
+
+        // build dropdown menu element
+        var dpdwn = document.createElement('select');
+        dpdwn.classList.add("form-control", "form-control-sm");
+
+        // for each option, build a tag
+        for (var o = 0; o < Object.keys(available_options).length; o++) {
+
+            // get key & value (aka text) of the current element
+            var option_key = Object.keys(available_options)[o];
+            var option_text = available_options[option_key];
+
+            // create option & add name
+            var dp_option = document.createElement('option');
+            dp_option.innerHTML = option_text;
+            dp_option.value = option_key;
+
+            // add to dropdown menug
+            dpdwn.appendChild(dp_option);
+
+            // should the just added option be selected?
+            var is_new = true;
+            // add 'select' mark (if key == db entry)
+            if (option_key.toString() == row_value.toString()) {
+                dpdwn.selectedIndex = o;
+                is_new = false;
+            };
+
+            /*
+            read the values with the following:
+                $(select).val() --> returns value
+                $(select :selected).text() --> returns text of selected item
+
+            */
+
+            // add event listener based on column
+            if (col == "cycle_type") { 
+                if (!is_new) { 
+                    dpdwn.setAttribute("onChange", "process_weekday(this, true)");
+                }
+                else {
+                    dpdwn.setAttribute("onChange", "process_weekday(this, false)");
+                }; 
+            }
+            else { if (!is_new) { dpdwn.setAttribute("onChange", "value_changed(this)");};};
+            
+
+            
+
+        };
+
+        return dpdwn
+
+    };
+
+    function create_table_row(row_data = {}, row_idx = -99) {
+        /* Creates one table row
+
+        Based on the passed data, the row is
+        either a row filled with content
+        or a empty row.
+
+        CAUTION:
+        This function uses the 'state' variables
+            - cols
+            - n_cols
+            - col_names
+            - dropdown
+        which get filled as soon the table creation
+        process is started!
+
+        params:
+        -------
+        row_data : json-object, optional
+            Json-object containing the data of
+            the row.
+            If it is an empty json-object the
+            algorithmn produces a empty row.
+            (default is { })
+                Format: {
+                    'col-name':value,
+                    'col-name':value,
+                    ...
+                }
+        row_idx : int, optional
+            The row idx to use for the coordinates.
+            (default is -99)
+            
+        returns:
+        --------
+        html element
+            The html table row
+
+        */
+
+        // check if the row_data is empty or not
+        const contains_data = !$.isEmptyObject(row_data);
+
+        // create dropdow_columns out of the dropdown keys
+        const dropdown_columns = Object.keys(dropdown);
+        
+        
+        // create table row
+        var tr = document.createElement('tr');
+
+        
+        // create cells
+        for (var c = 0; c < cols.length; c++) {
+
+            // grab current col stats for easier access
+            var col = cols[c]; // --> column name (raw)
+            var row_value = ""; // --> db entry (display text for cell input)
+            var is_editable = false; // --> new row editable?
+            var is_new = false; // --> is the row for new content?
+
+            // check if the columns should be editable
+            if (!non_editable.includes(col)) { is_editable = true; };
+
+            // set the column's value based on the current column
+            var row_value = "";
+            if (contains_data) { row_value = row_data[col];}
+            else { 
+                
+                // check if row should be editable
+                if (!is_editable) { row_value = "{{ management_auto_text }}"; }
+
+                // add the new-entry (cause the row has no data) class
+                tr.classList.add("new-entry");
+                is_new = true;
+
+            };
+
+
+            // create table cell (first column will be bold)
+            if (c == 0) { var cell = document.createElement('th'); }
+            else { var cell = document.createElement('td'); };
+
+            // differenciate between dropdown column or normal columns
+            // dropdown
+            if (dropdown_columns.includes(col)) {
+
+                // grab dropdown options for that column
+                var available_options = dropdown[col];
+            
+                // create and add the dropdown element
+                cell.appendChild(
+                    create_dropdown_element(available_options, row_value, col)
+                    );
+
+            }
+            // normal
+            else  {
+
+                // editable?
+                if (is_editable) { 
+
+                    // add editable
+                    cell.setAttribute('contenteditable', "true"); 
+
+                    // add event listener (only for update! aka for none-new lines)
+                    if (!is_new) {cell.setAttribute("oninput", "value_changed(this)");};
+
+                };
+
+                // add value (aka display text of cell)
+                cell.innerHTML = row_value;
+            };
+            
+            // add coordinates
+            cell.classList.add("col_" + c.toString(), "row_" + row_idx.toString());
+
+            // append to table-row
+            tr.appendChild(cell);
+
+        };
+
+
+        // create and add ui-buttons
+        // abo fetching for 'customers' table on customer id (--> shortcut)
+        if (tbl_type == "customers") {
+
+            var th_shortcut = document.createElement('td');
+            th_shortcut.classList.add("col_shortcut", "row_shortcut", "text-center");
+
+            // set display text based on state of 'is_new'
+            if (is_new) { th_shortcut.innerHTML = ""; }
+            else { 
+                
+                // create button
+                var btn = document.createElement('button');
+                btn.classList.add("btn", "btn-sm", "btn-info");
+                btn.setAttribute(
+                    "onClick", 
+                    "get_data('abo', filter_type = 'customer', what = get_id(this), amount = null)"
+                );
+                btn.innerHTML = "{{ managment_abo_btn_label }}"
+                
+                th_shortcut.appendChild(btn);
+            };
+
+            // append
+            tr.appendChild(th_shortcut);
+
+        };
+
+        // add row-remove button
+        var th_remove = document.createElement('td');
+        th_remove.innerHTML = "<i class='fa-solid fa-circle-minus fa-lg table-remove'></i>";
+        th_remove.classList.add("col_remover", "row_remover", "text-center");
+
+        // add confirm on change button
+        var th_check = document.createElement('td');
+        th_check.innerHTML = "<i class='fa-solid fa-circle-check fa-lg table-check-inactive'></i>";
+        th_check.classList.add("col_updater", "row_updater", "text-center");
+
+        // add to row
+        tr.appendChild(th_remove);
+        tr.appendChild(th_check);
+
+        return tr
+
+    };
 
     function create_tbl_head(cols, col_names) {
         /* Creates the table head 
@@ -196,14 +464,11 @@
         return tblh
     };
 
-    function create_tbl_body(cols, rows) {
+    function create_tbl_body(rows) {
         /* creates the table body
         
         params:
         -------
-        cols : array
-            The column orderings (original
-            column names, not the display names!)
         rows : array
             Array of json-objects.
                 Format: [
@@ -217,15 +482,12 @@
                     },
                     ...
                 ]
-
+        
         returns:
         --------
         html element
         
         */
-
-        // CAUTION: TBD: für products müssen wir an der stelle der categories
-        // ein dropdown menü einbauen.
 
         // create tbody
         var tbody = document.createElement('tbody');
@@ -233,74 +495,17 @@
         // iterate through data
         for (var r = 0; r < rows.length; r++) {
 
-            // create table row
-            var tr = document.createElement('tr');
-
-            // iterate through the column ordering
-            for (var c = 0; c < cols.length; c++) {
-
-                // create table cell
-                if (c == 0) { var th = document.createElement('th'); }
-                else { var th = document.createElement('td'); };
-
-                // editable?
-                if (!["id", "date"].includes(cols[c])) { 
-
-                    // add editable
-                    th.setAttribute('contenteditable', "true"); 
-                    
-                    // add event listener
-                    th.setAttribute("oninput", "value_changed(this)");
-                
-                };
-                
-                // add value
-                th.innerHTML = rows[r][cols[c]];
-
-                // add coordinates
-                th.classList.add("col_" + c.toString(), "row_" + r.toString());
-
-                // append to table-row
-                tr.appendChild(th);
-
-            };
-
-            // set special space for abo fetching based
-            // on customer id (--> shortcut)
-            if (tbl_type == "customers") {
-
-                var th_shortcut = document.createElement('td');
-                th_shortcut.innerHTML = "<button class='btn btn-sm btn-info' onClick='fetch_consumer_abo(this)'> {{ managment_abo_btn_label }}</button>";
-                th_shortcut.classList.add("col_shortcut", "row_shortcut", "text-center");
-
-                // append
-                tr.appendChild(th_shortcut);
-
-            };
-
-            // create the remove button
-            var th_remove = document.createElement('td');
-            th_remove.innerHTML = "<i class='fa-solid fa-circle-minus fa-lg table-remove'></i>";
-            th_remove.classList.add("col_remover", "row_remover", "text-center");
-
-            // create the update button (hidden until onchange triggered!)
-            var th_check = document.createElement('td');
-            th_check.innerHTML = "<i class='fa-solid fa-circle-check fa-lg table-check-inactive'></i>";
-            th_check.classList.add("col_updater", "row_updater", "text-center");
-
-            // add to row
-            tr.appendChild(th_remove);
-            tr.appendChild(th_check);
-
             // append table row to table body
-            tbody.appendChild(tr);
+            tbody.appendChild(
+                create_table_row(row_data = rows[r], row_idx = r)
+            );
 
         };
 
         return tbody
 
 
-    }
+    };
 
     function table_from_dict(data) {
         /* creates the table from a array of jsons
@@ -320,7 +525,8 @@
                         ...
                     ],
                     'order':[],
-                    'mapping':[]
+                    'mapping':[],
+                    dropdown: {}
                 }
         
         returns:
@@ -331,22 +537,29 @@
 
         // split the data into its elements
         const tbl_data = data.data;
-        const cols = data.order;
-        const n_cols = cols.length;
-        const col_names = data.mapping;
+        cols = data.order;
+        n_cols = cols.length;
+        col_names = data.mapping;
+
+        // dropdown in the keys?
+        if (Object.keys(data).includes('dropdown')) {
+            dropdown = data.dropdown;
+        };
+
 
         // create table element
         var tbl = document.createElement('table');
         tbl.classList.add("table", "table-hover", "table-sm");
         tbl.id = "displayTable";
 
+        
         // create thead element
         const tblh = create_tbl_head(cols, col_names);
         tbl.appendChild(tblh);
 
 
         // create table body
-        const tbody = create_tbl_body(cols, tbl_data);
+        const tbody = create_tbl_body(tbl_data);
         tbl.appendChild(tbody);
 
 
@@ -354,59 +567,144 @@
 
     };
 
-    function parse_row_content(row) {
-        /* parses the row content
+    
+
+    // table manipulators & getters
+    function get_id(element) {
+        /* grabs the id of the current row */
+
+        // grab parent (row)
+        var parent = $(element).parents('tr');
+
+        // grab children
+        var children = parent.children();
+
+        // grab index of col == "id"
+        var idx = cols.indexOf('id');
+
+        // get child and return the id
+        return children.eq(idx).text()
+
+    };
+
+    function value_changed(element) {
+        /* event handler for cell changes */
         
-        This function parses the row values.
-        
+        // activate active
+        var updater = $(element).parents('tr').find('.table-check-inactive');
+        updater.removeClass('table-check-inactive');
+        updater.addClass('table-check');
+
+        return
+    };
+
+    function process_weekday(element, run_change=true) {
+        /* Listens to the 'cycle_type' and changes inputs
+
+        The abo table is somewhat special.
+        If the cycle_type is 'day' we have to the
+        'interval' to a dropdown with the days as
+        input.
+        This function changes these elements.
+
+        It also calls the 'value_changed()' process.
+
         params:
         -------
-        cell : html element
-            The html element
+        element : html element
+            The html element on which the function is
+            attatched to 'onChange'.
+                Note: This element needs to be attached
+                      to the 'weekday'.
+        run_change : bool, optional
+            if true, the 'value_changed()' function will
+            be invoked after changing the element.
+            (default is true)
         
         returns:
         --------
-        json object
-            The row values
-                Format: {
-                        'colname':'value',
-                        'colname':'value',
-                        ...
-                    }    
-        
+        null
+
         */
 
-        // get tr
-        var tr = row;
+        // create jquery
+        var selector = $(element);
 
-        // get cells
-        var cells = tr.children();
+        // get the row
+        var row = selector.parents('tr');
 
-        // get table column names
-        var cols = []
+        // get the value of the selected child
+        var selected_value = selector.children().filter(":selected").val();
 
-        tr.parents('table').find('thead').find('th').each(function() {
-            
-            // get headers value
-            var headers = $(this).attr('headers');
+        // get the idx of the 'invertal' column
+        var idx = cols.indexOf('interval');
 
-            if (!['update_button', 'remove_button', 'shortcut_button', 'upload_button'].includes(headers)) {
-                cols.push($(this).attr('headers'));
+        // get the interval column
+        var interval = row.children().eq(idx);
+
+        // get the interval column value
+        var interval_value = 0;
+        if (interval.children().length == 1) {
+
+                // test it its a select tag
+                if (interval.children().first().is("select")) {
+
+                    // get selected value
+                    interval_value = interval.children().first().children().filter(":selected").val();
+                };
+
+            }
+        else { 
+
+            // check if interval_value is not the management_auto_text
+            if (interval_value == "{{ management_auto_text }}") {
+
+                interval_value = 0;
+            }
+            else {
+
+                interval_value = interval.text(); 
+
             };
-        });
+        };
 
-        // get data
-        var data = {}
+        // empty interval
+        interval.empty();
 
-        // get table row values
-        cols.forEach(function (col, c) {
+        // process the interval column
+        if (selected_value == "day") {
+
+            // create dropdown element, and attach to interval
+            interval.append(
+                create_dropdown_element(dropdown['weekday_interval'], interval_value, "interval")
+                );
+
+        }
+        else if (selected_value == "interval") {
+
+            // empty text
+            interval.text(interval_value);
+
+        }
+        else {
+
+            // set text to 'auto' and make cell not editable
+            interval.attr("contenteditable", "false");
+            interval.text("{{ management_auto_text }}");
             
-            // add data
-            data[col] = cells.eq(c).text();
+        };
 
-        });
 
-        return data
+        // run change?
+        if (run_change) {
+
+            // run changed function
+            value_changed(interval);
+
+        };
+        
+        return
+
     };
 
     function detach_row(cell) {
@@ -447,35 +745,112 @@
         return null
 
     };
-
-    function value_changed(element) {
-        /* event handler for cell changes */
+    
+    function parse_row_content(row) {
+        /* parses the row content
         
-        // activate active
-        var updater = $(element).parents('tr').find('.table-check-inactive');
-        updater.removeClass('table-check-inactive');
-        updater.addClass('table-check');
-
-        return
-    };
-
-    function get_costumers(filter_type = null, what = null, amount = null) {
-        /* fetches consumer data and populates the table 
+        This function parses the row values.
         
         params:
         -------
-        filter_type : str | null
+        row : html element
+            The html element
+        
+        returns:
+        --------
+        json object
+            The row values
+                Format: {
+                        'colname':'value',
+                        'colname':'value',
+                        ...
+                    }    
+        
+        */
+
+        // get tr
+        var tr = row;
+
+        // get cells
+        var cells = tr.children();
+
+        // get table column names
+        var cols = []
+
+        tr.parents('table').find('thead').find('th').each(function() {
+            
+            // get headers value
+            var headers = $(this).attr('headers');
+
+            if (!['update_button', 'remove_button', 'shortcut_button', 'upload_button'].includes(headers)) {
+                cols.push($(this).attr('headers'));
+            };
+        });
+
+        // get data
+        var data = {}
+
+        // get table row values
+        cols.forEach(function (col, c) {
+
+            // grab cell
+            var cell = cells.eq(c);
+
+            // check if the cell has children. if so, its probably a select tag
+            if (cell.children().length == 1) {
+
+                // test it its a select tag
+                if (cell.children().first().is("select")) {
+
+                    // get selected value
+                    data[col] = cell.children().first().children().filter(":selected").val();
+                }
+            }
+
+            // just add data
+            else { data[col] = cell.text(); };
+            
+
+        });
+
+        return data
+    };
+
+
+    // data fetching
+    function get_data(fetch_table = "customers", filter_type = null, what = null, amount = null) {
+        /* fetches db data and creates tables 
+        
+        params:
+        -------
+        fetch_table : str, optional
+            Indicates the data to get.
+            (default is 'customers')
+                Options: { 'customers', 'category',
+                           'subcategory', 'products',
+                           'abo' 
+                         }
+        filter_type : str | null, optional
         Indicates the type of filter to apply.
-            Options: { None, 'customer', 
-                       'town' }
-                    None: Fetches data by id
-                          interval.
-                    'customer': Searches for
-                                a singel customer.
-                    'town': Searches for all
-                            customers in one town.
-        what : str | null:
+        (default is null)
+            Caution: only available for 'customers',
+                     'products' & 'abos'
+            Options: 
+                for 'customers': { None, 'customer', 
+                                   'town' }
+                                None: Fetches data by id
+                                    interval.
+                                'customer': Searches for
+                                            a singel customer.
+                                'town': Searches for all
+                                        customers in one town.
+                for 'products':
+                for 'abo':
+        what : str | null, optional
             Indicates the query phrase.
+            (default is null)
+                Caution: only available for 'customers',
+                     'products' & 'abos'.
                 Example: if null, the string indicates
                         the interval of ids.
         amount : int | null, optional
@@ -485,99 +860,7 @@
         returns:
         --------
         null
-    
-        */
-
-        // destroy previous content
-        $(content_placeholder).empty()
-        table_name.innerHTML = "";
-        $('#createNewTableRow').addClass("col-12");
-        $('#createNewTableRow').removeClass("col-6");
-        $('#uploadNewRows').addClass("hidden");
-
-        // create endpoint
-        const URL = "{{ url_for('to_api', ressource='customers/get') }}";
-
-        /// get data
-        $.ajax({
-            method: 'POST',
-            url: URL,
-            data: JSON.stringify({
-                filter_type:filter_type,
-                what:what,
-                amount:amount,
-            }),
-            contentType: "application/json",
-        }).done(function (response) {
-
-            // success, process the tbl data
-            if (response.success) {
-
-                // set tbl type
-                tbl_type = "customers";
-
-                // set tbl name
-                table_name.innerHTML = "Customers";
-
-                // create the table to add
-                const tbl = table_from_dict(response.data)
-
-                // add to placholder
-                content_placeholder.appendChild(tbl);
-
-                // add the DataTable function
-                $('#displayTable').DataTable({
-                    'pagination':true,
-                    'pagingType':"full_numbers",
-                    'ordering':true,
-                    'searching':true,
-                    'bInfo' : false,
-                    'scrollX':true,
-
-                });
-                $('.dataTables_length').addClass('bs-select');
-                
-                // remove hidden
-                table_section.classList.remove("hidden");
-
-            }
-            else {
-
-                console.log(response.error);
-                
-                Toastify({
-                        text: response.error,
-                        duration: 3000,
-                        position:'right',
-                        gravity:'top',
-                        style: {
-                            background: "linear-gradient(to right, #e74c3c, #c0392b)",
-                        },
-                    }).showToast();
-
-            };
-
-        });
-
-    };
-
-    function get_categories(amount = null, category_type="category") {
-        /* fetches category data and populates the table 
         
-        params:
-        -------
-        amount : int | null, optional
-            The number of entries to query.
-            (default is null).
-        category_type : str, optional
-            The category name.
-            (default is 'category')
-                Options: { 'category', 'subcategory'}
-
-        returns:
-        --------
-        null
-    
         */
 
         // destroy previous content
@@ -589,118 +872,33 @@
 
         // create endpoint
         var URL = null;
-        if (category_type == "category") { URL = "{{ url_for('to_api', ressource='category/get') }}"; }
-        else { URL = "{{ url_for('to_api', ressource='subcategory/get') }}";};
+        if (fetch_table == "customers") { URL = "{{ url_for('to_api', ressource='customers/get') }}";}
+        else if (fetch_table == "category") { URL = "{{ url_for('to_api', ressource='category/get') }}";}
+        else if (fetch_table == "subcategory") { URL = "{{ url_for('to_api', ressource='subcategory/get') }}";}
+        else if (fetch_table == "products") { URL = "{{ url_for('to_api', ressource='products/get') }}";}
+        else if (fetch_table == "abo") { URL = "{{ url_for('to_api', ressource='abo/get') }}";};
 
-        /// get data
-        $.ajax({
-            method: 'POST',
-            url: URL,
-            data: JSON.stringify({
+        // create payload
+        var payload = {};
+
+        if (fetch_table == "category" || fetch_table == "subcategory") {
+            payload = JSON.stringify({
                 amount:amount,
-            }),
-            contentType: "application/json",
-        }).done(function (response) {
-
-            // success, process the tbl data
-            if (response.success) {
-                
-                // set tbl type
-                tbl_type = category_type;
-
-                // set tbl name
-                table_name.innerHTML = category_type.charAt(0).toUpperCase() + category_type.slice(1);
-
-                // create the table to add
-                const tbl = table_from_dict(response.data)
-
-                // add to placholder
-                content_placeholder.appendChild(tbl);
-
-                // add the DataTable function
-                $('#displayTable').DataTable({
-                    'pagination':true,
-                    'pagingType':"full_numbers",
-                    'ordering':true,
-                    'searching':true,
-                    'bInfo' : false,
-                    'scrollX':true,
-
-                });
-                $('.dataTables_length').addClass('bs-select');
-                
-                // remove hidden
-                table_section.classList.remove("hidden");
-
+            });
             }
-            else {
-
-                console.log(response.error);
-                
-                Toastify({
-                        text: response.error,
-                        duration: 3000,
-                        position:'right',
-                        gravity:'top',
-                        style: {
-                            background: "linear-gradient(to right, #e74c3c, #c0392b)",
-                        },
-                    }).showToast();
-
-            };
-
-        });
-    };
-
-    function get_products(filter_type = null, what = null, amount = null) {
-        /* fetches consumer data and populates the table 
-        
-        params:
-        -------
-        filter_type : str | null
-        Indicates the type of filter to apply.
-            Options: { None, 'product', 
-                       'category' }
-                    None: Fetches data by id
-                          interval.
-                    'product': Searches for
-                                a singel product.
-                    'category': Searches for all
-                                products in one
-                                category.
-        what : str | null:
-            Indicates the query phrase.
-                Example: if null, the string indicates
-                        the interval of ids.
-        amount : int | null, optional
-            The number of entries to query.
-            (default is null).
-
-        returns:
-        --------
-        null
-    
-        */
-
-        // destroy previous content
-        $(content_placeholder).empty()
-        table_name.innerHTML = "";
-        $('#createNewTableRow').addClass("col-12");
-        $('#createNewTableRow').removeClass("col-6");
-        $('#uploadNewRows').addClass("hidden");
-
-        // create endpoint
-        const URL = "{{ url_for('to_api', ressource='products/get') }}";
-
-        /// get data
-        $.ajax({
-            method: 'POST',
-            url: URL,
-            data: JSON.stringify({
+        else {
+            payload = JSON.stringify({
                 filter_type:filter_type,
                 what:what,
                 amount:amount,
-            }),
+            })
+        };
+
+        // ajax
+        $.ajax({
+            method: 'POST',
+            url: URL,
+            data: payload,
             contentType: "application/json",
         }).done(function (response) {
 
@@ -708,16 +906,20 @@
             if (response.success) {
 
                 // set tbl type
-                tbl_type = "products";
+                tbl_type = fetch_table;
 
                 // set tbl name
-                table_name.innerHTML = "Products";
+                table_name.innerHTML = fetch_table.charAt(0).toUpperCase() + fetch_table.slice(1);
 
                 // create the table to add
                 const tbl = table_from_dict(response.data)
 
                 // add to placholder
                 content_placeholder.appendChild(tbl);
+
+                // apply post weekday cleaning
+                if (tbl_type == "abo") { run_abo_cleaning(tbl)};
+                
 
                 // add the DataTable function
                 $('#displayTable').DataTable({
@@ -731,8 +933,11 @@
                 });
                 $('.dataTables_length').addClass('bs-select');
                 
-                // remove hidden
-                table_section.classList.remove("hidden");
+                // make table-add to active
+                $('#plusSign').addClass("table-add");
+                $('#plusSign').removeClass("table-add-inactive");
+
+                
 
             }
             else {
@@ -752,10 +957,38 @@
             };
 
         });
-    }
-
     
+    };
 
+
+    // cleaners
+    function run_abo_cleaning(table) {
+        /* Cleanes the abo table */
+
+        // turn into jquery
+        var tbl = $(table);
+
+        // get every row
+        var rows = tbl.find('tbody').find('tr');
+
+        // get the idx of the 'cycle_type' column
+        var cycle_idx = cols.indexOf('cycle_type');
+
+        // iterate through each row, grab the idx and process
+        // the 'process_weekday' function
+        rows.each(function() {
+
+            // get the correct child
+            var cell = $(this).children().eq(cycle_idx);
+
+            // get the first child of the cell & process it
+            process_weekday(cell.children().first(), false);
+
+        });
+
+    };
+
+    // button onchange event listener
     // delete db entry / table row
     $('#contentTablePlaceholder').on("click", '.table-remove', function () {
         
@@ -778,6 +1011,12 @@
             }
             else if (tbl_type == "subcategory") {
                 target_url = "{{ url_for('to_api', ressource='subcategory/delete') }}";
+            }
+            else if (tbl_type == "products") {
+                target_url = "{{ url_for('to_api', ressource='products/delete') }}";
+            }
+            else if (tbl_type == "abo") {
+                target_url = "{{ url_for('to_api', ressource='abo/delete') }}";
             };
 
             // parse row content
@@ -850,8 +1089,15 @@
         }
         else if (tbl_type == "subcategory") {
             target_url = "{{ url_for('to_api', ressource='subcategory/update') }}";
+        }
+        else if (tbl_type == "products") {
+                target_url = "{{ url_for('to_api', ressource='products/update') }}";
+        }
+        else if (tbl_type == "abo") {
+                target_url = "{{ url_for('to_api', ressource='abo/update') }}";
         };
         
+
 
         // make ajax call
         $.ajax({
@@ -885,7 +1131,6 @@
             };
 
         });
-
         
 
     });
@@ -913,6 +1158,12 @@
         }
         else if (tbl_type == "subcategory") {
             target_url = "{{ url_for('to_api', ressource='subcategory/add') }}";
+        }
+        else if (tbl_type == "products") {
+                target_url = "{{ url_for('to_api', ressource='products/add') }}";
+        }
+        else if (tbl_type == "abo") {
+                target_url = "{{ url_for('to_api', ressource='abo/add') }}";
         };
 
         // make ajax call
@@ -971,91 +1222,10 @@
         // get the table
         var tbl = $('#contentTablePlaceholder').find('table');
 
-        // get col 'headers' names
-        // CAUTION! the mds table scrollX copies your table. so you have to actually
-        // select the last one (cause this is the data table...)
-        var cols = []
-        tbl.find('thead').last().find('th').each(function() {
-            cols.push($(this).attr('headers'));
-        });
-
-        // get amount of columns
-        var n_cols = cols.length;
-
-        if (tbl_type == "customers") { n_cols = n_cols -3 }
-        else { n_cols = n_cols -2 };
-
-
-        // generate empty row
-        var tr = document.createElement('tr');
-
-        // add mark that the row is new
-        tr.classList.add("new-entry");
-
-        // generate content cells
-        for (var c=0; c < n_cols; c++) {
-
-            // create empty cell element
-            var cell = null;
-
-            // create table cell
-            if (c == 0) { var th = document.createElement('th'); }
-            else { var th = document.createElement('td'); };
-
-            // editable?
-            if (!["id", "date"].includes(cols[c])) { 
-
-                // add editable
-                th.setAttribute('contenteditable', "true"); 
-
-                // CAUTION: do not end event listener for on change
-                // cause the user has to refresh before editing newly
-                // created users
-                //th.setAttribute("oninput", "value_changed(this)");
-
-                // add the html text
-                th.innerHTML = "";
-
-            }
-            else {
-
-                // 'add auto text'
-                th.innerHTML = "{{ management_auto_text }}";
-            };
-
-            // append
-            tr.appendChild(th);
-
-        };
-
-        // set special space for abo fetching based (but without the button)
-        if (tbl_type == "customers") {
-
-            var th_shortcut = document.createElement('td');
-            th_shortcut.innerHTML = "";
-            th_shortcut.classList.add("col_shortcut", "row_shortcut", "text-center");
-
-            // append
-            tr.appendChild(th_shortcut);
-
-        };
-
-        // create the remove button
-        var th_remove = document.createElement('td');
-        th_remove.innerHTML = "<i class='fa-solid fa-circle-minus fa-lg table-remove'></i>";
-        th_remove.classList.add("col_remover", "row_remover", "text-center");
-
-        // create the 'upload/create' button
-        var th_upload = document.createElement('td');
-        //th_upload.innerHTML = "<i class='fa-solid fa-cloud fa-lg table-upload'></i>";
-        th_upload.classList.add("col_uploader", "row_uploader", "text-center");
-
-        // add to row
-        tr.appendChild(th_remove);
-        tr.appendChild(th_upload);
-
-        // attach
-        tbl.children('tbody').append(tr);
+        // create empty row and attach
+        tbl.children('tbody').append(
+            create_table_row()
+        )
 
         // make the upload button visible
         $('#createNewTableRow').removeClass("col-12");
@@ -1064,6 +1234,7 @@
 
 
     });
+
 
 
 

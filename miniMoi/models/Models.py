@@ -166,6 +166,9 @@ class Abo(base):
     product : int
         Product id.
             ForeignKey: Products -> id
+    subcategory: int
+        subcategory id.
+            ForeignKey: Subcategory -> id
     quantity : int
         The quantity of the product in the abo.
     

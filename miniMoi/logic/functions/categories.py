@@ -86,8 +86,22 @@ def get(
     # limit?
     if amount is not None: result = result.limit(amount)
 
+    #region 'create empty result return'
+    intendedOrder = [
+            'id', 'name'
+        ]
+
+    emptyResult = {
+        'data':[],
+        'order':intendedOrder,
+        'mapping':[mappedCols[col] for col in intendedOrder],
+        'category_type':category_type
+    }
+
+    #endregion
+
     # result is None?
-    if result.first() is None: return{'success':True, 'error':"", 'data':{'data':[], 'category_type':category_type}}
+    if result.first() is None: return{'success':True, 'error':"", 'data':emptyResult}
 
     # turn into list
     fetched = []
@@ -95,26 +109,16 @@ def get(
 
         fetched.append({col.name:getattr(row, col.name) for col in row.__table__.columns})
 
-    if len(fetched) == 0: return{'success':True, 'error':"", 'data':{'data':[], 'category_type':category_type}}
+    if len(fetched) == 0: return{'success':True, 'error':"", 'data':emptyResult}
 
-    # create order
-    ordering = []
-    mapping = []
-
-    for col in fetched[0].keys():
-        ordering.append(col)
-        mapping.append(mappedCols[col])
+    # add fetched to empty result
+    emptyResult.update({'data':fetched})
         
     # turn into dict & return
     return {
         'success':True,
         'error':"",
-        'data':{
-            'data':fetched,
-            'category_type':category_type,
-            'order':ordering,
-            'mapping':mapping
-        }
+        'data':emptyResult
     }
 
 def update(
