@@ -227,6 +227,7 @@ def update(product_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAG
     # check if the list is not empty
     if not bool(data): return {'success':False, 'error':errors['noEntry'], 'data':{}}
 
+    #region 'parse input'
     # try to parse numeric values
     try: category_id = int(data['category'])
     except ValueError as e: return {
@@ -238,27 +239,27 @@ def update(product_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAG
             'data':{}
         }
 
+    # try to parse float values
     float_values = {}
     for val in ['purchase_price', 'selling_price']:
-        
-        # get fallback
-        tmp = data[val]
 
-        # wrong numerical separator?
-        if "," in data[val]: tmp = ".".join(tmp.split(","))
 
-        # try to parse to float
-        try: tmp = float(tmp)
-        except ValueError as e: return {
-            'success':False,
-            'error':errors['wrongType'].format(
-                var = translation['column_mapping']['products'][val],
-                dtype = 'float',
-            ),
-            'data':{}
-        }
+        # check if the value is already a float
+        if isinstance(data[val], float): float_values.update({val:data[val]})
+        else:
 
-        float_values.update({val:tmp})
+            # try to parse to float
+            try: float_values.update({val:float(".".join(data[val].split(",")))})
+            except ValueError as e: return {
+                'success':False,
+                'error':errors['wrongType'].format(
+                    var = translation['column_mapping']['products'][val],
+                    dtype = 'float',
+                ),
+                'data':{}
+            }
+
+    #endregion
 
     # create a session
     session = Session()
@@ -379,7 +380,6 @@ def add(products:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
 
     """
 
-    print(products)
 
     # get language
     try: translation = language_files[language]
@@ -392,38 +392,6 @@ def add(products:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
     if not bool(products): return {'success':False, 'error':errors['noEntry'].format(
         element = "product"
     ), 'data':{}}
-
-    # turn into pd.DataFrame
-    df = pd.DataFrame(products)
-
-    print(df)
-
-    # try to convert the numeric values
-    try: df.loc[:, 'category'] = df.loc[:, 'category'].astype(int)
-    except Exception as e: return {
-            'success':False,
-            'error':errors['wrongType'].format(
-                var = translation['column_mapping']['products']['category'],
-                dtype = 'int',
-            ),
-            'data':{}
-        }
-
-    for val in ['selling_price', 'purchase_price']:
-    
-        try: df.loc[:, val] = df.loc[:, val].apply(lambda x: ".".join(x.split(","))).astype(float)
-        except Exception as e: return {
-            'success':False,
-            'error':errors['wrongType'].format(
-                var = translation['column_mapping']['products'][val],
-                dtype = 'float',
-            ),
-            'data':{}
-        }
-    
-
-    # calculate margin
-    df['margin'] = ((df['selling_price'] - df['purchase_price']) / df['purchase_price']).round(3)
 
     # create session
     session = Session()
@@ -441,32 +409,75 @@ def add(products:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
     toAdd = []
 
     # create the new products
-    for i, product in df.iterrows():
+    for product in products:
+
+        #region 'parse input values'
+        # int values parsing
+        try: category = int(product['category'])
+        except Exception as e: return {
+                'success':False,
+                'error':errors['wrongType'].format(
+                    var = translation['column_mapping']['products']['category'],
+                    dtype = 'int',
+                ),
+                'data':{}
+            }
+
+        # float parsing
+        float_values = {}
+        for val in ['selling_price', 'purchase_price']:
+    
+            # check if all elements are already floats, if not convert them
+            if isinstance(product[val], float): float_values.update({val:product[val]})
+            else:
+
+                try: float_values.update({val: float(".".join(product[val].split(",")))})
+                except ValueError as e: return {
+                    'success':False,
+                    'error':errors['wrongType'].format(
+                        var = translation['column_mapping']['products'][val],
+                        dtype = 'float',
+                    ),
+                    'data':{}
+            }
+    
+
+        # calculate margin
+        float_values.update({
+            'margin': round(
+                (float_values['selling_price'] - float_values['purchase_price']) / float_values['purchase_price'],
+                3
+            )
+        })
+
+        #endregion
+
+        #region 'check if selected category is available'
+        if not category in availableCategories:
+
+            # close session
+            session.close()
+
+            return {
+                'success':False,
+                'error':errors['wrongCategory'].format(
+                    p = str(product['name']),
+                    c = str(product['category'])
+                ),
+                'data':{}
+            }
+
+        #endregion
 
         # try to add
         try:
-
-            # check if selected category is available
-            if not product['category'] in availableCategories: 
                 
-                # close session
-                session.close()
-
-                return {
-                    'success':False,
-                    'error':errors['wrongCategory'].format(
-                        p = str(product['name']),
-                        c = str(product['category'])
-                    ),
-                    'data':{}
-                }
-
             toAdd.append(Products(
                 name = product['name'],
-                category = product['category'],
-                purchase_price = product['purchase_price'],
-                selling_price = product['selling_price'],
-                margin = product['margin'],
+                category = category,
+                purchase_price = float_values['purchase_price'],
+                selling_price = float_values['selling_price'],
+                margin = float_values['margin'],
                 store = product['store'],
                 phone = product['phone'] 
             ))
@@ -479,7 +490,6 @@ def add(products:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
             # close the session
             session.close()
 
-            print(product)
 
             return {
                 'success':False, 

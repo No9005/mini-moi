@@ -36,7 +36,7 @@
                 <div class="card-body">
                     <p class="card-text">{{ index_setup }} <a href="{{ url_for('settings') }}">{{ index_setup_link }}</a></p>
                 </div>
-                    <img class="card-img-top" data-src="" alt="Card image cap">
+                    <img class="card-img-top" src="{{ url_for('static', filename='img/settings_screen.png') }}" alt="Card image cap">
                 </div>
             </div>
 
@@ -52,14 +52,14 @@
                 <div class="card mb-4 box-shadow border-0">
                 <div class="card-body">
                     <p class="card-text">{{ index_enter_data|safe }}</p>
-                    <ul>
+                    <ol>
                         <li>{{ index_data_customer|safe }}</li>
                         <li>{{ index_data_categories|safe }}</li>
                         <li>{{ index_data_products|safe }}</li>
                         <li>{{ index_data_abos|safe }}</li>
-                    </ul>
+                    </ol>
                 </div>
-                    <img class="card-img-top" data-src="" alt="Card image cap">
+                    <img class="card-img-top" src="{{ url_for('static', filename='img/management_screen.png') }}" alt="Card image cap">
                 </div>
             </div>
 

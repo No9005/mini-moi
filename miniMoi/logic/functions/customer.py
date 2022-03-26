@@ -250,7 +250,8 @@ def update(customer_id:int, data:dict, language:str = app.config['DEFAULT_LANGUA
         return {'success':False, 'error':errors['notFound'].format(element="customer"), 'data':{}}
 
     try:
-
+        
+        # parse to int
         for col in ['nr', 'approach']:
             try: int(data[col])
             except ValueError as e: return {'success':False, 'error':errors['wrongType'].format(

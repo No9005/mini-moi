@@ -130,7 +130,7 @@ def get(
     if products.first() is None: return {
         'success':False, 
         'error':errors['noElementInDB'].format(
-            element = translation['table_mapping']['products']
+            element = translation['table_mapping']['product']
         ),
         'data':{}
         }
@@ -141,7 +141,7 @@ def get(
     if subcategories.first() is None: return {
         'success':False, 
         'error':errors['noElementInDB'].format(
-            element = translation['table_mapping']['subcategories']
+            element = translation['table_mapping']['subcategory']
         ),
         'data':{}
         }
@@ -181,7 +181,7 @@ def get(
             {
               'id':row.id,
               'customer_id':row.customer_id,
-              'update_date':time.to_string(time.utc_to_local(row.next_delivery), "%Y.%m.%d %H:%M"),
+              'update_date':time.to_string(time.utc_to_local(row.update_date), "%Y.%m.%d %H:%M"),
               'cycle_type':row.cycle_type,
               'interval':row.interval,
               'next_delivery':time.to_string(time.utc_to_local(row.next_delivery), "%Y.%m.%d"),
@@ -281,10 +281,10 @@ def update(abo_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE'],
 
     #region 'parse input'
     # check ints
-    int_values = []
+    int_values = {}
     for val in ['customer_id', 'product', 'subcategory', 'quantity']:
 
-        try: int_values.update({val:int(abo[val])})
+        try: int_values.update({val:int(data[val])})
         except ValueError as e: return {
             'success':False, 
             'error':errors['wrongType'].format(
@@ -314,12 +314,17 @@ def update(abo_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE'],
         }
 
     # parse next_delivery
-    next_delivery = None
+    next_delivery = data['next_delivery']
 
-    if data['next_delivery'] != "":
+    # get 'auto.' in different languages
+    auto = translation['html_text']['/management']['management_auto_text']
+    if next_delivery in ['', 'None', None, auto]: next_delivery = None
+
+    if next_delivery is not None:
+
         try: 
             # parse delivery into correct format
-            next_delivery = "-".join(abo['next_delivery'].split("."))
+            next_delivery = "-".join(next_delivery.split("."))
 
             # parse to datetime
             next_delivery = time.local_to_utc(
@@ -335,13 +340,13 @@ def update(abo_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE'],
     else:
 
         # calculate next delivery based on today
-            today = time.today()
-            next_delivery = time.calculate_next_delivery(
-                date = today,
-                cycle_type = cycle_type,
-                interval = interval,
-                language = language
-            )
+        today = time.today()
+        next_delivery = time.calculate_next_delivery(
+            date = today,
+            cycle_type = cycle_type,
+            interval = interval,
+            language = language
+        )
 
     #endregion
 
@@ -375,9 +380,9 @@ def update(abo_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE'],
         abo.cycle_type = cycle_type
         abo.interval = interval
         abo.next_delivery = next_delivery
-        abo.product = data['product']
-        abo.quantity = int(data['quantity'])
-        abo.subcategory = int(data['subcategory'])
+        abo.product = int_values['product']
+        abo.quantity = int_values['quantity']
+        abo.subcategory = int_values['subcategory']
 
         # commit
         session.commit()
@@ -427,6 +432,7 @@ def add(abos:list, language:str = app.config['DEFAULT_LANGUAGE'], tz = app.confi
         abo for the customer.
             Format: [
                 {
+                    'customer_id':int
                     'cycle_type':str,
                     'interval':int,
                     'product':int,
@@ -458,6 +464,9 @@ def add(abos:list, language:str = app.config['DEFAULT_LANGUAGE'], tz = app.confi
     # get language errorcodes
     errors = translation['error_codes']
 
+    # get translation for the auto. generation in the frontend
+    auto = translation['html_text']['/management']['management_auto_text']
+
     # check if the list is not empty
     if not bool(abos): return {'success':False, 'error':errors['noEntry'].format(
         element = "abo"
@@ -466,6 +475,7 @@ def add(abos:list, language:str = app.config['DEFAULT_LANGUAGE'], tz = app.confi
     # create session
     session = Session()
 
+    #region 'fetch additional info'
     # fetch all available products
     products = pd.read_sql_query(
         session.query(Products).statement,
@@ -483,6 +493,8 @@ def add(abos:list, language:str = app.config['DEFAULT_LANGUAGE'], tz = app.confi
 
     # get unique ids
     availableSubcategory = subcategories['id'].unique().tolist()
+
+    #endregion
 
     # create empty list to store new entries
     toAdd = []
@@ -568,12 +580,13 @@ def add(abos:list, language:str = app.config['DEFAULT_LANGUAGE'], tz = app.confi
                 }     
 
             #region 'parse next delivery'
-            next_delivery = None
+            next_delivery = abo['next_delivery']
+            if next_delivery in ['', 'None', None, auto]: next_delivery = None
 
-            if abo['next_delivery'] != "":
+            if next_delivery is not None:
                 try: 
                     # parse delivery into correct format
-                    next_delivery = "-".join(abo['next_delivery'].split("."))
+                    next_delivery = "-".join(next_delivery.split("."))
 
                     # parse to datetime
                     next_delivery = time.local_to_utc(

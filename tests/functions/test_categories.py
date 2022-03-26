@@ -172,7 +172,12 @@ class TestCategories(unittest.TestCase):
             language = "EN"
         )
 
-        self.assertEqual(result, {'success':True, 'error':"", 'data':{'data':[], 'category_type':"category"}})
+        self.assertEqual(result['data'], {
+            'data':[],
+            'order':["id", "name"],
+            'mapping':["id", "Name"],
+            'category_type':"category"
+        })
 
         #endregion
 

@@ -1,3 +1,12 @@
+v.0.4.10: Updated Unittests. See changelog.
+    Integration tests are needed.
+    Everything else is currently marked as 'nice-to-have':
+        - Reporting tool, to report the last week/month
+          as table and info graphics.
+        - table mass importing from excel/csv files
+        - exporting queried sheets as excel tables
+
+------------ old versions ----------------------------------
 v.0.4.9: Ui with good progress. See changelog.
     The management ui works so far for all but abos.
     This table needs the overhaul based on the json
@@ -12,8 +21,6 @@ v.0.4.9: Ui with good progress. See changelog.
     If everything goes well, I am going to add a basic
     reporting tool too.
 
-
------------- old versions ----------------------------------
 v.0.4.8: Tables. See changelog.
     Still working on the data fetching from the server.
     The basic tables are implemented. Adding & updating

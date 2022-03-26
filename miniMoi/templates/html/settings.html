@@ -57,6 +57,21 @@
 
     </div>
     </div>
+
+    <!-- db backup -->
+    <div class="card mb-4 box-shadow">
+        <div class="card-header">
+            <h4 class="my-0 font-weight-normal">{{ settings_db_backup }}</h4>
+        </div>
+        <div class="card-body">
+            <p class="mt-3 mb-4">{{ settings_db_backup_description|safe }}</p>
+    
+            <button type="button" class="btn btn-lg btn-block btn-warning" onClick="run_backup()"> {{ settings_make_backup }}</button>
+            
+    
+    
+        </div>
+        </div>
     
 
 </div>
@@ -185,6 +200,44 @@
         return
 
     };
+
+    function run_backup() {
+        /* creates a backup of the database */
+
+        $.ajax({
+            type:'POST',
+            url:"{{ url_for('to_api', ressource='system/dbBackup') }}",
+            data: {}
+        }).done(function(response){
+            if (response.success) {
+                
+                Toastify({
+                        text: response.data.msg,
+                        duration: 3000,
+                        position:'right',
+                        gravity:'top',
+                        style: {
+                            background: "linear-gradient(to right, #16a085, #2ecc71)",
+                        },
+                    }).showToast();
+            }
+            else {
+                
+                Toastify({
+                    text: response.error,
+                    duration: 5000,
+                    close: true,
+                    gravity: "top", // `top` or `bottom`
+                    position: "right", // `left`, `center` or `right`
+                    backgroundColor: "linear-gradient(to right, #d9534f, #D1504B)", // alternative: #592220
+                    stopOnFocus: true, // Prevents dismissing of toast on hover
+                    onClick: function(){} // Callback after click
+                }).showToast();
+
+            };
+        });
+
+    }
 
     $(document).ready(function() {
         update_interface();

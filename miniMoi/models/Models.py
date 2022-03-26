@@ -251,7 +251,7 @@ class Products(base):
         distributor
     selling_price : float
         Price upon selling the item.
-    margin : Float
+    margin : float
         Margin in % (--> as decimal)
             Example: .3 = 30%
     store : str

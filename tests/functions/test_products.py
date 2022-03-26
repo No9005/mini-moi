@@ -192,7 +192,18 @@ class TestProducts(unittest.TestCase):
             language = "EN"
         )
 
-        self.assertEqual(result, {'success':True, 'error':"", 'data':{'data':[]}})
+        self.assertEqual(result['data'], {
+            'data':[],
+            'order': [
+                    'id', 'name', 'category', 'purchase_price', 'selling_price', 
+                    'margin', 'store', 'phone'
+                    ],
+            'mapping': [
+                'id', 'Name', 'Category', 'Purchase price', 'Selling price', 
+                'Margin', 'Store', 'Phone'
+                ],
+            'dropdown': {'category': {1: 'Brot', 2: 'Weißwaren'}}
+        })
 
         #endregion
 
@@ -295,7 +306,19 @@ class TestProducts(unittest.TestCase):
             language = "EN",
         )
         
-        self.assertEqual(result, {'success':True, 'error':"", 'data':{'data':[]}})
+
+        self.assertEqual(result['data'], {
+            'data':[],
+            'order': [
+                    'id', 'name', 'category', 'purchase_price', 'selling_price', 
+                    'margin', 'store', 'phone'
+                    ],
+            'mapping': [
+                'id', 'Name', 'Category', 'Purchase price', 'Selling price', 
+                'Margin', 'Store', 'Phone'
+                ],
+            'dropdown': {'category': {1: 'Brot', 2: 'Weißwaren'}}
+        })
 
         #endregion
 
@@ -346,8 +369,8 @@ class TestProducts(unittest.TestCase):
             data = {
                 'name':"Apfel",
                 'category':2,
-                'purchase_price':20.0,
-                'selling_price':25.0,
+                'purchase_price':"20.0",
+                'selling_price':"25,0",
                 'store':"AndererLaden",
                 'phone':"+phone"
             },
@@ -418,14 +441,14 @@ class TestProducts(unittest.TestCase):
                     'name':"Apfel",
                     'category':2,
                     'purchase_price':20.0,
-                    'selling_price':25.0,
+                    'selling_price':"25.0",
                     'store':"AndererLaden",
                     'phone':"+phone"
                 },
                 {
                     'name':"Wurm",
                     'category':1,
-                    'purchase_price':25.0,
+                    'purchase_price':"1,50",
                     'selling_price':25.0,
                     'store':"AndererLaden",
                     'phone':"+phone"
@@ -448,7 +471,10 @@ class TestProducts(unittest.TestCase):
 
             # check entries
             self.assertEqual(result.filter_by(id = 3).first().name, "Apfel")
-            self.assertEqual(result.filter_by(id = 4).first().margin, .0)
+            self.assertEqual(result.filter_by(id = 4).first().margin, 15.667)
+            self.assertEqual(result.filter_by(id=4).first().purchase_price, 1.50)
+            self.assertEqual(result.filter_by(id=3).first().selling_price, 25.0)
+
 
         
         #endregion

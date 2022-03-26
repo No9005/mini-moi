@@ -11,7 +11,7 @@ from flask import send_file, make_response
 from miniMoi import app
 from miniMoi.language import language_files
 from miniMoi.logic.helpers import tools
-from miniMoi.logic.functions import customer, products, categories, abo, delivery
+from miniMoi.logic.functions import customer, products, categories, abo, delivery, system
 
 #region 'handler'
 def api(request:dict) -> dict:
@@ -1009,6 +1009,15 @@ def api(request:dict) -> dict:
 
         #endregion
 
+        #region 'system'
+        elif ressource == "system/dbBackup":
+            """Copies the mini-moi db to the documents folder """
+
+            response = system.make_db_copy()
+
+            return response
+
+        #endregion
         else: 
             
             # grab the language files

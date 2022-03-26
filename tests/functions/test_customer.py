@@ -182,7 +182,19 @@ class TestCustomer(unittest.TestCase):
             tz = "Europe/Berlin"
         )
 
-        self.assertEqual(result, {'success':True, 'error':"", 'data':{'data':[]}})
+        self.assertEqual(result['data'], {
+            'data':[],
+            'order':[
+                'id', 'date', 'name', 'surname', 'street', 'nr', 'postal',
+                'town', 'phone', 'mobile', 'birthdate', 'approach', 'notes'
+                ],
+            'mapping':[
+                'id', 'Date', 'Name', 'Surname', 'Street',
+                'Nr', 'Postal', 'City',
+                'Phone', 'Mobile', 'Birthdate', 'Approach',
+                'Notes'
+            ]
+        })
 
         #endregion
 
@@ -276,7 +288,19 @@ class TestCustomer(unittest.TestCase):
             tz = "Europe/Berlin"
         )
         
-        self.assertEqual(result, {'success':True, 'error':"", 'data':{'data':[]}})
+        self.assertEqual(result['data'], {
+            'data':[],
+            'order':[
+                'id', 'date', 'name', 'surname', 'street', 'nr', 'postal',
+                'town', 'phone', 'mobile', 'birthdate', 'approach', 'notes'
+                ],
+            'mapping':[
+                'id', 'Date', 'Name', 'Surname', 'Street',
+                'Nr', 'Postal', 'City',
+                'Phone', 'Mobile', 'Birthdate', 'Approach',
+                'Notes'
+            ]
+        })
 
         #endregion
 

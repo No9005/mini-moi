@@ -44,6 +44,7 @@
         <nav class="my-2 my-md-0 mr-md-3">
           <a class="p-2 text-dark" href="{{ url_for('delivery') }}">{{ base_delivery }}</a>
           <a class="p-2 text-dark" href="{{ url_for('management') }}">{{ base_tables }}</a>
+          <a class="p-2 text-dark text-muted disabled" href="#">{{ base_reporting }}</a>
           <a class="p-2 text-dark" href="{{ url_for('settings') }}">{{ base_settings }}</a>
         </nav>
         <a class="btn btn-outline-danger" href="{{ url_for('shutdown') }}">{{ base_shutdown }}</a>

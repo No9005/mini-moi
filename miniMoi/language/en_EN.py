@@ -74,6 +74,7 @@ mapping = {
             'base_app_name':"Mini Moi",
             'base_delivery':"Delivery",
             'base_tables':"Management",
+            'base_reporting':"Report",
             'base_settings':"Settings",
             'base_shutdown':"Shutdown",
             'base_documentation':"Documentation",
@@ -94,6 +95,17 @@ mapping = {
                 ),
             'settings_logging_on':"Activated",
             'settings_logging_off':"Deactivated",
+            'settings_db_backup':"Database Backup",
+            'settings_db_backup_description':(
+                "You should create database backups on a <b>regular basis</b>. <br> "
+                "If you click on the below button, you make a copy of the current "
+                "state of your database. <br>"
+                "The copy will be saved to: <br>"
+                "<br>"
+                "<span class='text-muted'> ~/mini-moi/</span>"
+            ),
+            'settings_make_backup':"Run backup",
+
             'settings_apply_button':"Apply settings"
         },
         '/':{
@@ -106,13 +118,13 @@ mapping = {
             'index_getting_started':"Getting started",
             'index_steps':"Only 3 steps needed.",
             'index_setup':"Setup your app ",
-            'index_setup_link':"click me!",
+            'index_setup_link':"(click me!)",
             'index_enter_data':(
                 "Enter your customer data and add some products. <br>"
                 "You need set up the following data:"
                 ),
             'index_data_customer':(
-                "Your consumers in the <span class='text-info'>Consumer Table</span>."
+                "Your customers in the <span class='text-info'>Customer Table</span>."
                 ),
             'index_data_categories':(
                 "Supply your product categories and subcategories (e.g. 'cut', 'whole') in the "
@@ -195,7 +207,8 @@ mapping = {
         'save_path':"Your file was saved at: {path}",
         'added_to_db':"'{element}' was successfully added! Please refresh the data.",
         'deleted_from_db':"'{element}' was successfully deleted!",
-        'update_to_db':"'{element}' was successfully updated!"
+        'update_to_db':"'{element}' was successfully updated!",
+        'db_backup_success':"The database backup was successfull. Directory {directory}"
     },
     'column_mapping':{
         'customers':{
