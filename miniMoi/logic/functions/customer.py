@@ -279,14 +279,14 @@ def update(customer_id:int, data:dict, language:str = app.config['DEFAULT_LANGUA
             )}
 
         # try to update him
-        customer.name = data['name']
-        customer.surname = data['surname']
-        customer.street = data['street']
+        customer.name = str(data['name'])
+        customer.surname = str(data['surname'])
+        customer.street = str(data['street'])
         customer.nr = int(data['nr'])
-        customer.postal = data['postal']
-        customer.town = data['town']
-        customer.phone = data['phone']
-        customer.mobile = data['mobile']
+        customer.postal = str(data['postal'])
+        customer.town = str(data['town'])
+        customer.phone = str(data['phone'])
+        customer.mobile = str(data['mobile'])
         customer.approach = int(data['approach'])
         customer.birthdate = birthdate
     
@@ -420,17 +420,17 @@ def add(customers:list, language:str = app.config['DEFAULT_LANGUAGE'], tz = app.
 
             # try to create the new object
             toAdd.append(Customers(
-                name = customer['name'],
-                surname = customer['surname'],
-                street = customer['street'],
+                name = str(customer['name']),
+                surname = str(customer['surname']),
+                street = str(customer['street']),
                 nr = int(customer['nr']),
-                postal = customer['postal'],
-                town = customer['town'],
-                phone = customer['phone'],
-                mobile = customer['mobile'],
+                postal = str(customer['postal']),
+                town = str(customer['town']),
+                phone = str(customer['phone']),
+                mobile = str(customer['mobile']),
                 birthdate = birthdate,
                 approach = int(customer['approach']),
-                notes = customer['notes']
+                notes = str(customer['notes'])
             ))
 
         except Exception as e:

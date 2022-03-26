@@ -128,6 +128,12 @@ def management():
     """Displays the management page """
 
     return render_template("html/management.html")
+
+@app.route("/bulk", methods=["GET"])
+def bulk():
+    """Displays the bulk upload system """
+
+    return render_template("html/bulk.html")
     
 #endregion
 

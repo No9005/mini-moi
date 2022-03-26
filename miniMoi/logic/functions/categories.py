@@ -182,7 +182,7 @@ def update(
 
     # try to update
     try: 
-        category.name = name
+        category.name = str(name)
 
         session.commit()
           
@@ -278,7 +278,7 @@ def add(categories:list, category_type:str = "category", language:str = app.conf
         try:
 
             toAdd.append(mapper[category_type](
-                name = name['name']
+                name = str(name['name'])
             ))
 
         except Exception as e:

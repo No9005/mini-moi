@@ -1,0 +1,216 @@
+{% extends "html/base.html" %}
+
+{% block title %} {{ bulk_title }} {% endblock %}
+
+{% block body %}
+
+<!-- Header -->
+<div class="header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center" style="margin-top:50px;">
+    <h1 class="display-4">{{ bulk_title }}</h1>
+    <p class="lead">{{ bulk_lead|safe }}</p>
+</div>
+<hr>
+<div class="container py-4 text-center" style="margin-bottom:100px;">
+
+    <!-- 1. select blueprint -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h3>{{ bulk_select_blueprint }}</h3>
+        </div>
+
+    </div>
+
+    <div class="row pb-4">
+
+        <div class="col-6" id="">
+            <button type="button" class="btn btn-lg btn-block btn-secondary my-2" onClick="create_blueprint('customers')"> 
+                {{ bulk_customers_btn }}
+            </button>
+        </div>
+
+        <div class="col-6" id="">
+            <button type="button" class="btn btn-lg btn-block btn-secondary my-2" onClick="create_blueprint('category')" > 
+                {{ bulk_category_btn }}
+            </button>
+        </div>
+
+        <div class="col-6" id="">
+            <button type="button" class="btn btn-lg btn-block btn-secondary my-2" onClick="create_blueprint('subcategory')" > 
+                {{ bulk_subcategory_btn }}
+            </button>
+        </div>
+
+        <div class="col-6" id="">
+            <button type="button" class="btn btn-lg btn-block btn-secondary my-2" onClick="create_blueprint('products')" > 
+                {{ bulk_products_btn }}
+            </button>
+        </div>
+
+        <div class="col-6" id="">
+            <button type="button" class="btn btn-lg btn-block btn-secondary my-2" onClick="create_blueprint('abo')" > 
+                {{ bulk_abo_btn }}
+            </button>
+        </div>
+    </div>
+
+    <!-- 2. edit files-->
+    <div class="row mt-4 mb-2">
+        <div class="col-12">
+            <h3>{{ bulk_edit_blueprints }}</h3>
+        </div>
+
+    </div>
+
+    <div class="row pb-4">
+
+        <div class="card mb-4 box-shadow border-0">
+        <div class="card-body">
+            <p class="card-text text-muted"><small>{{ bulk_edit_addition|safe }}</small></p>
+        </div>
+            <img class="card-img-top" src="{{ url_for('static', filename='img/blueprint_folder.png') }}" alt="Card image cap">
+
+            <img class="card-img-top" src="{{ url_for('static', filename='img/bulk_edit.png') }}" alt="Card image cap">
+        </div>
+        
+
+    </div>
+
+    <!-- 3. push the button -->
+    <div class="row mt-4 mb-2">
+        <div class="col-12">
+            <h3>{{ bulk_push_the_button }}</h3>
+        </div>
+
+    </div>
+
+    <div class="row pb-4">
+
+        <div class="card mb-4 box-shadow border-0">
+        <div class="card-body">
+            <p class="card-text text-muted"><small>{{ bulk_push_it|safe }}</small></p>
+        </div>
+            <a href="#" onClick="abfahrt()" class="btn btn-danger">Push me!</a>
+        </div>
+ 
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block script %}
+<script>
+
+    function create_blueprint(blueprint) {
+        /* Creates a excel blueprint for a table
+
+        params:
+        ------
+        blueprint : str
+            The name of the blueprint to create
+                Options: { 'customers', 'category'
+                           'subcategory', 'products',
+                           'abo' }
+
+        returns:
+        --------
+        null
+
+        */
+
+        // send to server
+        $.ajax({
+            method: 'POST',
+            url: "{{ url_for('to_api', ressource='bulk/createBlueprint' ) }}",
+            data: JSON.stringify({
+                blueprint:blueprint
+            }),
+            contentType: "application/json"
+        }).done(function(response) {
+
+            if (response.success) {
+
+                Toastify({
+                        text: response.data.msg,
+                        duration: 3000,
+                        position:'right',
+                        gravity:'top',
+                        style: {
+                            background: "linear-gradient(to right, #16a085, #2ecc71)",
+                        },
+                    }).showToast();
+
+            }
+            else {
+
+                console.log(response.error);
+                
+                Toastify({
+                        text: response.error,
+                        duration: 3000,
+                        position:'right',
+                        gravity:'top',
+                        style: {
+                            background: "linear-gradient(to right, #e74c3c, #c0392b)",
+                        },
+                    }).showToast();
+
+            };
+
+        });
+    };
+
+    function abfahrt() {
+        /* Updates tables based on blueprints
+
+        params:
+        ------
+        null
+
+        returns:
+        --------
+        null
+
+        */
+
+        // send to server
+        $.ajax({
+            method: 'POST',
+            url: "{{ url_for('to_api', ressource='bulk/update' ) }}",
+            data: {}
+        }).done(function(response) {
+
+            if (response.success) {
+
+                Toastify({
+                        text: response.data.msg,
+                        duration: 3000,
+                        position:'right',
+                        gravity:'top',
+                        style: {
+                            background: "linear-gradient(to right, #16a085, #2ecc71)",
+                        },
+                    }).showToast();
+
+            }
+            else {
+
+                console.log(response.error);
+                
+                Toastify({
+                        text: response.error,
+                        duration: 3000,
+                        position:'right',
+                        gravity:'top',
+                        style: {
+                            background: "linear-gradient(to right, #e74c3c, #c0392b)",
+                        },
+                    }).showToast();
+
+            };
+
+        });
+    };
+
+</script>
+{% endblock %}

@@ -23,6 +23,8 @@ mapping = {
         'weekdays':"Monday, Tuesday, Wendsday, Thursday, Friday, Saturday, Sunday",
         'cycleMismatch':"The 'interval' is not allowed to be None if the 'cycle_type' indicates a 'day' or 'interval'.",
         'missingData':"There is data missing: {column}",
+        'blueprintUnkonwn':"The selected blueprint is not known ('{blueprint}'",
+        'noBlueprintFound':"There was no blueprint to import. Please create first one.",
         '500':"An error occured: {c}: {m}",
         '404':"Endpoint '{ressource}' not found.",
     },
@@ -193,6 +195,7 @@ mapping = {
             'management_category_btn':"Categories",
             'management_subcategory_btn':"Subcategories",
             'management_products_btn':"Products",
+            'management_bulk_btn':"Bulk upload",
             'management_abo_btn':"Abos",
             'managment_abo_btn_label':"abo",
             'management_tbl_col_remover':"Remove",
@@ -201,6 +204,38 @@ mapping = {
             'management_auto_text':"Auto.",
             'management_no_data':"No data available!",
         },
+        '/bulk':{
+            'bulk_title':"Bulk Upload",
+            'bulk_lead':(
+                "Add multiple database entries for one <span class='text-info'> "
+                "Table</span> (e.g. Customers) by using a excel blueprint."
+            ),
+            'bulk_select_blueprint':"1. Select the blueprint to create",
+            'bulk_click_me':(
+                "Click me! <br>"
+                "<span><small>Caution: the blueprint(s) get deleted "
+                "afterwards!</small></span>"
+            ),
+            'bulk_customers_btn':"Customers",
+            'bulk_category_btn':"Category",
+            'bulk_subcategory_btn':"Subcategory",
+            'bulk_products_btn':"Products",
+            'bulk_abo_btn':"Abos",
+            'bulk_edit_blueprints':"2. Edit your blueprints",
+            'bulk_edit_addition':(
+                "Got to your 'mini-moi/blueprints' folder in your home directory "
+                "and copy and paste your wanted data into the created excel files. <br> "
+                "Caution: do not change the column names!"
+            ),
+            'bulk_push_the_button':"3. Push the button",
+            'bulk_push_it':(
+                "After editing your files, just press the red button and see "
+                "what happens. <br>"
+                "<span class='text-danger'>Caution: After the process is complete, the blueprints "
+                "get automatically deleted. So make copies of them if needed! </span>"
+            )
+
+        }
 
     },
     'notification':{
@@ -208,7 +243,11 @@ mapping = {
         'added_to_db':"'{element}' was successfully added! Please refresh the data.",
         'deleted_from_db':"'{element}' was successfully deleted!",
         'update_to_db':"'{element}' was successfully updated!",
-        'db_backup_success':"The database backup was successfull. Directory {directory}"
+        'db_backup_success':"The database backup was successfull. Directory {directory}",
+        'blueprint_created':"The blueprint for '{blueprint}' was successfully created as '{path}'",
+        'bulkFinished':"Successfull: {success}, Failures: {failures}",
+        'is_empty':"is empty",
+
     },
     'column_mapping':{
         'customers':{

@@ -11,7 +11,7 @@ from flask import send_file, make_response
 from miniMoi import app
 from miniMoi.language import language_files
 from miniMoi.logic.helpers import tools
-from miniMoi.logic.functions import customer, products, categories, abo, delivery, system
+from miniMoi.logic.functions import customer, products, categories, abo, delivery, system, bulk
 
 #region 'handler'
 def api(request:dict) -> dict:
@@ -1018,6 +1018,63 @@ def api(request:dict) -> dict:
             return response
 
         #endregion
+
+        #region 'bulk'
+        elif ressource == "bulk/createBlueprint":
+            """Creates a blueprint for given table
+    
+            This function creates a blueprint for the
+            given sql table.
+            The blueprint is a empty excel with the correct
+            columns in the specified app.config language.
+            
+            params:
+            -------
+            blueprint : str
+                The name of the blueprint to create.
+                    Options: { 'customers', 'category'
+                            'subcategory', 'products',
+                            'abo' }
+
+            returns:
+            --------
+            dict
+                success, error & datat {msg:str}
+            
+            """
+
+            response = bulk.create_blueprint(
+                blueprint = request['data']['blueprint']
+            )
+
+            return response
+
+        elif ressource == "bulk/update":
+            """Reads all blueprints and updates the tables
+    
+            This function reads all tables in the
+            directory '~/mini-moi/blueprints'
+            and updates the tables
+            
+            params:
+            -------
+            None
+
+            returns:
+            -------
+            dict
+                success, error & data {
+                    'msg':str
+                }
+
+            """
+
+            response = bulk.update()
+
+            return response
+
+        #endregion
+
         else: 
             
             # grab the language files

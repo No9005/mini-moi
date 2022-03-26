@@ -300,12 +300,12 @@ def update(product_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAG
 
     # try to update
     try:
-        product.name = data['name']
+        product.name = str(data['name'])
         product.category = category_id
         product.purchase_price = float_values['purchase_price']
         product.selling_price = float_values['selling_price']
-        product.store = data['store']
-        product.phone = data['phone']
+        product.store = str(data['store'])
+        product.phone = str(data['phone'])
         product.margin = round(
             (float_values['selling_price'] - float_values['purchase_price']) / float_values['purchase_price'],
             3
@@ -473,13 +473,13 @@ def add(products:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
         try:
                 
             toAdd.append(Products(
-                name = product['name'],
+                name = str(product['name']),
                 category = category,
                 purchase_price = float_values['purchase_price'],
                 selling_price = float_values['selling_price'],
                 margin = float_values['margin'],
-                store = product['store'],
-                phone = product['phone'] 
+                store = str(product['store']),
+                phone = str(product['phone'] )
             ))
 
         except Exception as e:

@@ -53,6 +53,12 @@
             </button>
         </div>
 
+        <div class="col-4" id="">
+            <button type="button" class="btn btn-lg btn-block btn-light" onClick="bulk_frame()" data-toggle="tooltip" data-placement="management_bulk_btn" > 
+                {{ management_bulk_btn }}
+            </button>
+        </div>
+
         
     </div>
 
@@ -1234,6 +1240,14 @@
 
 
     });
+
+
+    // bulk option
+    function bulk_frame() {
+
+        // create window
+        window.open("{{ url_for('bulk') }}", "", "width=500,height=600");
+    };
 
 
 

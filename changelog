@@ -1,3 +1,13 @@
+v.0.5.0: Bulk update. See changelog.
+    Integration tests are needed still needed.
+    Bulk import unittests needed (?)
+    Bulk looks to work properly (manually view).
+    Everything else is currently marked as 'nice-to-have':
+        - Reporting tool, to report the last week/month
+          as table and info graphics.
+        - exporting queried sheets as excel tables
+
+------------ old versions ----------------------------------
 v.0.4.10: Updated Unittests. See changelog.
     Integration tests are needed.
     Everything else is currently marked as 'nice-to-have':
@@ -6,7 +16,6 @@ v.0.4.10: Updated Unittests. See changelog.
         - table mass importing from excel/csv files
         - exporting queried sheets as excel tables
 
------------- old versions ----------------------------------
 v.0.4.9: Ui with good progress. See changelog.
     The management ui works so far for all but abos.
     This table needs the overhaul based on the json
