@@ -43,6 +43,7 @@ app.config['DEFAULT_LANGUAGE'] = settings['default_language']
 app.config['ACTION_LOGGING'] = settings['action_logging'] == "True"
 app.config['CWD'] = cwd
 app.config['HOME'] = Path().home()
+app.config['MINI_MOI_HOME'] = Path().home() / "mini-moi"
 app.config['BLUEPRINT_PATH'] = Path().home() /"mini-moi/blueprints"
 app.config['FILE_TYPE'] = "xlsx"
 

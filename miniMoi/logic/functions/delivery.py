@@ -729,7 +729,9 @@ def book(data:dict, language = app.config['DEFAULT_LANGUAGE']) -> dict:
             toAdd.append(Orders(
                 customer_id = int(tmp['customer_id'].tolist()[0]),
                 product = int(tmp['product_id'].tolist()[0]),
-                name = tmp['product_name'].tolist()[0],
+                product_name = str(tmp['product_name'].tolist()[0]),
+                category = str(tmp['category_name'].tolist()[0]),
+                subcategory = str(tmp['subcategory_name'].tolist()[0]),
                 quantity = int(tmp['quantity'].tolist()[0]),
                 price = float(tmp['product_selling_price'].tolist()[0]),
                 total = float(tmp['cost'].tolist()[0])

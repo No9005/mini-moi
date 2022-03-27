@@ -11,7 +11,7 @@ from flask import send_file, make_response
 from miniMoi import app
 from miniMoi.language import language_files
 from miniMoi.logic.helpers import tools
-from miniMoi.logic.functions import customer, products, categories, abo, delivery, system, bulk
+from miniMoi.logic.functions import customer, products, categories, abo, delivery, system, bulk, reporting
 
 #region 'handler'
 def api(request:dict) -> dict:
@@ -1017,6 +1017,27 @@ def api(request:dict) -> dict:
 
             return response
 
+        elif ressource == "system/dbRollback":
+            """Rollback the db with old backup
+            
+            params:
+            ------
+            filename : str
+                The name of the file to import
+
+            returns:
+            --------
+            dict    
+                success, error & data {msg}
+
+            """
+
+            response = system.rollback_db_save(
+                filename = request['data']['filename']
+            )
+
+            return response 
+            
         #endregion
 
         #region 'bulk'
@@ -1074,6 +1095,16 @@ def api(request:dict) -> dict:
 
             return response
 
+        #endregion
+
+        #region 'report'
+        elif ressource == "reporting/get":
+            """Creates the report """
+
+            response = reporting.get_report()
+
+            return response
+        
         #endregion
 
         else: 

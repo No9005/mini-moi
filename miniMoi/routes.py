@@ -135,6 +135,12 @@ def bulk():
 
     return render_template("html/bulk.html")
     
+@app.route("/reporting", methods=["GET", "POST"])
+def reporting():
+    """Displays the reporting page """
+
+    return render_template("html/reporting.html")
+
 #endregion
 
 #region 'api routes'

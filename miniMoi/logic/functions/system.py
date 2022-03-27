@@ -45,4 +45,41 @@ def make_db_copy():
         }
     }
 
+def rollback_db_save(filename:str) -> dict:
+    """Select file to exchange with current db
+    
+    This function uses the file name to search
+    for the file in the mini-moi folders.
+    
+    params:
+    -------
+    filename : str
+        The file name to search for in
+        the 'mini-moi' folder.
+
+    returns:
+    -------
+    dict
+        success, error & data {}
+
+    """
+
+    # get language files
+    try: translation = language_files[app.config['DEFAULT_LANGUAGE']]
+    except: translation = language_files['EN']
+
+    # create source path
+    sourcePath = app.config['MINI_MOI_HOME'] / "backups" / filename
+
+    # copy it to the cwd db
+    shutil.copyfile(str(sourcePath), str(app.config['CWD']/"db/app.db"))
+
+    return {
+        'success':True,
+        'error':"",
+        'data':{
+            'msg':translation['notification']['db_rollback_success'].format(file=str(sourcePath))
+        }
+    }
+
 #endregion

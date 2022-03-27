@@ -108,7 +108,18 @@ mapping = {
                 "<span class='text-muted'> ~/mini-moi/</span>"
             ),
             'settings_make_backup':"Run backup",
-
+            'settings_backup_rollback':"DB rollback",
+            'settings_db_rollback':"Database Rollback",
+            'settings_db_rollback_description':(
+                "Sometimes you need to load an old database "
+                "into <b>Mini Moi</b>. <br>"
+                "In these cases you can use the 'rollback' option. <br>"
+                "But use with caution! Once you reloaded a database state "
+                "previous states are gone. <br>"
+                "<span class='text-muted'><small>Please make sure to select "
+                "a database file (.db) in the 'mini-moi' folder!  <br>"
+                "( located at <b>~/mini-moi/backups/</b> ) </small></span>"
+            ),
             'settings_apply_button':"Apply settings"
         },
         '/':{
@@ -235,8 +246,20 @@ mapping = {
                 "<span class='text-danger'>Caution: After the process is complete, the blueprints "
                 "get automatically deleted. So make copies of them if needed! </span>"
             )
-
+        },
+        '/reporting':{
+            'reporting_title':"Dashboard",
+            'reporting_lead':"Overview over past earnings & expenses",
+            'reporting_current_week':"Overview current week",
+            'reporting_last_week':"Overview last week",
+            'reporting_month':"Overview current month",
+            'reporting_year':"Overview this year",
+            'reporting_earning_spending':"Earnings",
+            'reporting_revenue_source':"Revenue sources",
+            'reporting_selling_count':"Selling overview",
+            'reporting_no_data_available':"No data available",
         }
+        
 
     },
     'notification':{
@@ -245,6 +268,7 @@ mapping = {
         'deleted_from_db':"'{element}' was successfully deleted!",
         'update_to_db':"'{element}' was successfully updated!",
         'db_backup_success':"The database backup was successfull. Directory {directory}",
+        'db_rollback_success':"The database rollback was successfull. Used file {file}",
         'blueprint_created':"The blueprint for '{blueprint}' was successfully created as '{path}'",
         'bulkFinished':"Successfull: {success}, Failures: {failures}",
         'is_empty':"is empty",
@@ -317,7 +341,20 @@ mapping = {
         4:"Friday",
         5:"Saturday",
         6:"Sunday",
-
+    },
+    'month_mapping':{
+        1:"January",
+        2:"February",
+        3:"March",
+        4:"April",
+        5:"May",
+        6:"June",
+        7:"July",
+        8:"August",
+        9:"September",
+        10:"October",
+        11:"November",
+        12:"December",
     }
     
 }

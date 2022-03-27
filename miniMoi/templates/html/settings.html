@@ -5,76 +5,102 @@
 {% block body %}
 
 <!-- Header -->
-<div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+<div class="settings-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
     <h1 class="display-4">{{ settings_title }}</h1>
     <p class="lead">{{ settings_lead }}</p>
 </div>
 
 <!-- settings -->
-<div class="card-deck mb-3 text-center">
+<div class="container">
+
+    <div class="row">
+
+        <div class="card-deck mb-3 text-center">
     
-    <!-- language settings -->
-    <div class="card mb-4 box-shadow">
-    <div class="card-header">
-        <h4 class="my-0 font-weight-normal">{{ settings_language }}</h4>
-    </div>
-    <div class="card-body">
-        <p class="mt-3 mb-4">{{ settings_language_description }}</p>
-        <div class="dropdown">
-            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownLanguageButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              {{ selected_language }}
-            </button>
-            <div class="dropdown-menu" aria-labelledby="dropdownLanguageButton">
-                {% for element in available_languages %}
-                    <li class="dropdown-item" value="{{ element }}" onClick="set_language(this)"> {{ element }}</li>
-                {% endfor %}
+            <!-- language settings -->
+            <div class="card mb-4 box-shadow">
+            <div class="card-header">
+                <h4 class="my-0 font-weight-normal">{{ settings_language }}</h4>
             </div>
-          </div>
-    </div>
-    </div>
-    
-    <!-- logging -->
-    <div class="card mb-4 box-shadow">
-    <div class="card-header">
-        <h4 class="my-0 font-weight-normal">{{ settings_logging }}</h4>
-    </div>
-    <div class="card-body">
-        <p class="mt-3 mb-4">{{ settings_logging_description|safe }}</p>
-
-        <div class="form-check" id="loggingRadio">
-            <input class="form-check-input loggingRadio" type="radio" name="flexRadioLogging" id="flexRadioLoggingOn" value="True" onClick="update_logging(this)" checked>
-            <label class="form-check-label" for="flexRadioLoggingOn">
-            {{ settings_logging_on }}
-            </label>
-        </div>
-        <div class="form-check">
-            <input class="form-check-input loggingRadio" type="radio" name="flexRadioLogging" id="flexRadioLoggingOff" value="False" onClick="update_logging(this)">
-            <label class="form-check-label" for="flexRadioLoggingOff">
-                {{ settings_logging_off }}
-            </label>
-        </div>
-
-
-    </div>
-    </div>
-
-    <!-- db backup -->
-    <div class="card mb-4 box-shadow">
-        <div class="card-header">
-            <h4 class="my-0 font-weight-normal">{{ settings_db_backup }}</h4>
-        </div>
-        <div class="card-body">
-            <p class="mt-3 mb-4">{{ settings_db_backup_description|safe }}</p>
-    
-            <button type="button" class="btn btn-lg btn-block btn-warning" onClick="run_backup()"> {{ settings_make_backup }}</button>
+            <div class="card-body">
+                <p class="mt-3 mb-4">{{ settings_language_description }}</p>
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownLanguageButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      {{ selected_language }}
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownLanguageButton">
+                        {% for element in available_languages %}
+                            <li class="dropdown-item" value="{{ element }}" onClick="set_language(this)"> {{ element }}</li>
+                        {% endfor %}
+                    </div>
+                  </div>
+            </div>
+            </div>
             
-    
-    
+            <!-- logging -->
+            <div class="card mb-4 box-shadow">
+            <div class="card-header">
+                <h4 class="my-0 font-weight-normal">{{ settings_logging }}</h4>
+            </div>
+            <div class="card-body">
+                <p class="mt-3 mb-4">{{ settings_logging_description|safe }}</p>
+        
+                <div class="form-check" id="loggingRadio">
+                    <input class="form-check-input loggingRadio" type="radio" name="flexRadioLogging" id="flexRadioLoggingOn" value="True" onClick="update_logging(this)" checked>
+                    <label class="form-check-label" for="flexRadioLoggingOn">
+                    {{ settings_logging_on }}
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input loggingRadio" type="radio" name="flexRadioLogging" id="flexRadioLoggingOff" value="False" onClick="update_logging(this)">
+                    <label class="form-check-label" for="flexRadioLoggingOff">
+                        {{ settings_logging_off }}
+                    </label>
+                </div>
+        
+        
+            </div>
+            </div>
+        
+            <!-- db backup -->
+            <div class="card mb-4 box-shadow">
+                <div class="card-header">
+                    <h4 class="my-0 font-weight-normal">{{ settings_db_backup }}</h4>
+                </div>
+                <div class="card-body">
+                    <p class="mt-3 mb-4">{{ settings_db_backup_description|safe }}</p>
+            
+                    <button type="button" class="btn btn-lg btn-block btn-warning" onClick="run_backup()"> {{ settings_make_backup }}</button>
+                </div>
+            </div>
+        
         </div>
+
+    </div>
+
+    <div class="row">
+
+        <div class="card-deck mb-3 text-center">
+            
+            <!-- db rollback -->
+            <div class="card mb-4 box-shadow">
+                <div class="card-header">
+                    <h4 class="my-0 font-weight-normal">{{ settings_db_rollback }}</h4>
+                </div>
+                <div class="card-body">
+                    <p class="mt-3 mb-4">{{ settings_db_rollback_description|safe }}</p>
+            
+                    <button type="button" class="btn btn-lg btn-block btn-light" onClick="select_file()"> {{ settings_backup_rollback }}</button>
+                    <input type="file" accept=".db" class="hidden" onChange="get_file_path(this)" id="rollbackButton" />
+                </div>
+            </div>
+
         </div>
-    
+
+    </div>
 
 </div>
+
 
 <button type="button" class="btn btn-lg btn-block btn-success" onClick="apply_settings()"> {{ settings_apply_button }}</button>
 
@@ -236,6 +262,69 @@
 
             };
         });
+
+    };
+
+    function get_file_path(element) {
+
+        // get file name
+        var inpt = document.getElementById('rollbackButton').value.split(/(\\|\/)/g).pop();
+        
+        // make ajax call for rollback
+        $.ajax({
+            method: 'POST',
+            url: "{{ url_for('to_api', ressource='system/dbRollback') }}",
+            data: JSON.stringify({
+                'filename':inpt
+            }),
+            contentType: "application/json"
+        }).done(function(response) {
+            
+            if (response.success) {
+
+                Toastify({
+                        text: response.data.msg,
+                        duration: 3000,
+                        position:'right',
+                        gravity:'top',
+                        style: {
+                            background: "linear-gradient(to right, #16a085, #2ecc71)",
+                        },
+                    }).showToast();
+
+            }
+            else {
+
+                console.log(response.error);
+
+                Toastify({
+                    text: response.error,
+                    duration: 5000,
+                    close: true,
+                    gravity: "top", // `top` or `bottom`
+                    position: "right", // `left`, `center` or `right`
+                    backgroundColor: "linear-gradient(to right, #d9534f, #D1504B)", // alternative: #592220
+                    stopOnFocus: true, // Prevents dismissing of toast on hover
+                    onClick: function(){} // Callback after click
+                }).showToast();
+
+            }
+        })
+
+    };
+
+    function select_file() {
+        /* open file explorer for db rollback */
+
+        // grab rollbackButton input
+        var rollback_btn = $('#rollbackButton');
+
+        // click on it
+        rollback_btn.click();
+
+        // get file variable
+        //var filename = rollback_btn.prop('files');
+
 
     }
 

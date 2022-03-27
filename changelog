@@ -1,3 +1,12 @@
+v.0.5.2: Reporting generating (start). See changelog.
+    First elements from the reporting are implemented.
+    Need testdate though.
+    Everything else is currently marked as 'nice-to-have':
+        - Reporting tool, to report the last week/month
+          as table and info graphics.
+        - exporting queried sheets as excel tables
+
+------------ old versions ----------------------------------
 v.0.5.1: Bulk update foxes. See changelog.
     Changed Bulk update to be xlsx ready.
     Manual integration tests do look correct.
@@ -7,7 +16,6 @@ v.0.5.1: Bulk update foxes. See changelog.
           as table and info graphics.
         - exporting queried sheets as excel tables
 
------------- old versions ----------------------------------
 v.0.5.0: Bulk update. See changelog.
     Integration tests are needed still needed.
     Bulk import unittests needed (?)

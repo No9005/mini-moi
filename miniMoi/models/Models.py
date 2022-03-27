@@ -113,7 +113,9 @@ class Orders(base):
     date = Column(DateTime, default=datetime.utcnow)
 
     product = Column(Integer, ForeignKey("products.id"), nullable=False)
-    name = Column(String(100), nullable = False)
+    product_name = Column(String(100), nullable = False)
+    category = Column(String(100), default="unknown")
+    subcategory = Column(String(100), default="unknown")
     quantity = Column(Integer, nullable = False)
     price = Column(Float, nullable = False)
     total = Column(Float, nullable = False)
