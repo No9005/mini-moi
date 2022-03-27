@@ -82,4 +82,15 @@ def rollback_db_save(filename:str) -> dict:
         }
     }
 
+def delete_db() -> dict:
+    """Deletes the database. Handle with care! """
+
+    (app.config['CWD'] / "db/app.db").unlink()
+    
+    return {
+        'success':True,
+        'error':"",
+        'data':{}
+    }
+    
 #endregion
