@@ -22,6 +22,9 @@ from . import version
 # grab cwd
 cwd = Path().cwd() / "miniMoi"
 
+# create db directory
+(cwd/"db").mkdir(exist_ok=True)
+
 # init python app
 app = Flask(
     __name__,
@@ -39,6 +42,10 @@ app.config['VERSION'] = version.__version__
 app.config['DEFAULT_LANGUAGE'] = settings['default_language']
 app.config['ACTION_LOGGING'] = settings['action_logging'] == "True"
 app.config['CWD'] = cwd
+app.config['HOME'] = Path().home()
+app.config['MINI_MOI_HOME'] = Path().home() / "mini-moi"
+app.config['BLUEPRINT_PATH'] = Path().home() /"mini-moi/blueprints"
+app.config['FILE_TYPE'] = "xlsx"
 
 app.config['TZ_INFO'] = get_localzone_name()
 print("TIMEZONE: ", get_localzone_name())
@@ -66,7 +73,7 @@ print("DB PATH: ", dbPath)
 engine = create_engine(
     dbPath,
     echo = False,
-    future = True
+    future = False
 )
 
 # create session maker
@@ -92,3 +99,6 @@ run_creation(engine, base)
 from miniMoi import routes
 
 #endregion
+
+#test import! TBD:DELETE
+from miniMoi.logic.db.generate_testdata import generate as generate_data

@@ -1,0 +1,1257 @@
+{% extends "html/base.html" %}
+
+{% block title %} {{ management_title }} {% endblock %}
+
+{% block thirdParty %} 
+
+<!-- data table support -->
+<link rel="stylesheet" href="http://cdn.datatables.net/1.10.2/css/jquery.dataTables.min.css"></style>
+<script type="text/javascript" src="http://cdn.datatables.net/1.10.2/js/jquery.dataTables.min.js"></script>
+
+{% endblock %}
+
+{% block body %}
+<!-- Header -->
+<div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+    <h1 class="display-4">{{ management_title }}</h1>
+    <p class="lead">{{ management_lead }}</p>
+</div>
+
+<!-- content -->
+<div class = "container">
+
+    <!-- buttons row -->
+    <div class="row force-min-height flex justify-content-center">
+
+        <div class="col-2" id="">
+            <button type="button" class="btn btn-lg btn-block btn-secondary" onClick="get_data('customers')" data-toggle="tooltip" data-placement="bottom"> 
+                {{ management_customers_btn }}
+            </button>
+        </div>
+
+        <div class="col-2" id="">
+            <button type="button" class="btn btn-lg btn-block btn-secondary" onClick="get_data('category')" data-toggle="tooltip" data-placement="bottom"> 
+                {{ management_category_btn }}
+            </button>
+        </div>
+
+        <div class="col-2" id="">
+            <button type="button" class="btn btn-lg btn-block btn-secondary" onClick="get_data('subcategory')" data-toggle="tooltip" data-placement="bottom"> 
+                {{ management_subcategory_btn }}
+            </button>
+        </div>
+
+        <div class="col-2" id="">
+            <button type="button" class="btn btn-lg btn-block btn-secondary" onClick="get_data('products')" data-toggle="tooltip" data-placement="bottom" > 
+                {{ management_products_btn }}
+            </button>
+        </div>
+
+        <div class="col-2" id="">
+            <button type="button" class="btn btn-lg btn-block btn-secondary" onClick="get_data('abo')" data-toggle="tooltip" data-placement="bottom" > 
+                {{ management_abo_btn }}
+            </button>
+        </div>
+
+        <div class="col-4" id="">
+            <button type="button" class="btn btn-lg btn-block btn-light" onClick="bulk_frame()" data-toggle="tooltip" data-placement="management_bulk_btn" > 
+                {{ management_bulk_btn }}
+            </button>
+        </div>
+
+        
+    </div>
+
+    <!-- tables -->
+
+    <div class="" id="tablesSection">
+        <hr class="py-2">
+
+        <!-- table name -->
+        <div class="row mb-3" >
+
+            <div class="col-12" >
+                <h3 id="shownContentName"></h3>
+            </div>
+        </div>
+
+        <div class="row mb-5">
+
+            <!-- data table -->
+            <div class="col-12" id="contentTablePlaceholder">
+                            
+                <!-- generated data-->
+
+            </div>
+
+        </div>
+
+        <!-- table '+'' sign -->
+        <div class="row" style="margin-bottom:100px;">
+        
+            <div class="col-12 text-center" id="createNewTableRow">
+                <i class='table-add-inactive fa-solid fa-circle-plus fa-xl' id="plusSign"></i>
+            </div>
+            <div class="col-6 text-center hidden" id="uploadNewRows">
+                <i class='fa-solid fa-cloud fa-xl table-upload'></i>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+{% endblock %} 
+
+{% block script %}
+<script type="text/javascript" src="{{ url_for('static', filename='js/custom/tables.js') }}"></script>
+
+<script>
+
+    // get html elements
+    var content_placeholder = document.getElementById('contentTablePlaceholder');
+    var table_section = document.getElementById("tablesSection");
+    var table_name = document.getElementById("shownContentName");
+
+    // create status variable to track current table type
+    var tbl_type = null;
+
+    // save table meta info (cols order, mapping & dropdown)
+    var cols = []; // --> db names
+    var n_cols = null;
+    var col_names = []; // --> display names
+    var dropdown = {}; // --> dropdown columns & their option
+    const non_editable = ['id', 'date', 'margin', 'update_date'];
+    const special_handling = ['cycle_type'];
+
+
+    // table creation
+    function create_dropdown_element(available_options, row_value = "", col="") {
+        /* Creates a dropdown menu html element
+        
+        Creates an 'select' html element and 
+        fills it with all possible options.
+        If the row value fits one of the options
+        it sets the option as selected.
+
+        params:
+        -------
+        available_options : object
+            json-object containing the options.
+            The object keys are the <option values>
+            and the object values are the display
+            texts.
+                Format: {
+                    'option value':'display name',
+                    'option value':'display name',
+                    ...
+                }
+        row_value : str | int, optional
+            The row value. It is basically the database
+            entry (aka selection of the user) and gets
+            compared to the available_option keys.
+            If one fits, it gets selected.
+            (default is "")
+        col : str, optional
+            Name of the column.
+            (default is "")
+
+        returns:
+        --------
+        html element
+        
+        */
+
+        // build dropdown menu element
+        var dpdwn = document.createElement('select');
+        dpdwn.classList.add("form-control", "form-control-sm");
+
+        // for each option, build a tag
+        for (var o = 0; o < Object.keys(available_options).length; o++) {
+
+            // get key & value (aka text) of the current element
+            var option_key = Object.keys(available_options)[o];
+            var option_text = available_options[option_key];
+
+            // create option & add name
+            var dp_option = document.createElement('option');
+            dp_option.innerHTML = option_text;
+            dp_option.value = option_key;
+
+            // add to dropdown menug
+            dpdwn.appendChild(dp_option);
+
+            // should the just added option be selected?
+            var is_new = true;
+            // add 'select' mark (if key == db entry)
+            if (option_key.toString() == row_value.toString()) {
+                dpdwn.selectedIndex = o;
+                is_new = false;
+            };
+
+            /*
+            read the values with the following:
+                $(select).val() --> returns value
+                $(select :selected).text() --> returns text of selected item
+
+            */
+
+            // add event listener based on column
+            if (col == "cycle_type") { 
+                if (!is_new) { 
+                    dpdwn.setAttribute("onChange", "process_weekday(this, true)");
+                }
+                else {
+                    dpdwn.setAttribute("onChange", "process_weekday(this, false)");
+                }; 
+            }
+            else { if (!is_new) { dpdwn.setAttribute("onChange", "value_changed(this)");};};
+            
+
+            
+
+        };
+
+        return dpdwn
+
+    };
+
+    function create_table_row(row_data = {}, row_idx = -99) {
+        /* Creates one table row
+
+        Based on the passed data, the row is
+        either a row filled with content
+        or a empty row.
+
+        CAUTION:
+        This function uses the 'state' variables
+            - cols
+            - n_cols
+            - col_names
+            - dropdown
+        which get filled as soon the table creation
+        process is started!
+
+        params:
+        -------
+        row_data : json-object, optional
+            Json-object containing the data of
+            the row.
+            If it is an empty json-object the
+            algorithmn produces a empty row.
+            (default is { })
+                Format: {
+                    'col-name':value,
+                    'col-name':value,
+                    ...
+                }
+        row_idx : int, optional
+            The row idx to use for the coordinates.
+            (default is -99)
+            
+        returns:
+        --------
+        html element
+            The html table row
+
+        */
+
+        // check if the row_data is empty or not
+        const contains_data = !$.isEmptyObject(row_data);
+
+        // create dropdow_columns out of the dropdown keys
+        const dropdown_columns = Object.keys(dropdown);
+        
+        
+        // create table row
+        var tr = document.createElement('tr');
+
+        
+        // create cells
+        for (var c = 0; c < cols.length; c++) {
+
+            // grab current col stats for easier access
+            var col = cols[c]; // --> column name (raw)
+            var row_value = ""; // --> db entry (display text for cell input)
+            var is_editable = false; // --> new row editable?
+            var is_new = false; // --> is the row for new content?
+
+            // check if the columns should be editable
+            if (!non_editable.includes(col)) { is_editable = true; };
+
+            // set the column's value based on the current column
+            var row_value = "";
+            if (contains_data) { row_value = row_data[col];}
+            else { 
+                
+                // check if row should be editable
+                if (!is_editable) { row_value = "{{ management_auto_text }}"; }
+
+                // add the new-entry (cause the row has no data) class
+                tr.classList.add("new-entry");
+                is_new = true;
+
+            };
+
+
+            // create table cell (first column will be bold)
+            if (c == 0) { var cell = document.createElement('th'); }
+            else { var cell = document.createElement('td'); };
+
+            // differenciate between dropdown column or normal columns
+            // dropdown
+            if (dropdown_columns.includes(col)) {
+
+                // grab dropdown options for that column
+                var available_options = dropdown[col];
+            
+                // create and add the dropdown element
+                cell.appendChild(
+                    create_dropdown_element(available_options, row_value, col)
+                    );
+
+            }
+            // normal
+            else  {
+
+                // editable?
+                if (is_editable) { 
+
+                    // add editable
+                    cell.setAttribute('contenteditable', "true"); 
+
+                    // add event listener (only for update! aka for none-new lines)
+                    if (!is_new) {cell.setAttribute("oninput", "value_changed(this)");};
+
+                };
+
+                // add value (aka display text of cell)
+                cell.innerHTML = row_value;
+            };
+            
+            // add coordinates
+            cell.classList.add("col_" + c.toString(), "row_" + row_idx.toString());
+
+            // append to table-row
+            tr.appendChild(cell);
+
+        };
+
+
+        // create and add ui-buttons
+        // abo fetching for 'customers' table on customer id (--> shortcut)
+        if (tbl_type == "customers") {
+
+            var th_shortcut = document.createElement('td');
+            th_shortcut.classList.add("col_shortcut", "row_shortcut", "text-center");
+
+            // set display text based on state of 'is_new'
+            if (is_new) { th_shortcut.innerHTML = ""; }
+            else { 
+                
+                // create button
+                var btn = document.createElement('button');
+                btn.classList.add("btn", "btn-sm", "btn-info");
+                btn.setAttribute(
+                    "onClick", 
+                    "get_data('abo', filter_type = 'customer', what = get_id(this), amount = null)"
+                );
+                btn.innerHTML = "{{ managment_abo_btn_label }}"
+                
+                th_shortcut.appendChild(btn);
+            };
+
+            // append
+            tr.appendChild(th_shortcut);
+
+        };
+
+        // add row-remove button
+        var th_remove = document.createElement('td');
+        th_remove.innerHTML = "<i class='fa-solid fa-circle-minus fa-lg table-remove'></i>";
+        th_remove.classList.add("col_remover", "row_remover", "text-center");
+
+        // add confirm on change button
+        var th_check = document.createElement('td');
+        th_check.innerHTML = "<i class='fa-solid fa-circle-check fa-lg table-check-inactive'></i>";
+        th_check.classList.add("col_updater", "row_updater", "text-center");
+
+        // add to row
+        tr.appendChild(th_remove);
+        tr.appendChild(th_check);
+
+        return tr
+
+    };
+
+    function create_tbl_head(cols, col_names) {
+        /* Creates the table head 
+        
+        params:
+        -------
+        cols : array
+            The original names of the columns.
+        col_names : array
+            The display name of the cols.
+                Caution: needs same ordering as
+                'cols'.
+        
+        returns:
+        --------
+        html element
+
+        */
+
+        // get n_cols
+        const n_cols = cols.length;
+
+        // create head
+        var tblh = document.createElement('thead');
+        //tblh.classList.add("thead-dark");
+        var tblh_tr = document.createElement('tr');
+
+        // only for the 'head' columns: to identify during the parsing
+        tblh_tr.classList.add("head");
+
+        // populate thead
+        for (i = 0; i < n_cols; i++) {
+            
+            // create element
+            var th = document.createElement('th');
+            th.scope = "col";
+            th.headers = cols[i];
+
+            // set inner html
+            th.innerHTML = col_names[i];
+
+            // add to table-head-row
+            tblh_tr.appendChild(th);
+
+        };
+
+        // set special space for abo fetching based
+        // on customer id (--> shortcut)
+        if (tbl_type == "customers") {
+
+            var th_shortcut = document.createElement('th');
+            th_shortcut.scope = "col";
+            th_shortcut.innerHTML = "{{ management_tbl_col_special }}";
+            th_shortcut.setAttribute('headers', "shortcut_button");
+            th_shortcut.setAttribute('style', "width:5%");
+
+            // append
+            tblh_tr.appendChild(th_shortcut);
+
+        };
+
+        // add the remover col
+        var th_remover = document.createElement('th');
+        th_remover.scope = "col";
+        th_remover.innerHTML = "{{ management_tbl_col_remover }}";
+        th_remover.setAttribute('headers', "remove_button");
+        th_remover.setAttribute('style', "width:5%");
+
+        // add the update button
+        var th_check = document.createElement('th');
+        th_check.scope = "col";
+        th_check.innerHTML = "{{ management_tbl_col_updater }}";
+        th_check.setAttribute('headers', "update_button");
+        th_check.setAttribute('style', "width:5%");
+
+        // append
+        tblh_tr.appendChild(th_remover);
+        tblh_tr.appendChild(th_check);
+
+        // add the table-head-row to table-head
+        tblh.appendChild(tblh_tr);
+        
+        return tblh
+    };
+
+    function create_tbl_body(rows) {
+        /* creates the table body
+        
+        params:
+        -------
+        rows : array
+            Array of json-objects.
+                Format: [
+                    {
+                        'col':value,
+                        'col':value,
+                        ....
+                    },
+                    {
+                        ...
+                    },
+                    ...
+                ]
+        
+        returns:
+        --------
+        html element
+        
+        */
+
+        // create tbody
+        var tbody = document.createElement('tbody');
+
+        // iterate through data
+        for (var r = 0; r < rows.length; r++) {
+
+            // append table row to table body
+            tbody.appendChild(
+                create_table_row(row_data = rows[r], row_idx = r)
+            );
+
+        };
+
+        return tbody
+
+
+    };
+
+    function table_from_dict(data) {
+        /* creates the table from a array of jsons
+
+        params:
+        -------
+        data : json object
+            Json object containing the table data,
+            mapping and column odering.
+                Format:{
+                    'data':[
+                        {
+                            'col':value,
+                            'col':value,
+                            ...
+                        },
+                        ...
+                    ],
+                    'order':[],
+                    'mapping':[],
+                    dropdown: {}
+                }
+        
+        returns:
+        --------
+        html element
+        
+        */ 
+
+        // split the data into its elements
+        const tbl_data = data.data;
+        cols = data.order;
+        n_cols = cols.length;
+        col_names = data.mapping;
+
+        // dropdown in the keys?
+        if (Object.keys(data).includes('dropdown')) {
+            dropdown = data.dropdown;
+        };
+
+
+        // create table element
+        var tbl = document.createElement('table');
+        tbl.classList.add("table", "table-hover", "table-sm");
+        tbl.id = "displayTable";
+
+        
+        // create thead element
+        const tblh = create_tbl_head(cols, col_names);
+        tbl.appendChild(tblh);
+
+
+        // create table body
+        const tbody = create_tbl_body(tbl_data);
+        tbl.appendChild(tbody);
+
+
+        return tbl
+
+    };
+
+    
+
+    // table manipulators & getters
+    function get_id(element) {
+        /* grabs the id of the current row */
+
+        // grab parent (row)
+        var parent = $(element).parents('tr');
+
+        // grab children
+        var children = parent.children();
+
+        // grab index of col == "id"
+        var idx = cols.indexOf('id');
+
+        // get child and return the id
+        return children.eq(idx).text()
+
+    };
+
+    function value_changed(element) {
+        /* event handler for cell changes */
+        
+        // activate active
+        var updater = $(element).parents('tr').find('.table-check-inactive');
+        updater.removeClass('table-check-inactive');
+        updater.addClass('table-check');
+
+        return
+    };
+
+    function process_weekday(element, run_change=true) {
+        /* Listens to the 'cycle_type' and changes inputs
+
+        The abo table is somewhat special.
+        If the cycle_type is 'day' we have to the
+        'interval' to a dropdown with the days as
+        input.
+        This function changes these elements.
+
+        It also calls the 'value_changed()' process.
+
+        params:
+        -------
+        element : html element
+            The html element on which the function is
+            attatched to 'onChange'.
+                Note: This element needs to be attached
+                      to the 'weekday'.
+        run_change : bool, optional
+            if true, the 'value_changed()' function will
+            be invoked after changing the element.
+            (default is true)
+        
+        returns:
+        --------
+        null
+
+        */
+
+        // create jquery
+        var selector = $(element);
+
+        // get the row
+        var row = selector.parents('tr');
+
+        // get the value of the selected child
+        var selected_value = selector.children().filter(":selected").val();
+
+        // get the idx of the 'invertal' column
+        var idx = cols.indexOf('interval');
+
+        // get the interval column
+        var interval = row.children().eq(idx);
+
+        // get the interval column value
+        var interval_value = 0;
+        if (interval.children().length == 1) {
+
+                // test it its a select tag
+                if (interval.children().first().is("select")) {
+
+                    // get selected value
+                    interval_value = interval.children().first().children().filter(":selected").val();
+                };
+
+            }
+        else { 
+
+            // check if interval_value is not the management_auto_text
+            if (interval_value == "{{ management_auto_text }}") {
+
+                interval_value = 0;
+            }
+            else {
+
+                interval_value = interval.text(); 
+
+            };
+        };
+
+        // empty interval
+        interval.empty();
+
+        // process the interval column
+        if (selected_value == "day") {
+
+            // create dropdown element, and attach to interval
+            interval.append(
+                create_dropdown_element(dropdown['weekday_interval'], interval_value, "interval")
+                );
+
+        }
+        else if (selected_value == "interval") {
+
+            // empty text
+            interval.text(interval_value);
+
+        }
+        else {
+
+            // set text to 'auto' and make cell not editable
+            interval.attr("contenteditable", "false");
+            interval.text("{{ management_auto_text }}");
+            
+        };
+
+
+        // run change?
+        if (run_change) {
+
+            // run changed function
+            value_changed(interval);
+
+        };
+        
+        return
+
+    };
+
+    function detach_row(cell) {
+        /* detatches the parent row of the cell
+
+        params:
+        -------
+        cell : jquery element
+            The cell located in the row to
+            detach.
+
+        returns:
+        --------
+        null
+
+        */
+
+
+        // get closest tbody
+        var tbody = cell.closest('tbody');
+
+        //detach the parent tr
+        cell.parents('tr').detach();
+
+        // check if there are 'new-entry's
+        if (tbody.find('.new-entry').length <=0 ) {
+
+            // make the upload button invisible
+            $('#createNewTableRow').addClass("col-12");
+            $('#createNewTableRow').removeClass("col-6");
+            $('#uploadNewRows').addClass("hidden");
+
+        };
+
+        //detach the parent tr
+        cell.parents('tr').detach();
+
+        return null
+
+    };
+    
+    function parse_row_content(row) {
+        /* parses the row content
+        
+        This function parses the row values.
+        
+        params:
+        -------
+        row : html element
+            The html element
+        
+        returns:
+        --------
+        json object
+            The row values
+                Format: {
+                        'colname':'value',
+                        'colname':'value',
+                        ...
+                    }    
+        
+        */
+
+        // get tr
+        var tr = row;
+
+        // get cells
+        var cells = tr.children();
+
+        // get table column names
+        var cols = []
+
+        tr.parents('table').find('thead').find('th').each(function() {
+            
+            // get headers value
+            var headers = $(this).attr('headers');
+
+            if (!['update_button', 'remove_button', 'shortcut_button', 'upload_button'].includes(headers)) {
+                cols.push($(this).attr('headers'));
+            };
+        });
+
+        // get data
+        var data = {}
+
+        // get table row values
+        cols.forEach(function (col, c) {
+
+            // grab cell
+            var cell = cells.eq(c);
+
+            // check if the cell has children. if so, its probably a select tag
+            if (cell.children().length == 1) {
+
+                // test it its a select tag
+                if (cell.children().first().is("select")) {
+
+                    // get selected value
+                    data[col] = cell.children().first().children().filter(":selected").val();
+                }
+            }
+
+            // just add data
+            else { data[col] = cell.text(); };
+            
+
+        });
+
+        return data
+    };
+
+
+    // data fetching
+    function get_data(fetch_table = "customers", filter_type = null, what = null, amount = null) {
+        /* fetches db data and creates tables 
+        
+        params:
+        -------
+        fetch_table : str, optional
+            Indicates the data to get.
+            (default is 'customers')
+                Options: { 'customers', 'category',
+                           'subcategory', 'products',
+                           'abo' 
+                         }
+        filter_type : str | null, optional
+        Indicates the type of filter to apply.
+        (default is null)
+            Caution: only available for 'customers',
+                     'products' & 'abos'
+            Options: 
+                for 'customers': { None, 'customer', 
+                                   'town' }
+                                None: Fetches data by id
+                                    interval.
+                                'customer': Searches for
+                                            a singel customer.
+                                'town': Searches for all
+                                        customers in one town.
+                for 'products':
+                for 'abo':
+        what : str | null, optional
+            Indicates the query phrase.
+            (default is null)
+                Caution: only available for 'customers',
+                     'products' & 'abos'.
+                Example: if null, the string indicates
+                        the interval of ids.
+        amount : int | null, optional
+            The number of entries to query.
+            (default is null).
+
+        returns:
+        --------
+        null
+        
+        */
+
+        // destroy previous content
+        $(content_placeholder).empty()
+        table_name.innerHTML = "";
+        $('#createNewTableRow').addClass("col-12");
+        $('#createNewTableRow').removeClass("col-6");
+        $('#uploadNewRows').addClass("hidden");
+
+        // create endpoint
+        var URL = null;
+        if (fetch_table == "customers") { URL = "{{ url_for('to_api', ressource='customers/get') }}";}
+        else if (fetch_table == "category") { URL = "{{ url_for('to_api', ressource='category/get') }}";}
+        else if (fetch_table == "subcategory") { URL = "{{ url_for('to_api', ressource='subcategory/get') }}";}
+        else if (fetch_table == "products") { URL = "{{ url_for('to_api', ressource='products/get') }}";}
+        else if (fetch_table == "abo") { URL = "{{ url_for('to_api', ressource='abo/get') }}";};
+
+        // create payload
+        var payload = {};
+
+        if (fetch_table == "category" || fetch_table == "subcategory") {
+            payload = JSON.stringify({
+                amount:amount,
+            });
+            }
+        else {
+            payload = JSON.stringify({
+                filter_type:filter_type,
+                what:what,
+                amount:amount,
+            })
+        };
+
+        // ajax
+        $.ajax({
+            method: 'POST',
+            url: URL,
+            data: payload,
+            contentType: "application/json",
+        }).done(function (response) {
+
+            // success, process the tbl data
+            if (response.success) {
+
+                // set tbl type
+                tbl_type = fetch_table;
+
+                // set tbl name
+                table_name.innerHTML = fetch_table.charAt(0).toUpperCase() + fetch_table.slice(1);
+
+                // create the table to add
+                const tbl = table_from_dict(response.data)
+
+                // add to placholder
+                content_placeholder.appendChild(tbl);
+
+                // apply post weekday cleaning
+                if (tbl_type == "abo") { run_abo_cleaning(tbl)};
+                
+
+                // add the DataTable function
+                $('#displayTable').DataTable({
+                    'pagination':true,
+                    'pagingType':"full_numbers",
+                    'ordering':true,
+                    'searching':true,
+                    'bInfo' : false,
+                    'scrollX':true,
+
+                });
+                $('.dataTables_length').addClass('bs-select');
+                
+                // make table-add to active
+                $('#plusSign').addClass("table-add");
+                $('#plusSign').removeClass("table-add-inactive");
+
+                
+
+            }
+            else {
+
+                console.log(response.error);
+                
+                Toastify({
+                        text: response.error,
+                        duration: 3000,
+                        position:'right',
+                        gravity:'top',
+                        style: {
+                            background: "linear-gradient(to right, #e74c3c, #c0392b)",
+                        },
+                    }).showToast();
+
+            };
+
+        });
+    
+    };
+
+
+    // cleaners
+    function run_abo_cleaning(table) {
+        /* Cleanes the abo table */
+
+        // turn into jquery
+        var tbl = $(table);
+
+        // get every row
+        var rows = tbl.find('tbody').find('tr');
+
+        // get the idx of the 'cycle_type' column
+        var cycle_idx = cols.indexOf('cycle_type');
+
+        // iterate through each row, grab the idx and process
+        // the 'process_weekday' function
+        rows.each(function() {
+
+            // get the correct child
+            var cell = $(this).children().eq(cycle_idx);
+
+            // get the first child of the cell & process it
+            process_weekday(cell.children().first(), false);
+
+        });
+
+    };
+
+    // button onchange event listener
+    // delete db entry / table row
+    $('#contentTablePlaceholder').on("click", '.table-remove', function () {
+        
+        // turn into cell
+        var cell = $(this);
+
+        // get current row
+        var row = cell.closest('tr');
+
+        // parse and send only if its NOT a new element
+        if (!row.hasClass('new-entry')) {
+
+            // create url
+            var target_url = null;
+            if (tbl_type == "customers") { 
+                target_url = "{{ url_for('to_api', ressource='customers/delete') }}"; 
+            }
+            else if (tbl_type == "category") {
+                target_url = "{{ url_for('to_api', ressource='category/delete') }}"
+            }
+            else if (tbl_type == "subcategory") {
+                target_url = "{{ url_for('to_api', ressource='subcategory/delete') }}";
+            }
+            else if (tbl_type == "products") {
+                target_url = "{{ url_for('to_api', ressource='products/delete') }}";
+            }
+            else if (tbl_type == "abo") {
+                target_url = "{{ url_for('to_api', ressource='abo/delete') }}";
+            };
+
+            // parse row content
+            var data = parse_row_content(row);
+
+            // make the call
+            $.ajax({
+                method:'POST',
+                url: target_url,
+                data: JSON.stringify(data),
+                contentType:'application/json',
+            }).done(function(response) {
+
+                if (response.success) {
+
+                    // detach row
+                    detach_row(cell);
+
+                }
+                else {
+
+                    console.log(response.error);
+                    
+                    Toastify({
+                            text: response.error,
+                            duration: 3000,
+                            position:'right',
+                            gravity:'top',
+                            style: {
+                                background: "linear-gradient(to right, #e74c3c, #c0392b)",
+                            },
+                        }).showToast();
+
+                };
+
+            });
+
+        }
+        else {
+
+            // just detach the row
+            detach_row(cell);
+
+        };
+
+
+        
+
+    });
+
+    // update db entry
+    $('#contentTablePlaceholder').on("click", '.table-check', function () {
+
+        // turn into cell
+        var cell = $(this);
+
+        // get current row
+        var row = cell.closest('tr');
+
+        // parse row content
+        var data = parse_row_content(row);
+
+        // create url
+        var target_url = null;
+        if (tbl_type == "customers") { 
+            target_url = "{{ url_for('to_api', ressource='customers/update') }}"; 
+        }
+        else if (tbl_type == "category") {
+            target_url = "{{ url_for('to_api', ressource='category/update') }}"; 
+        }
+        else if (tbl_type == "subcategory") {
+            target_url = "{{ url_for('to_api', ressource='subcategory/update') }}";
+        }
+        else if (tbl_type == "products") {
+                target_url = "{{ url_for('to_api', ressource='products/update') }}";
+        }
+        else if (tbl_type == "abo") {
+                target_url = "{{ url_for('to_api', ressource='abo/update') }}";
+        };
+        
+
+
+        // make ajax call
+        $.ajax({
+            method:'POST',
+            url: target_url,
+            data: JSON.stringify(data),
+            contentType:'application/json',
+        }).done(function(response) {
+
+            if (response.success) {
+
+                //detach the parent tr
+                cell.removeClass('table-check');
+                cell.addClass('table-check-inactive');
+
+            }
+            else {
+
+                console.log(response.error);
+                
+                Toastify({
+                        text: response.error,
+                        duration: 3000,
+                        position:'right',
+                        gravity:'top',
+                        style: {
+                            background: "linear-gradient(to right, #e74c3c, #c0392b)",
+                        },
+                    }).showToast();
+
+            };
+
+        });
+        
+
+    });
+
+    // add db entry
+    $('#uploadNewRows').on("click", ".table-upload", function() {
+
+        // turn into cell
+        //var cell = $(this);
+
+        // get table
+        var tbl = $('#displayTable');
+
+        // find all new-entries
+        var data = []
+        tbl.find('.new-entry').each(function() { data.push(parse_row_content($(this))); });
+
+        // create url & keyword for data
+        var target_url = null;
+        if (tbl_type == "customers") { 
+            target_url = "{{ url_for('to_api', ressource='customers/add') }}";
+        }
+        else if (tbl_type == "category") {
+            target_url = "{{ url_for('to_api', ressource='category/add') }}";
+        }
+        else if (tbl_type == "subcategory") {
+            target_url = "{{ url_for('to_api', ressource='subcategory/add') }}";
+        }
+        else if (tbl_type == "products") {
+                target_url = "{{ url_for('to_api', ressource='products/add') }}";
+        }
+        else if (tbl_type == "abo") {
+                target_url = "{{ url_for('to_api', ressource='abo/add') }}";
+        };
+
+        // make ajax call
+        $.ajax({
+            method:'POST',
+            url: target_url,
+            data: JSON.stringify({
+                'to_add':data
+            }),
+            contentType:'application/json',
+        }).done(function(response) {
+
+            if (response.success) {
+
+                //make upload invisible and kill remove 'new-entry' class
+                $('#createNewTableRow').addClass("col-12");
+                $('#createNewTableRow').removeClass("col-6");
+                $('#uploadNewRows').addClass("hidden");
+                
+                tbl.find('.new-entry').each(function() { $(this).removeClass("new-entry"); });
+
+                Toastify({
+                        text: response.data.msg,
+                        duration: 3000,
+                        position:'right',
+                        gravity:'top',
+                        style: {
+                            background: "linear-gradient(to right, #16a085, #2ecc71)",
+                        },
+                    }).showToast();
+
+            }
+            else {
+
+                console.log(response.error);
+                
+                Toastify({
+                        text: response.error,
+                        duration: 3000,
+                        position:'right',
+                        gravity:'top',
+                        style: {
+                            background: "linear-gradient(to right, #e74c3c, #c0392b)",
+                        },
+                    }).showToast();
+
+            };
+
+        });
+
+    });
+
+    // add empty table row
+    $('#createNewTableRow').on("click", ".table-add", function() {
+
+        // get the table
+        var tbl = $('#contentTablePlaceholder').find('table');
+
+        // create empty row and attach
+        tbl.children('tbody').append(
+            create_table_row()
+        )
+
+        // make the upload button visible
+        $('#createNewTableRow').removeClass("col-12");
+        $('#createNewTableRow').addClass("col-6");
+        $('#uploadNewRows').removeClass("hidden");
+
+
+    });
+
+
+    // bulk option
+    function bulk_frame() {
+
+        // create window
+        window.open("{{ url_for('bulk') }}", "", "width=500,height=600");
+    };
+
+
+
+
+</script>
+
+{% endblock %} 

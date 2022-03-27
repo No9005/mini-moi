@@ -15,7 +15,41 @@ from miniMoi.models.Models import Products, Category
 from miniMoi.language import language_files
 from miniMoi.logic.helpers import tools
 
-#region 'functions'
+
+#region 'private functions' -----------------------
+def _margin(revenue:float, cost:float, decimals:int = 2) -> float:
+    """Calulates the margin 
+    
+    Calculates the margin and returns it.
+    The margin is defined as
+    
+        (revenue - cost) / revenue
+        
+    REFERENCE:
+        [1] https://www.patriotsoftware.com/blog/accounting/margin-vs-markup-chart-infographic/#:~:text=To%20find%20the%20margin%2C%20divide%20gross%20profit%20by%20the%20revenue.&text=To%20make%20the%20margin%20a%20percentage%2C%20multiply%20the%20result%20by%20100.&text=The%20margin%20is%2025%25.,25%25%20of%20your%20total%20revenue.
+
+    params:
+    ------
+    revenue : float
+        The selling price of the item.
+    cost : float
+        The purchase price of the item.
+    decimals : int, optional
+        The number of decimals.
+        (default is 2)
+
+    returns:
+    --------
+    float
+        margin
+
+    """
+
+    return (revenue - cost) / revenue
+
+#endregion
+
+#region 'public functions' ------------------------
 def get(
         filter_type:typing.Union[str, None], 
         what:typing.Union[str, None],
@@ -69,9 +103,15 @@ def get(
 
     """
 
+    # get language files
+    try: translation = language_files[language]
+    except: translation = language_files[app.config['DEFAULT_LANGUAGE']]
+
     # get language errorcodes
-    try: errors = language_files[language]['error_codes']
-    except: errors = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
+    errors = translation['error_codes']
+
+    # get language mapping for columns
+    mappedCols = translation['column_mapping']['products']
 
     # check if the filter is one of the allowed keywords
     allowedFilter = [None, "product", "category"]
@@ -128,8 +168,40 @@ def get(
     # limit the amount?
     if amount is not None: result = result.limit(amount)
 
+    #region 'create dropdown options'
+    categories = session.query(Category)
+    if categories.first() is None: return {
+        'success':False, 
+        'error':errors['noElementInDB'].format(
+            element = translation['table_mapping']['category']
+        ),
+        'data':{}
+        }
+
+    # parse all elements to dict
+    dropdown_category = {cat.id:cat.name for cat in categories.all()}
+
+    #endregion
+
+    #region 'create empty result return'
+    intendedOrder = [
+            'id', 'name', 'category', 'purchase_price',
+            'selling_price', 'margin', 'store', 'phone'
+        ]
+
+    emptyResult = {
+        'data':[],
+        'order':intendedOrder,
+        'mapping':[mappedCols[col] for col in intendedOrder],
+        'dropdown':{
+            'category':dropdown_category
+        }
+    }
+
+    #endregion
+
     # result is None?
-    if result is None: return{'success':True, 'error':"", 'data':{'result':[]}}
+    if result.first() is None: return{'success':True, 'error':"", 'data':emptyResult}
 
     # turn into list
     fetched = []
@@ -137,13 +209,16 @@ def get(
 
         fetched.append({col.name:getattr(row, col.name) for col in row.__table__.columns})
 
+    if len(fetched) == 0: return{'success':True, 'error':"", 'data':emptyResult}
+
+    # update empty result data
+    emptyResult.update({'data':fetched})
+
     # turn into dict & return
     return {
         'success':True,
         'error':"",
-        'data':{
-            'result':fetched
-        }
+        'data':emptyResult
     }
     
 def update(product_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
@@ -176,12 +251,49 @@ def update(product_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAG
     
     """
 
+    # get language
+    try: translation = language_files[language]
+    except: translation = language_files[app.config['DEFAULT_LANGUAGE']]
+
     # get language errorcodes
-    try: errors = language_files[language]['error_codes']
-    except: errors = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
+    errors = translation['error_codes']
 
     # check if the list is not empty
     if not bool(data): return {'success':False, 'error':errors['noEntry'], 'data':{}}
+
+    #region 'parse input'
+    # try to parse numeric values
+    try: category_id = int(data['category'])
+    except ValueError as e: return {
+            'success':False,
+            'error':errors['wrongType'].format(
+                var = translation['column_mapping']['products']['category'],
+                dtype = 'int',
+            ),
+            'data':{}
+        }
+
+    # try to parse float values
+    float_values = {}
+    for val in ['purchase_price', 'selling_price']:
+
+
+        # check if the value is already a float
+        if isinstance(data[val], float): float_values.update({val:data[val]})
+        else:
+
+            # try to parse to float
+            try: float_values.update({val:float(".".join(str(data[val]).split(",")))})
+            except ValueError as e: return {
+                'success':False,
+                'error':errors['wrongType'].format(
+                    var = translation['column_mapping']['products'][val],
+                    dtype = 'float',
+                ),
+                'data':{}
+            }
+
+    #endregion
 
     # create a session
     session = Session()
@@ -205,7 +317,7 @@ def update(product_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAG
     availableCategories = categories['id'].unique().tolist()
 
     # check if product has valid category
-    if data['category'] not in availableCategories:
+    if category_id not in availableCategories:
 
         # close session
         session.close()
@@ -222,16 +334,13 @@ def update(product_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAG
 
     # try to update
     try:
-        product.name = data['name']
-        product.category = data['category']
-        product.purchase_price = data['purchase_price']
-        product.selling_price = data['selling_price']
-        product.store = data['store']
-        product.phone = data['phone']
-        product.margin = round(
-            (data['selling_price'] - data['purchase_price']) / data['purchase_price'],
-            3
-            )
+        product.name = str(data['name'])
+        product.category = category_id
+        product.purchase_price = float_values['purchase_price']
+        product.selling_price = float_values['selling_price']
+        product.store = str(data['store'])
+        product.phone = str(data['phone'])
+        product.margin = _margin(float_values['selling_price'], float_values['purchase_price'])
 
         session.commit()
 
@@ -260,7 +369,11 @@ def update(product_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAG
     return {
         'success':True,
         'error':"",
-        'data':{}
+        'data':{
+            'msg':translation['notification']['update_to_db'].format(
+                element=translation['table_mapping']['product']
+            )
+        }
     }
 
 def add(products:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
@@ -298,20 +411,18 @@ def add(products:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
 
     """
 
+
+    # get language
+    try: translation = language_files[language]
+    except: translation = language_files[app.config['DEFAULT_LANGUAGE']]
+
     # get language errorcodes
-    try: errors = language_files[language]['error_codes']
-    except: errors = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
+    errors = translation['error_codes']
 
     # check if the list is not empty
     if not bool(products): return {'success':False, 'error':errors['noEntry'].format(
         element = "product"
     ), 'data':{}}
-
-    # turn into pd.DataFrame
-    df = pd.DataFrame(products)
-
-    # calculate margin
-    df['margin'] = ((df['selling_price'] - df['purchase_price']) / df['purchase_price']).round(3)
 
     # create session
     session = Session()
@@ -329,33 +440,74 @@ def add(products:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
     toAdd = []
 
     # create the new products
-    for i, product in df.iterrows():
+    for product in products:
 
-        try:
+        #region 'parse input values'
+        # int values parsing
+        try: category = int(product['category'])
+        except Exception as e: return {
+                'success':False,
+                'error':errors['wrongType'].format(
+                    var = translation['column_mapping']['products']['category'],
+                    dtype = 'int',
+                ),
+                'data':{}
+            }
 
-            # check if selected category is available
-            if not product['category'] in availableCategories: 
-                
-                # close session
-                session.close()
+        # float parsing
+        float_values = {}
+        for val in ['selling_price', 'purchase_price']:
+    
+            # check if all elements are already floats, if not convert them
+            if isinstance(product[val], float): float_values.update({val:product[val]})
+            else:
 
-                return {
+                try: float_values.update({val: float(".".join(str(product[val]).split(",")))})
+                except ValueError as e: return {
                     'success':False,
-                    'error':errors['wrongCategory'].format(
-                        p = str(product['name']),
-                        c = str(product['category'])
+                    'error':errors['wrongType'].format(
+                        var = translation['column_mapping']['products'][val],
+                        dtype = 'float',
                     ),
                     'data':{}
-                }
+            }
+    
 
+        # calculate margin
+        float_values.update({
+            'margin': _margin(float_values['selling_price'], float_values['purchase_price'])
+        })
+
+        #endregion
+
+        #region 'check if selected category is available'
+        if not category in availableCategories:
+
+            # close session
+            session.close()
+
+            return {
+                'success':False,
+                'error':errors['wrongCategory'].format(
+                    p = str(product['name']),
+                    c = str(product['category'])
+                ),
+                'data':{}
+            }
+
+        #endregion
+
+        # try to add
+        try:
+                
             toAdd.append(Products(
-                name = product['name'],
-                category = product['category'],
-                purchase_price = product['purchase_price'],
-                selling_price = product['selling_price'],
-                margin = product['margin'],
-                store = product['store'],
-                phone = product['phone'] 
+                name = str(product['name']),
+                category = category,
+                purchase_price = float_values['purchase_price'],
+                selling_price = float_values['selling_price'],
+                margin = float_values['margin'],
+                store = str(product['store']),
+                phone = str(product['phone'] )
             ))
 
         except Exception as e:
@@ -366,7 +518,6 @@ def add(products:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
             # close the session
             session.close()
 
-            print(product)
 
             return {
                 'success':False, 
@@ -406,7 +557,11 @@ def add(products:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
     return {
         'success':True,
         'error':"",
-        'data':{}
+        'data':{
+            'msg':translation['notification']['added_to_db'].format(
+                element=translation['table_mapping']['products']
+            )
+        }
     }
 
 def delete(product_id:int, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
@@ -428,9 +583,12 @@ def delete(product_id:int, language:str = app.config['DEFAULT_LANGUAGE']) -> dic
 
     """
 
+    # get language
+    try: translation = language_files[language]
+    except: translation = language_files[app.config['DEFAULT_LANGUAGE']]
+
     # get language errorcodes
-    try: errors = language_files[language]['error_codes']
-    except: errors = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
+    errors = translation['error_codes']
 
     # create session
     session = Session()
@@ -471,7 +629,11 @@ def delete(product_id:int, language:str = app.config['DEFAULT_LANGUAGE']) -> dic
     return {
         'success':True,
         'error':"",
-        'data':{}
+        'data':{
+            'msg':translation['notification']['deleted_from_db'].format(
+                element=translation['table_mapping']['product']
+            )
+        }
     }
 
 #endregion

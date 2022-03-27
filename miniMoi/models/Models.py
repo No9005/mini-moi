@@ -93,13 +93,20 @@ class Orders(base):
     product : int
         product id.
             ForeignKey: Product -> id
-    name : str
+    product_name : str
         The product name at the time of
         order.
+    category : str
+        The name of the category
+        of the product (during time of
+        ordering)
+    subcategory : str
+        The subcategory at the time of
+        ordering (name)
     quantity : int
         The amount of the ordered product.
     price : float
-        The price of the product at the moment.
+        The selling price of the product at the moment.
     total : float
         The total cost for the amount of
         products ordered.
@@ -113,7 +120,9 @@ class Orders(base):
     date = Column(DateTime, default=datetime.utcnow)
 
     product = Column(Integer, ForeignKey("products.id"), nullable=False)
-    name = Column(String(100), nullable = False)
+    product_name = Column(String(100), nullable = False)
+    category = Column(String(100), default="unknown")
+    subcategory = Column(String(100), default="unknown")
     quantity = Column(Integer, nullable = False)
     price = Column(Float, nullable = False)
     total = Column(Float, nullable = False)
@@ -166,6 +175,9 @@ class Abo(base):
     product : int
         Product id.
             ForeignKey: Products -> id
+    subcategory: int
+        subcategory id.
+            ForeignKey: Subcategory -> id
     quantity : int
         The quantity of the product in the abo.
     
@@ -248,7 +260,7 @@ class Products(base):
         distributor
     selling_price : float
         Price upon selling the item.
-    margin : Float
+    margin : float
         Margin in % (--> as decimal)
             Example: .3 = 30%
     store : str

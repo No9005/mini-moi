@@ -1,6 +1,89 @@
-v.0.4.0: First html added.
+v.0.6.0: Reporting done. See changelog.
+    Reporting is missing its unittest, but it works for now.
+    Missing documentation in README.md
+    Missing button in the footer to create demo files.
+    Everything else is currently marked as 'nice-to-have':
+        - exporting queried sheets as excel tables
 
 ------------ old versions ----------------------------------
+v.0.5.2: Reporting generating (start). See changelog.
+    First elements from the reporting are implemented.
+    Need testdate though.
+    Everything else is currently marked as 'nice-to-have':
+        - Reporting tool, to report the last week/month
+          as table and info graphics.
+        - exporting queried sheets as excel tables
+
+v.0.5.1: Bulk update foxes. See changelog.
+    Changed Bulk update to be xlsx ready.
+    Manual integration tests do look correct.
+    Missing language file for DE & FR.
+    Everything else is currently marked as 'nice-to-have':
+        - Reporting tool, to report the last week/month
+          as table and info graphics.
+        - exporting queried sheets as excel tables
+
+v.0.5.0: Bulk update. See changelog.
+    Integration tests are needed still needed.
+    Bulk import unittests needed (?)
+    Bulk looks to work properly (manually view).
+    Everything else is currently marked as 'nice-to-have':
+        - Reporting tool, to report the last week/month
+          as table and info graphics.
+        - exporting queried sheets as excel tables
+
+v.0.4.10: Updated Unittests. See changelog.
+    Integration tests are needed.
+    Everything else is currently marked as 'nice-to-have':
+        - Reporting tool, to report the last week/month
+          as table and info graphics.
+        - table mass importing from excel/csv files
+        - exporting queried sheets as excel tables
+
+v.0.4.9: Ui with good progress. See changelog.
+    The management ui works so far for all but abos.
+    This table needs the overhaul based on the json
+    input changes.
+    Also need to updaten and add new unittests
+    to all functions (test_abo to test_products;
+    the getter changed everywhere).
+    Other to-dos are a full interface check.
+    Some integration tests.
+    Maybe we add also a bulk adder.
+    We have to add a backup function for the db too.
+    If everything goes well, I am going to add a basic
+    reporting tool too.
+
+v.0.4.8: Tables. See changelog.
+    Still working on the data fetching from the server.
+    The basic tables are implemented. Adding & updating
+    possible.
+    There is still the option to bulk import missing
+    (strg+c -> strg+v).
+    The products & abos need also additional dropdown
+    menus, so the user can select the product by name
+    in the ui.
+
+v.0.4.7: Added auto create db directory.
+
+v.0.4.6: Small fix of missing assignment & unittest changes.
+
+v.0.4.5: Table non editable check... See changelog.
+    For the sake of my sanity, I just added the complete
+    relevant information to the table in the delivery section.
+    Have to test if the non-editable elements are actualy non
+    editable.
+
+v.0.4.4: Hoops for excel sending... gotta change this.
+
+v.0.4.3: Table add/delete + fetch.
+
+v.0.4.2: Tables buttons.
+
+v.0.4.1: Tables...
+
+v.0.4.0: First html added.
+
 v.0.3.1: Xlsx bugfixing. Frontend needed.
 
 v.0.3.0: Added xlsx writing. Frontend needed.

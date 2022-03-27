@@ -15,37 +15,47 @@
         {% block title %}{% endblock %}
     </title>
 
-    {%block thirdParty %}{% endblock %}
-
     <!-- jQuery, Bootstrap & toastify -->
-    <script type="application/javascript" src="{{ url_for('static', filename='js/jquery/3.6.0/jquery-3.6.0.js') }}"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='js/bootstrap/4.0.0/css/bootstrap.min.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='js/toastify/1.11.1/toastify.min.css') }}">
+    <script type="application/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    
+    {%block thirdParty %}{% endblock %}
     
     <!-- custom Stylesheet-->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 
     <!-- favicon -->
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='icons/favicon-32x32.png') }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='icons/favicon-16x16.png') }}">
-    <link rel="shortcut icon" type="image/icon" href="{{ url_for('static', filename='icons/favicon.ico')}}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
+    <link rel="shortcut icon" type="image/icon" href="{{ url_for('static', filename='favicon/favicon.ico')}}">
 
 </head>
 
 <body>
 
     <div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom box-shadow">
-      <img src="https://user-images.githubusercontent.com/52833906/159451562-de17a088-1438-4198-8e90-0cda45ef307a.png" style="width:5%" class="pr-1">  
+      <img src="https://user-images.githubusercontent.com/52833906/159451562-de17a088-1438-4198-8e90-0cda45ef307a.png" style="width:60px" class="pr-1">  
       <h5 class="my-0 mr-md-auto font-weight-normal"> 
-        <a href="{{ url_for('index') }}" class="text-dark no-link-underline"><b>{{ base_app_name }}</b></a>
-      </h5>
+        {% if request.path != "/bulk" %}
+          <a href="{{ url_for('index') }}" class="text-dark no-link-underline"><b>{{ base_app_name }}</b></a>
+        {% else %} 
+          <p class="text-dark no-link-underline"><b>{{ base_app_name }}</b></p>
+        {% endif %}
+        </h5>
+        {% if request.path != "/shutdown/app" and request.path != "/bulk" %}
         <nav class="my-2 my-md-0 mr-md-3">
           <a class="p-2 text-dark" href="{{ url_for('delivery') }}">{{ base_delivery }}</a>
-          <a class="p-2 text-dark" href="#">{{ base_tables }}</a>
+          <a class="p-2 text-dark" href="{{ url_for('management') }}">{{ base_tables }}</a>
+          <a class="p-2 text-dark" href="{{ url_for('reporting') }}">{{ base_reporting }}</a>
           <a class="p-2 text-dark" href="{{ url_for('settings') }}">{{ base_settings }}</a>
         </nav>
-        <a class="btn btn-outline-danger" href="{{ url_for('shutdown') }}">{{ base_shutdown }}</a>
+        {% endif %}
+        {% if request.path != "/shutdown/app" and request.path != "/bulk" %}
+          <a class="btn btn-outline-danger" href="{{ url_for('shutdown') }}">{{ base_shutdown }}</a>
+        {% endif %}
       </div>
   
       <!-- content container -->
@@ -57,7 +67,10 @@
         <footer class="pt-4 my-md-5 pt-md-5 border-top">
           <div class="row">
             <div class="col-12 col-md">
-              <img class="mb-2" src="https://getbootstrap.com/docs/4.0/assets/brand/bootstrap-solid.svg" alt="" width="24" height="24">
+              <a onClick="window.open('https://www.layers-of-life.com')">
+                <img class="mb-2" src="https://user-images.githubusercontent.com/52833906/160291224-d6b215b9-6f6f-4dc3-9e95-a25492341705.png" alt="" width="80px;">
+              </a>
+              
               <small class="d-block mb-3 text-muted">
                 &copy; 2022 Daniel Kiermeier <br>
                 mail: d.kiermeier@layers-of-life.com
@@ -66,19 +79,19 @@
             <div class="col-6 col-md">
               <h5>{{ base_documentation }}</h5>
               <ul class="list-unstyled text-small">
-                <li><a class="text-muted" href="#">github</a></li>
+                <li><a class="text-muted" href="https://github.com/No9005/mini-moi">github</a></li>
               </ul>
             </div>
             <div class="col-6 col-md">
               <h5>{{ base_update }}</h5>
               <ul class="list-unstyled text-small">
-                <li><a class="text-muted" href="#">{{ base_releases }}</a></li>
+                <li><a class="text-muted" href="https://github.com/No9005/mini-moi/releases">{{ base_releases }}</a></li>
               </ul>
             </div>
             <div class="col-6 col-md">
               <h5>{{ base_version }}</h5>
               <ul class="list-unstyled text-small">
-                <li><a class="text-muted" href="#">{{ base_app_version }}</a></li>
+                <li><p class="text-muted">{{ base_app_version }}</p></li>
               </ul>
             </div>
           </div>
@@ -88,11 +101,11 @@
 </body>
 
 <!-- bootstrap js -->
-<script type="text/javascript" src="{{ url_for('static', filename='js/popper/1.12.9/popper.min.js') }}"></script>
-<script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap/4.0.0/js/bootstrap.min.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
 <!-- toastify-js -->
-<script type="text/javascript" src="{{ url_for('static', filename='js/toastify/1.11.1/toastify-js.js') }}"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
 
 {% block script %}{% endblock %}

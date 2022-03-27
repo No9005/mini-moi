@@ -142,7 +142,7 @@ class TestCustomer(unittest.TestCase):
             'success': True,
             'error': '',
             'data': {
-                'result': [
+                'data': [
                     {
                         'id': 1, 
                         'date':'2022.03.15 13:00',
@@ -157,8 +157,18 @@ class TestCustomer(unittest.TestCase):
                         'birthdate':"2022.03.16",
                         'approach':3,
                         'notes':""
-                        }
-                    ]
+                    }
+                    ],
+                'order': [
+                    'id', 'date', 'name', 'surname', 'street', 'nr', 
+                    'postal', 'town', 'phone', 'mobile', 'birthdate', 
+                    'approach', 'notes'
+                    ],
+                'mapping': [
+                    'id', 'Date', 'Name', 'Surname', 'Street', 'Nr', 
+                    'Postal', 'City', 'Phone', 'Mobile', 'Birthdate', 
+                    'Approach', 'Notes'
+                ]
                 }
         })
 
@@ -172,7 +182,19 @@ class TestCustomer(unittest.TestCase):
             tz = "Europe/Berlin"
         )
 
-        self.assertEqual(result, {'success':True, 'error':"", 'data':{'result':[]}})
+        self.assertEqual(result['data'], {
+            'data':[],
+            'order':[
+                'id', 'date', 'name', 'surname', 'street', 'nr', 'postal',
+                'town', 'phone', 'mobile', 'birthdate', 'approach', 'notes'
+                ],
+            'mapping':[
+                'id', 'Date', 'Name', 'Surname', 'Street',
+                'Nr', 'Postal', 'City',
+                'Phone', 'Mobile', 'Birthdate', 'Approach',
+                'Notes'
+            ]
+        })
 
         #endregion
 
@@ -186,7 +208,7 @@ class TestCustomer(unittest.TestCase):
         )
 
         self.assertEqual(result, {'success':True, 'error':"", 'data':{
-            'result': [
+            'data': [
                     {
                         'id': 1, 
                         'date':'2022.03.15 13:00',
@@ -202,7 +224,17 @@ class TestCustomer(unittest.TestCase):
                         'approach':3,
                         'notes':""
                         }
-                    ]
+                    ],
+            'order': [
+                    'id', 'date', 'name', 'surname', 'street', 'nr', 
+                    'postal', 'town', 'phone', 'mobile', 'birthdate', 
+                    'approach', 'notes'
+                    ],
+            'mapping': [
+                'id', 'Date', 'Name', 'Surname', 'Street', 'Nr', 
+                'Postal', 'City', 'Phone', 'Mobile', 'Birthdate', 
+                'Approach', 'Notes'
+            ]
             }})
 
         #endregion
@@ -216,7 +248,7 @@ class TestCustomer(unittest.TestCase):
         )
 
         self.assertEqual(result, {'success':True, 'error':"", 'data':{
-            'result': [
+            'data': [
                     {
                         'id': 1, 
                         'date':'2022.03.15 13:00',
@@ -232,7 +264,17 @@ class TestCustomer(unittest.TestCase):
                         'approach':3,
                         'notes':""
                         }
-                    ]
+                    ],
+            'order': [
+                    'id', 'date', 'name', 'surname', 'street', 'nr', 
+                    'postal', 'town', 'phone', 'mobile', 'birthdate', 
+                    'approach', 'notes'
+                    ],
+            'mapping': [
+                'id', 'Date', 'Name', 'Surname', 'Street', 'Nr', 
+                'Postal', 'City', 'Phone', 'Mobile', 'Birthdate', 
+                'Approach', 'Notes'
+            ]
             }})
 
         #endregion
@@ -246,7 +288,19 @@ class TestCustomer(unittest.TestCase):
             tz = "Europe/Berlin"
         )
         
-        self.assertEqual(result, {'success':True, 'error':"", 'data':{'result':[]}})
+        self.assertEqual(result['data'], {
+            'data':[],
+            'order':[
+                'id', 'date', 'name', 'surname', 'street', 'nr', 'postal',
+                'town', 'phone', 'mobile', 'birthdate', 'approach', 'notes'
+                ],
+            'mapping':[
+                'id', 'Date', 'Name', 'Surname', 'Street',
+                'Nr', 'Postal', 'City',
+                'Phone', 'Mobile', 'Birthdate', 'Approach',
+                'Notes'
+            ]
+        })
 
         #endregion
 
@@ -308,6 +362,7 @@ class TestCustomer(unittest.TestCase):
                 'phone':"",
                 'mobile':"",
                 'birthdate':"1832-12-10",
+                'approach':"15",
                 'notes':"Some notes"
             },
             language = "EN"
@@ -337,14 +392,15 @@ class TestCustomer(unittest.TestCase):
                 'town':"Birdy",
                 'phone':"",
                 'mobile':"",
-                'birthdate':"1832-12.10",
+                'birthdate':"1832-12:10",
+                'approach':"10",
                 'notes':"Some notes"
             },
             language = "EN"
         )
 
         # assert
-        self.assertEqual(result['error'], "Not able to run the operation 'update' the customer.: : ValueError: time data '1832-12.10' does not match format '%Y-%m-%d'.")
+        self.assertEqual(result['error'], "'Birthdate' needs to be in the format 'Year.Month.Day'.")
 
         # check db
         with Session(testEngine) as session:
@@ -386,6 +442,7 @@ class TestCustomer(unittest.TestCase):
                     'phone':"",
                     'mobile':"",
                     'birthdate':"1755-12-10",
+                    'approach':"3",
                     'notes':"Gut'n Tach"
                 },
                 {
@@ -398,6 +455,7 @@ class TestCustomer(unittest.TestCase):
                     'phone':"",
                     'mobile':"",
                     'birthdate':"2022-12-10",
+                    'approach':4,
                     'notes':""
                 }
             ],
@@ -435,7 +493,8 @@ class TestCustomer(unittest.TestCase):
                     'town':"Schnapp",
                     'phone':"",
                     'mobile':"",
-                    'birthdate':"1755-12.10",
+                    'birthdate':"1755-12:10",
+                    'approach':3,
                     'notes':""
                 },
             ],
@@ -443,8 +502,34 @@ class TestCustomer(unittest.TestCase):
         )
 
         # assert
-        self.assertEqual(result['error'], "Not able to run the operation 'add' the customer.: Bilbo: ValueError: time data '1755-12.10' does not match format '%Y-%m-%d'.")
+        self.assertEqual(result['error'], "'Birthdate' needs to be in the format 'Year.Month.Day'.")
 
+        #endregion
+
+        #region 'birthdate empty'
+        """--> should work"""
+        result = customer.add(
+            customers = [
+                {
+                    'name':"Bilbo",
+                    'surname':"Männchen",
+                    'street':"Weiher",
+                    'nr':3,
+                    'postal':"2020",
+                    'town':"Schnapp",
+                    'phone':"",
+                    'mobile':"",
+                    'birthdate':"",
+                    'approach':3,
+                    'notes':""
+                },
+            ],
+            language = "EN"
+        )
+
+        # assert
+        self.assertTrue(result['success'])
+        
         #endregion
 
     def test_delete(self):

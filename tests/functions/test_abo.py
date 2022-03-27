@@ -128,6 +128,15 @@ class TestAbo(unittest.TestCase):
         self.account = None
 
     #region 'tests'
+    def test_db(self):
+        """Tests the time in the database """
+
+        with Session(self.testEngine) as session:
+            self.assertEqual(
+                session.query(Abo).first().update_date, 
+                datetime.datetime.strptime("2022.03.15 12:00:00", "%Y.%m.%d %H:%M:%S")
+            )
+
     def test_get(self):
         """Tests the data getter """
 
@@ -139,24 +148,42 @@ class TestAbo(unittest.TestCase):
             tz = "Europe/Berlin"
         )
 
-        self.assertEqual(result, {
-            'success': True,
-            'error': '',
-            'data': {
-                'result': [
-                    {
-                        'id': 1, 
-                        'customer_id': 1, 
-                        'update_date': '2022.03.15 13:00', 
-                        'cycle_type': 'day', 
-                        'interval': 5, 
-                        'next_delivery': '2022.03.16', 
-                        'product_id': 2, 
-                        'product_name': 'Baguette'
+        self.assertEqual(result['data']['data'], [
+                {
+                    'id': 1, 
+                    'customer_id': 1, 
+                    'update_date': '2022.03.15 13:00', 
+                    'cycle_type': 'day', 
+                    'interval': 5, 
+                    'next_delivery': '2022.03.16', 
+                    'product': 2, 
+                    'subcategory': 1, 
+                    'quantity': 5
+                    }
+                ])
+        self.assertEqual(result['data']['order'], [
+                    'id', 'customer_id', 'update_date', 'cycle_type', 'interval', 
+                    'next_delivery', 'product', 'subcategory', 'quantity'
+                    ])
+        self.assertEqual(result['data']['mapping'], [
+                    'id', 'Customer id', 'Update date', 'Cycle type', 'Interval', 
+                    'Next delivery', 'Product', 'Subcategory', 'Qnt.'
+                    ])
+        self.assertEqual(result['data']['dropdown'], {
+                    'cycle_type': {
+                        'None': 'None', 'day': 'Weekday', 'interval': 'Interval'
+                        },
+                    'weekday_interval': {
+                        0: 'Monday', 1: 'Tuesday', 2: 'Wendsday', 3: 'Thursday', 
+                        4: 'Friday', 5: 'Saturday', 6: 'Sunday'
+                        },
+                    'product': {
+                        1: 'Brot', 2: 'Baguette'
+                        },
+                    'subcategory': {
+                        1: 'Sub1', 2: 'Sub2'
                         }
-                    ]
-                }
-        })
+                    })
 
         #endregion
 
@@ -168,7 +195,32 @@ class TestAbo(unittest.TestCase):
             tz = "Europe/Berlin"
         )
 
-        self.assertEqual(result, {'success':True, 'error':"", 'data':{'result':[]}})
+        self.assertEqual(result['data'], {
+            'data':[],
+            'order': [
+                'id', 'customer_id', 'update_date', 'cycle_type', 'interval', 
+                'next_delivery', 'product', 'subcategory', 'quantity'
+                ], 
+            'mapping': [
+                'id', 'Customer id', 'Update date', 'Cycle type', 'Interval', 
+                'Next delivery', 'Product', 'Subcategory', 'Qnt.'
+                ],
+            'dropdown': {
+                'cycle_type': {
+                    'None': 'None', 'day': 'Weekday', 'interval': 'Interval'
+                    },
+                'weekday_interval': {
+                    0: 'Monday', 1: 'Tuesday', 2: 'Wendsday', 3: 'Thursday', 
+                    4: 'Friday', 5: 'Saturday', 6: 'Sunday'
+                    },
+                'product': {
+                    1: 'Brot', 2: 'Baguette'
+                    },
+                'subcategory': {
+                    1: 'Sub1', 2: 'Sub2'
+                    }
+                }
+        })
 
         #endregion
 
@@ -198,8 +250,7 @@ class TestAbo(unittest.TestCase):
             tz = "Europe/Berlin"
         )
 
-        self.assertEqual(result, {'success':True, 'error':"", 'data':{
-            'result': [
+        self.assertEqual(result['data']['data'], [
                     {
                         'id': 2, 
                         'customer_id': 1, 
@@ -207,11 +258,34 @@ class TestAbo(unittest.TestCase):
                         'cycle_type': 'interval', 
                         'interval': 6, 
                         'next_delivery': '2022.03.16', 
-                        'product_id': 1, 
-                        'product_name': 'Brot'
+                        'product': 1, 
+                        'subcategory': 2, 
+                        'quantity': 5
                         }
-                    ]
-            }})
+                    ])
+        self.assertEqual(result['data']['order'], [
+                    'id', 'customer_id', 'update_date', 'cycle_type', 'interval', 
+                    'next_delivery', 'product', 'subcategory', 'quantity'
+                    ])
+        self.assertEqual(result['data']['mapping'], [
+                'id', 'Customer id', 'Update date', 'Cycle type', 'Interval', 
+                'Next delivery', 'Product', 'Subcategory', 'Qnt.'
+                ])
+        self.assertEqual(result['data']['dropdown'], {
+                'cycle_type': {
+                    'None': 'None', 'day': 'Weekday', 'interval': 'Interval'
+                    },
+                'weekday_interval': {
+                    0: 'Monday', 1: 'Tuesday', 2: 'Wendsday', 3: 'Thursday', 
+                    4: 'Friday', 5: 'Saturday', 6: 'Sunday'
+                    },
+                'product': {
+                    1: 'Brot', 2: 'Baguette'
+                    },
+                'subcategory': {
+                    1: 'Sub1', 2: 'Sub2'
+                    }
+                })
 
         #endregion
 
@@ -224,7 +298,7 @@ class TestAbo(unittest.TestCase):
         )
 
         self.assertEqual(result, {'success':True, 'error':"", 'data':{
-            'result': [
+            'data': [
                     {
                         'id': 1, 
                         'customer_id': 1, 
@@ -232,8 +306,9 @@ class TestAbo(unittest.TestCase):
                         'cycle_type': 'day', 
                         'interval': 5, 
                         'next_delivery': '2022.03.16', 
-                        'product_id': 2, 
-                        'product_name': 'Baguette'
+                        'product': 2,
+                        'subcategory': 1, 
+                        'quantity': 5
                     },
                     {
                         'id': 2, 
@@ -242,10 +317,34 @@ class TestAbo(unittest.TestCase):
                         'cycle_type': 'interval', 
                         'interval': 6, 
                         'next_delivery': '2022.03.16', 
-                        'product_id': 1, 
-                        'product_name': 'Brot'
+                        'product': 1,
+                        'subcategory': 2, 
+                        'quantity': 5
                         }
-                    ]
+                    ],
+            'order': [
+                'id', 'customer_id', 'update_date', 'cycle_type', 'interval', 
+                'next_delivery', 'product', 'subcategory', 'quantity'
+                ], 
+            'mapping': [
+                'id', 'Customer id', 'Update date', 'Cycle type', 'Interval', 
+                'Next delivery', 'Product', 'Subcategory', 'Qnt.'
+                ],
+            'dropdown': {
+                'cycle_type': {
+                    'None': 'None', 'day': 'Weekday', 'interval': 'Interval'
+                    },
+                'weekday_interval': {
+                    0: 'Monday', 1: 'Tuesday', 2: 'Wendsday', 3: 'Thursday', 
+                    4: 'Friday', 5: 'Saturday', 6: 'Sunday'
+                    },
+                'product': {
+                    1: 'Brot', 2: 'Baguette'
+                    },
+                'subcategory': {
+                    1: 'Sub1', 2: 'Sub2'
+                    }
+                }
             }})
 
         #endregion
@@ -259,7 +358,32 @@ class TestAbo(unittest.TestCase):
             tz = "Europe/Berlin"
         )
         
-        self.assertEqual(result, {'success':True, 'error':"", 'data':{'result':[]}})
+        self.assertEqual(result['data'], {
+            'data':[],
+            'order': [
+                'id', 'customer_id', 'update_date', 'cycle_type', 'interval', 
+                'next_delivery', 'product', 'subcategory', 'quantity'
+                ], 
+            'mapping': [
+                'id', 'Customer id', 'Update date', 'Cycle type', 'Interval', 
+                'Next delivery', 'Product', 'Subcategory', 'Qnt.'
+                ],
+            'dropdown': {
+                'cycle_type': {
+                    'None': 'None', 'day': 'Weekday', 'interval': 'Interval'
+                    },
+                'weekday_interval': {
+                    0: 'Monday', 1: 'Tuesday', 2: 'Wendsday', 3: 'Thursday', 
+                    4: 'Friday', 5: 'Saturday', 6: 'Sunday'
+                    },
+                'product': {
+                    1: 'Brot', 2: 'Baguette'
+                    },
+                'subcategory': {
+                    1: 'Sub1', 2: 'Sub2'
+                    }
+                }
+        })
 
         #endregion
 
@@ -311,10 +435,11 @@ class TestAbo(unittest.TestCase):
             abo_id = 1,
             data = {
                 'cycle_type':"interval",
+                'customer_id':"1",
                 'interval':3,
-                'product':1,
+                'product':"1",
                 'next_delivery':None,
-                'subcategory':2,
+                'subcategory':2.,
                 'quantity':2
             }
         )
@@ -340,11 +465,12 @@ class TestAbo(unittest.TestCase):
             abo_id = 1,
             data = {
                 'cycle_type':"day",
+                'customer_id':"1",
                 'interval':2,
                 'product':1,
                 'next_delivery':"2021-12-01",
                 'subcategory':1,
-                'quantity':3
+                'quantity':"3"
             },
             tz = "Europe/Berlin"
         )
@@ -367,9 +493,12 @@ class TestAbo(unittest.TestCase):
             abo_id = 1,
             data = {
                 'cycle_type':"interval",
+                'customer_id':"1",
                 'interval':3,
                 'product':15,
-                'custom_next_delivery':None
+                'next_delivery':None,
+                'subcategory':1,
+                'quantity':3
             }
         )
 
@@ -383,10 +512,12 @@ class TestAbo(unittest.TestCase):
             abo_id = 1,
             data = {
                 'cycle_type':"interval",
+                'customer_id':"1",
                 'interval':3,
                 'product':1,
-                'custom_next_delivery':None,
-                'subcategory':10
+                'next_delivery':None,
+                'subcategory':10,
+                'quantity':3.0
             }
         )
 
@@ -398,10 +529,10 @@ class TestAbo(unittest.TestCase):
     def test_add(self):
         """Adds a element to the db """
 
-        #region 'customer not found'
+        #region 'product not available'
         result = abo.add(
-            customer_id = 6,
             abos = [{
+                'customer_id':"1",
                 'cycle_type':"day",
                 'interval':6,
                 'product':6,
@@ -409,25 +540,8 @@ class TestAbo(unittest.TestCase):
                 'subcategory':1,
                 'quantity':5
             }],
+            language="EN",
             tz = "Europe/Berlin"
-        )
-
-        # assert
-        self.assertEqual(result['error'], "The customer was not found.")
-
-        #endregion
-
-        #region 'product not available'
-        result = abo.add(
-            customer_id = 1,
-            abos = [{
-                'cycle_type':"day",
-                'interval':6,
-                'product':6,
-                'next_delivery':None,
-                'subcategory':1,
-                'quantity':5
-            }]
         )
 
         # assert
@@ -437,8 +551,8 @@ class TestAbo(unittest.TestCase):
 
         #region 'subcategory not available'
         result = abo.add(
-            customer_id = 1,
             abos = [{
+                'customer_id':"1",
                 'cycle_type':"day",
                 'interval':6,
                 'product':1,
@@ -461,8 +575,8 @@ class TestAbo(unittest.TestCase):
 
         # run function
         result = abo.add(
-            customer_id = 1,
             abos = [{
+                'customer_id':"1",
                 'cycle_type':"day",
                 'interval':6,
                 'product':1,
@@ -470,7 +584,9 @@ class TestAbo(unittest.TestCase):
                 'subcategory':1,
                 'quantity':5
                 },
-                {'cycle_type':"interval",
+                {
+                'customer_id':"1",
+                'cycle_type':"interval",
                 'interval':8,
                 'product':2,
                 'next_delivery':None,

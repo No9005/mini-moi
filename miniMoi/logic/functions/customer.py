@@ -56,30 +56,39 @@ def get(
     --------
     dict
         success, error, data {
-            'result':[
+            'data':[
                 {
-                    'id':int,
-                    'date':datetime,
-                    'name':str,
-                    'surname':str,
-                    'street':str,
-                    'nr':int,
-                    'postal':str,
-                    'town':str,
-                    'phone':str,
-                    'mobile':str,
-                    'birthdate':str("%Y.%m.%d)
-                    'notes':str,
+                    'id':list[int],
+                    'date':list[datetime],
+                    'name':list[str],
+                    'surname':list[str],
+                    'street':list[str],
+                    'nr':list[int],
+                    'postal':list[str],
+                    'town':list[str],
+                    'phone':list[str],
+                    'mobile':list[str],
+                    'birthdate':list[str]("%Y.%m.%d),
+                    'approach':list[int],
+                    'notes':list[str],
                 },
                 ...
-            ]
+            ],
+            'order':[],
+            'mapping':[]
         }
 
     """
 
+    # get language files
+    try: translation = language_files[language]
+    except: translation = language_files[app.config['DEFAULT_LANGUAGE']]
+
     # get language errorcodes
-    try: errors = language_files[language]['error_codes']
-    except: errors = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
+    errors = translation['error_codes']
+
+    # get language mapping for columns
+    mappedCols = translation['column_mapping']['customers']
 
     # check if the filter is one of the allowed keywords
     allowedFilter = [None, "customer", "town"]
@@ -125,8 +134,24 @@ def get(
     # limit the amount?
     if amount is not None: result = result.limit(amount)
 
+    #region 'create empty result return'
+    intendedOrder = [
+            'id', 'date', 'name', 'surname', 'street',
+            'nr', 'postal', 'town',
+            'phone', 'mobile', 'birthdate', 'approach',
+            'notes'
+        ]
+
+    emptyResult = {
+        'data':[],
+        'order':intendedOrder,
+        'mapping':[mappedCols[col] for col in intendedOrder],
+    }
+
+    #endregion
+
     # result is None?
-    if result is None: return{'success':True, 'error':"", 'data':{'result':[]}}
+    if result.first() is None: return{'success':True, 'error':"", 'data':emptyResult}
 
     # turn into list
     fetched = []
@@ -151,13 +176,16 @@ def get(
 
         fetched.append(copy.deepcopy(tmp))
 
+    if len(fetched) == 0: return{'success':True, 'error':"", 'data':emptyResult}
+
+    # update empty result
+    emptyResult.update({'data':fetched})
+
     # turn into dict & return
     return {
         'success':True,
         'error':"",
-        'data':{
-            'result':fetched
-        }
+        'data':emptyResult
     }
 
 def update(customer_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']) -> dict:
@@ -179,7 +207,7 @@ def update(customer_id:int, data:dict, language:str = app.config['DEFAULT_LANGUA
                 'town':str,
                 'phone':str,
                 'mobile':str,
-                'birthdate':str("%Y-%m-%d)
+                'birthdate':str("%Y.%m.%d)
                 'notes':str
             }
     language : str, optional
@@ -193,13 +221,18 @@ def update(customer_id:int, data:dict, language:str = app.config['DEFAULT_LANGUA
     returns:
     -------
     dict
-        success, error & data
+        success, error & data {
+            'msg':str
+        }
     
     """
 
+    # get language
+    try: translation = language_files[language]
+    except: translation = language_files[app.config['DEFAULT_LANGUAGE']]
+
     # get language errorcodes
-    try: errors = language_files[language]['error_codes']
-    except: errors = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
+    errors = translation['error_codes']
 
     # check if the list is not empty
     if not bool(data): return {'success':False, 'error':errors['noEntry'], 'data':{}}
@@ -217,22 +250,44 @@ def update(customer_id:int, data:dict, language:str = app.config['DEFAULT_LANGUA
         return {'success':False, 'error':errors['notFound'].format(element="customer"), 'data':{}}
 
     try:
+        
+        # parse to int
+        for col in ['nr', 'approach']:
+            try: int(data[col])
+            except ValueError as e: return {'success':False, 'error':errors['wrongType'].format(
+                var = translation['column_mapping']['customers'][col],
+                dtype="int"
+            ), 'data':{}}
 
-        # check if the format of the birthdate is correct
-        birthdate = time.local_to_utc(
-            time.parse_date_string(data['birthdate']),
-            tz
-            )
+        # check if birthdate is not just a empty string
+        birthdate = None
+
+        if data['birthdate'] != "":
+            try: 
+                # parse birthdate into correct format
+                birthdate = "-".join(data['birthdate'].split("."))
+
+                # parse to datetime
+                birthdate = time.local_to_utc(
+                time.parse_date_string(birthdate),
+                tz
+                )
+
+            except: return {'success':False, 'error':errors['wrongFormat'].format(
+                var=translation['column_mapping']['customers']['birthdate'],
+                format="Year.Month.Day"
+            )}
 
         # try to update him
-        customer.name = data['name']
-        customer.surname = data['surname']
-        customer.street = data['street']
-        customer.nr = data['nr']
-        customer.postal = data['postal']
-        customer.town = data['town']
-        customer.phone = data['phone']
-        customer.mobile = data['mobile']
+        customer.name = str(data['name'])
+        customer.surname = str(data['surname'])
+        customer.street = str(data['street'])
+        customer.nr = int(data['nr'])
+        customer.postal = str(data['postal'])
+        customer.town = str(data['town'])
+        customer.phone = str(data['phone'])
+        customer.mobile = str(data['mobile'])
+        customer.approach = int(data['approach'])
         customer.birthdate = birthdate
     
         # commit
@@ -264,7 +319,11 @@ def update(customer_id:int, data:dict, language:str = app.config['DEFAULT_LANGUA
     return {
         'success':True,
         'error':"",
-        'data':{}
+        'data':{
+            'msg':translation['notification']['update_to_db'].format(
+                element=translation['table_mapping']['customer']
+            )
+        }
     }
 
 def add(customers:list, language:str = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']) -> dict:
@@ -288,7 +347,8 @@ def add(customers:list, language:str = app.config['DEFAULT_LANGUAGE'], tz = app.
                     'town':str,
                     'phone':str,
                     'mobile':str,
-                    'birthdate':str("%Y-%m-%d)
+                    'birthdate':str("%Y-%m-%d),
+                    'approach':int,
                     'notes':str
                 },
                 ...
@@ -304,13 +364,18 @@ def add(customers:list, language:str = app.config['DEFAULT_LANGUAGE'], tz = app.
     returns:
     --------
     dict
-        success, error & data {}
+        success, error & data {
+            'msg':str
+        }
 
     """
 
+    # get language
+    try: translation = language_files[language]
+    except: translation = language_files[app.config['DEFAULT_LANGUAGE']]
+
     # get language errorcodes
-    try: errors = language_files[language]['error_codes']
-    except: errors = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
+    errors = translation['error_codes']
 
     # check if the list is not empty
     if not bool(customers): return {'success':False, 'error':errors['noEntry'], 'data':{}}
@@ -324,26 +389,48 @@ def add(customers:list, language:str = app.config['DEFAULT_LANGUAGE'], tz = app.
     # create a new customer object for each in the list
     for customer in customers:
 
+        # check if the stringified ints are int convertable
+        for col in ['nr', 'approach']:
+            try: int(customer[col])
+            except ValueError as e: return {'success':False, 'error':errors['wrongType'].format(
+                var = translation['column_mapping']['customers'][col],
+                dtype="int"
+            ), 'data':{}}
+
         try:
 
-            # check if the datetime is convertable
-            birthdate = time.local_to_utc(
-                time.parse_date_string(customer['birthdate']),
-                tz
-                )
+            # check if birthdate is just ""
+            birthdate = None
+
+            if customer['birthdate'] != "":
+                try: 
+                    # parse birthdate into correct format
+                    birthdate = "-".join(customer['birthdate'].split("."))
+
+                    # parse to datetime
+                    birthdate = time.local_to_utc(
+                    time.parse_date_string(birthdate),
+                    tz
+                    )
+
+                except: return {'success':False, 'error':errors['wrongFormat'].format(
+                    var=translation['column_mapping']['customers']['birthdate'],
+                    format="Year.Month.Day"
+                )}
 
             # try to create the new object
             toAdd.append(Customers(
-                name = customer['name'],
-                surname = customer['surname'],
-                street = customer['street'],
-                nr = customer['nr'],
-                postal = customer['postal'],
-                town = customer['town'],
-                phone = customer['phone'],
-                mobile = customer['mobile'],
+                name = str(customer['name']),
+                surname = str(customer['surname']),
+                street = str(customer['street']),
+                nr = int(customer['nr']),
+                postal = str(customer['postal']),
+                town = str(customer['town']),
+                phone = str(customer['phone']),
+                mobile = str(customer['mobile']),
                 birthdate = birthdate,
-                notes = customer['notes']
+                approach = int(customer['approach']),
+                notes = str(customer['notes'])
             ))
 
         except Exception as e:
@@ -393,7 +480,11 @@ def add(customers:list, language:str = app.config['DEFAULT_LANGUAGE'], tz = app.
     return {
         'success':True,
         'error':"",
-        'data':{}
+        'data':{
+            'msg':translation['notification']['added_to_db'].format(
+                element=translation['table_mapping']['customers']
+            )
+        }
     }
 
 def delete(customer_id:int, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
@@ -415,9 +506,12 @@ def delete(customer_id:int, language:str = app.config['DEFAULT_LANGUAGE']) -> di
 
     """
 
+    # get language
+    try: translation = language_files[language]
+    except: translation = language_files[app.config['DEFAULT_LANGUAGE']]
+
     # get language errorcodes
-    try: errors = language_files[language]['error_codes']
-    except: errors = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
+    errors = translation['error_codes']
 
     # create session
     session = Session()
@@ -458,7 +552,11 @@ def delete(customer_id:int, language:str = app.config['DEFAULT_LANGUAGE']) -> di
     return {
         'success':True,
         'error':"",
-        'data':{}
+        'data':{
+            'msg':translation['notification']['deleted_from_db'].format(
+                element=translation['table_mapping']['customer']
+            )
+        }
     }
 
 #endregion

@@ -9,6 +9,7 @@ import datetime
 import zipfile
 import io
 
+import numpy as np
 import pandas as pd
 import xlsxwriter as xlsx
 
@@ -21,6 +22,39 @@ import miniMoi.logic.helpers.excel as xlsx
 
 
 #region 'helpers (private) functions' ----------------------------
+def _create_mapping(data:dict, translation:dict) -> tuple:
+    """Creates column ordering & mapper
+
+    Needed for correct displaying of elements
+    in forntend.
+
+    params:
+    ------
+    data : dict
+        The data as dict to check.
+    translation : dict
+        The excel translation dict.
+
+    returns:
+    --------
+    tuple
+        (ordering, mapper)
+    
+    """
+
+    # get cols ordering
+    cols = [col for col in data.keys()]
+
+    # create empty mapper
+    mapper = []
+
+    # cycle through cols and try to get a translation
+    for element in cols:
+        if element in translation: mapper.append(translation[element])
+        else: mapper.append(element)
+
+    return (cols, mapper)
+
 def _product_overview(granular:pd.DataFrame, to_dict:bool=False) -> typing.Union[pd.DataFrame, dict]:
     """Produces the product overview
 
@@ -121,6 +155,209 @@ def _prepare_granular(df:pd.DataFrame, reset_index:bool = True) -> pd.DataFrame:
 
     return granular
 
+def _process_excel(
+        df:pd.DataFrame, 
+        save_cover:bool=True, 
+        save_overview:bool=True, 
+        language:str = app.config['DEFAULT_LANGUAGE']
+    ) -> dict:
+    """Process the df and saves the files to 'downloads'
+
+    params:
+    -------
+    df : pd.DataFrame
+        The order data
+    save_cover : bool, optional
+        If True, the cover excel will be saved.
+        (default is True)
+    save_overview : bool, optional
+        If True, the overview excel will be saved.
+
+    returns:
+    --------
+    dict
+        success, error & data {'path':str}
+    
+    """
+
+    # try to grab the language files
+    try: translation = language_files[language]
+    except: translation = language_files[app.config['DEFAULT_LANGUAGE']]
+
+    # gate date of tomorrow
+    date = time.to_string(
+                    time.utc_to_local(
+                        time.utcnow() + datetime.timedelta(days=1),
+                        tz = app.config['TZ_INFO']
+                        ), 
+                    "%Y-%m-%d"
+                )
+
+    # get HOME
+    home = app.config['HOME']
+    fullPath = home/"mini-moi/delivery"
+
+    # create 'mini-moi' folder if available
+    fullPath.mkdir(exist_ok=True)
+
+    # create product overviews
+    # group on granularest level
+    granular = _prepare_granular(df)
+
+    if save_cover:
+        # create category overview
+        overview_category = _category_overview(granular, to_dict=True)
+
+        # create product overview
+        overview_product = _product_overview(granular, to_dict = True)
+
+        # create excel -> save to download folder
+        cover = xlsx.print_cover(
+            category_overview = overview_category,
+            product_overview = overview_product,
+            path = str(fullPath / "cover_{date}.xlsx".format(date=date)),
+            tomorrow = True,
+            language = language
+    )
+
+    if save_overview:
+        
+        # build townbased
+        townbased = {
+                t:df[df['customer_town'] == t].to_dict("list") for t in df['customer_town'].unique().tolist()
+            } 
+
+        orderDetails = xlsx.print_order_list(
+            townbased,
+            path = str(fullPath / "overview_{date}.xlsx".format(date=date)),
+            tomorrow = True,
+            language = language
+        )
+
+    # did all work?
+    return {
+        'success':True,
+        'error':"",
+        'data':{
+            'path':translation['notification']['save_path'].format(path=str(fullPath))
+        }
+    }
+
+def _process_received(data:dict, errors:dict) -> dict:
+    """Processes the ajax received data
+
+    Turns the received json data into a dataframe
+    and processes it (checking, cleaning & sorting)
+
+    params:
+    -------
+    data : dict
+        The town based data for each abo.
+            Format: {
+                    'customer_approach':list[int], 
+                    'customer_street':list[str], 
+                    'customer_nr':list[int],
+                    'customer_town':list[str],
+                    'customer_name':list[str],
+                    'customer_surname':list[str],
+                    'customer_id':list[int],
+                    'customer_phone':list[str],
+                    'customer_mobile':list[str],
+                    'quantity':list[int], 
+                    'product_name':list[str], 
+                    'product_id':list[int],
+                    'category_name':list[str],
+                    'subcategory_name':list[str],
+                    'product_selling_price':list[float],
+                    'cost':list[float],
+                    'total_cost':list[float],
+                    'notes':list[str]
+                    'id':list[int] # -> the abo_id
+                    }
+            }
+    errors : dict
+        The language file for the errors.
+
+    returns:
+    --------
+    dict
+        success, error & data {
+            'df':pd.DataFrame
+        }
+
+    """
+
+    # data empty?
+    if not bool(data): return {'success':False, 'error':errors['noEntry'], 'data':{}}
+
+    # turn into pd.dataFrame
+    df = pd.DataFrame(data)
+
+    # all relevant columns in the data?
+    relCols = [
+        'customer_street',
+        'customer_approach', 
+        'customer_nr',
+        'customer_town',
+        'customer_name',
+        'customer_surname',
+        'customer_id',
+        'quantity', 
+        'product_name',
+        'product_id',
+        'product_selling_price',
+        'subcategory_name',
+        'category_name',
+        'cost',
+        'total_cost',
+        'customer_phone',
+        'customer_mobile',
+        'customer_notes',
+        'id',
+        ]
+    for col in relCols:
+
+        if col not in df.columns: return {
+            'success':False, 
+            'error':errors['missingData'].format(column=str(col)), 
+            'data':{}
+            }
+
+    # turn into correct formats
+    # fill na with -999
+    df.fillna(-999, inplace=True)
+    df.replace('', -999, inplace=True)
+    
+    # sort
+    df = df.astype(str).sort_values(['customer_town', 'customer_approach', 'product_name'])
+
+    int_values = ['id', 'customer_approach', 'customer_nr', 'customer_id', 'quantity', 'product_id']
+    float_values = ['product_selling_price', 'cost', 'total_cost']
+    is_numeric = int_values + float_values
+    str_values = [col for col in df.columns if col not in is_numeric]
+
+    numeric_df = df.loc[:, is_numeric].astype(float).round(2)
+    #int_df = df.loc[:, int_values].astype(int)
+    str_df = df.loc[:, str_values].astype(str)
+
+    df = pd.concat([numeric_df[float_values], numeric_df[int_values].astype(int), str_df], axis=1)
+    
+    # turn -999 back to nan
+    df.replace(-999, np.nan, inplace=True)
+    df.replace(-999.0, np.nan, inplace=True)
+    df.replace('-999', "", inplace=True)
+
+    # sort order
+    df = df.loc[:, relCols]
+
+    return {
+        'success':True,
+        'error':"",
+        'data':{
+            'df':df
+        }
+    }
+
 #endregion
 
 
@@ -145,60 +382,73 @@ def create(language = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']
     dict
         success, error & data {
             'overview_category':{
-                'category_name':[],
-                'quantity':[],
-                'cost':[]
+                'data':{
+                    'category_name':[],
+                    'quantity':[],
+                    'cost':[]
+                },
+                'order':[],
+                'mapping':[]
                 },
             'overview_product':{
                 'category_name':{
-                    'product_name':[],
-                    'subcat_1:[],
-                    'subcat_2:[],
-                    'subcat_X:[],
-                    ...
+                    'data':{
+                        'product_name':[],
+                        'subcat_1:[],
+                        'subcat_2:[],
+                        'subcat_X:[],
+                        ...},
+                    'order':[],
+                    'mapping':[]
                 },
                 'category_name2':{
-                    ...
+                   { ...}
                 },
                 ...
                 
                 },
             'total_earnigns':int,
+            'total_spendings':int,
             'town_based':{
                 'townName':{
-                    'customer_approach':list[int], 
-                    'customer_street':list[str], 
-                    'customer_nr':list[int],
-                    'customer_town':list[str],
-                    'customer_name':list[str],
-                    'customer_surname':list[str],
-                    'customer_id':list[int],
-                    'customer_phone':list[str],
-                    'customer_mobile':list[str],
-                    'quantity':list[int], 
-                    'product_name':list[str],
-                    'product_id':list[int],
-                    'category_name':list[str],
-                    'subcategory_name':list[str],
-                    'product_selling_price':list[float],
-                    'cost':list[float],
-                    'total_cost':list[float],
-                    'notes':list[str]
-                    'id':list[int] # -> the abo_id
-                    },
+                    'data':{
+                        'customer_approach':list[int], 
+                        'customer_street':list[str], 
+                        'customer_nr':list[int],
+                        'customer_town':list[str],
+                        'customer_name':list[str],
+                        'customer_surname':list[str],
+                        'customer_id':list[int],
+                        'customer_phone':list[str],
+                        'customer_mobile':list[str],
+                        'quantity':list[int], 
+                        'product_name':list[str],
+                        'product_id':list[int],
+                        'category_name':list[str],
+                        'subcategory_name':list[str],
+                        'product_selling_price':list[float],
+                        'cost':list[float],
+                        'total_cost':list[float],
+                        'notes':list[str]
+                        'id':list[int] # -> the abo_id}
+                        },
+                    'order':[],
+                    'mapping':[]
                 'townName':{
                     ...
                     },
                 ...
             }
-
         }
     
     """
 
+    # get language files
+    try: translation = language_files[language]
+    except: translation = language_files[app.config['DEFAULT_LANGUAGE']]
+
     # get language errorcodes
-    try: errors = language_files[language]['error_codes']
-    except: errors = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
+    errors = translation['error_codes']
 
     # create session
     session = Session()
@@ -233,6 +483,8 @@ def create(language = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']
 
     # filter abos to be only for tomorrow
     abos = abos[abos['next_delivery'] == time.to_string(tomorrowLocal)]
+
+    if abos.empty: return {'success':False, 'error':errors['noDelivery'], 'data':{}}
 
     #endregion
 
@@ -287,6 +539,7 @@ def create(language = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']
     #region 'create overview' ----------------------------------
     # calculate cost & total for each participant
     df['cost'] = df.loc[:, 'product_selling_price'] * df.loc[:, 'quantity']
+    df['spendings'] = df.loc[:, 'product_purchase_price'] * df.loc[:, 'quantity']
 
     # group on granularest level
     granular = _prepare_granular(df)
@@ -299,6 +552,7 @@ def create(language = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']
 
     # get total earned price
     totalEarnings = df['cost'].sum()
+    totalSpendings = df['spendings'].sum()
 
     # sort for town based userlist
     cost_per_customer = df.groupby('customer_id').apply(lambda x: x['cost'].sum()).reset_index()
@@ -308,27 +562,28 @@ def create(language = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']
     df = pd.merge(df, cost_per_customer, how="left", left_on="customer_id", right_on="customer_id")
 
     # select only relevant information
-    df = df.loc[:, [
-        'customer_approach', 
-        'customer_street', 
+    relevantCols = [
+        'customer_approach',
+        'customer_street',
         'customer_nr',
         'customer_town',
         'customer_name',
         'customer_surname',
-        'customer_id',
-        'customer_phone',
-        'customer_mobile',
-        'quantity', 
         'product_name',
-        'product_id',
-        'product_selling_price',
+        'quantity',
         'subcategory_name',
         'category_name',
+        'product_selling_price',
         'cost',
         'total_cost',
+        'customer_phone',
+        'customer_mobile',
         'customer_notes',
-        'id'
-        ]].sort_values(['customer_town', 'customer_approach', 'product_name'])
+        'product_id',
+        'customer_id',
+        'id',
+        ]
+    df = df.loc[:, relevantCols].sort_values(['customer_town', 'customer_approach', 'product_name'])
 
     # turn into townbased dict
     townbased = {
@@ -337,15 +592,59 @@ def create(language = app.config['DEFAULT_LANGUAGE'], tz = app.config['TZ_INFO']
 
     #endregion
 
+    # get xlsx table name mapping
+    xlsxNames = translation['xlsx']
+
+    #region 'create orders & mapping'
+    # category
+    categoryOrder, categoryMapping = _create_mapping(overview_category, xlsxNames)
+
+    # product
+    productOverview = {}
+    for p in overview_product.keys():
+
+        # get mapping
+        tmpOrder, tmpMapping = _create_mapping(overview_product[p], xlsxNames)
+
+        productOverview.update({
+            p:{
+                'data':overview_product[p],
+                'order':[c for c in tmpOrder],
+                'mapping':[c for c in tmpMapping]
+            }
+        })
+
+    # townbased
+    townBasedOverview = {}
+    for t in townbased.keys():
+
+        # get mapper
+        tmpOrder, tmpMapping = _create_mapping(townbased[t], xlsxNames)
+
+        townBasedOverview.update({
+            t:{
+                'data':townbased[t],
+                'order':[c for c in tmpOrder],
+                'mapping':[c for c in tmpMapping]
+            }
+        })
+    
+    #endregion
+
     # did all work?
     return {
         'success':True,
         'error':"",
         'data':{
-            'overview_category':overview_category,
-            'overview_product':overview_product,
+            'overview_category':{
+                'data':overview_category,
+                'order':categoryOrder,
+                'mapping':categoryMapping
+                },
+            'overview_product':productOverview,
             'total_earnings':totalEarnings,
-            'town_based':townbased
+            'total_spendings':totalSpendings,
+            'town_based':townBasedOverview,
         }
     }
 
@@ -399,55 +698,23 @@ def book(data:dict, language = app.config['DEFAULT_LANGUAGE']) -> dict:
     """
 
     # get language errorcodes
-    try: errors = language_files[language]['error_codes']
-    except: errors = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
+    try: translation = language_files[language]
+    except: translation = language_files[app.config['DEFAULT_LANGUAGE']]
+    errors = translation['error_codes']
 
-    # data empty?
-    if not bool(data): return {'success':False, 'error':errors['noEntry'], 'data':{}}
+    processed = _process_received(data, errors)
+    if not processed['success']: return processed
 
-    # all relevant columns in the data?
-    relCols = [
-        'customer_approach',
-        'customer_street', 
-        'customer_nr',
-        'customer_town',
-        'customer_name',
-        'customer_surname',
-        'customer_id',
-        'customer_phone',
-        'customer_mobile',
-        'quantity', 
-        'product_name', 
-        'product_id',
-        'product_selling_price',
-        'subcategory_name',
-        'category_name',
-        'cost',
-        'total_cost',
-        'customer_notes',
-        'id'
-        ]
-    for col in relCols:
-
-        if col not in data.keys(): return {
-            'success':False, 
-            'error':errors['missingData'].format(column=str(col)), 
-            'data':{}
-            }
-
-    # turn into pd.dataFrame
-    df = pd.DataFrame(data)
-
-    # sort
-    df = df.sort_values(['customer_town', 'customer_approach', 'product_name'])
+    # get df & delete processed
+    df = processed['data']['df']
+    del processed
 
     # create session
     session = Session()
 
     # fetch all abos to update
-    abos = session.query(Abo).filter(Abo.id.in_(
-        df['id'].unique().tolist()
-    )).all()
+    toQuery = [int(val) for val in  df['id'].unique().tolist() if not np.isnan(val)]
+    abos = session.query(Abo).filter(Abo.id.in_(toQuery)).all()
     
     # add order & update next_delivery
     toAdd = []
@@ -460,12 +727,14 @@ def book(data:dict, language = app.config['DEFAULT_LANGUAGE']) -> dict:
 
             # add order
             toAdd.append(Orders(
-                customer_id = tmp['customer_id'].tolist()[0],
-                product = tmp['product_id'].tolist()[0],
-                name = tmp['product_name'].tolist()[0],
-                quantity = tmp['quantity'].tolist()[0],
-                price = tmp['product_selling_price'].tolist()[0],
-                total = tmp['cost'].tolist()[0]
+                customer_id = int(tmp['customer_id'].tolist()[0]),
+                product = int(tmp['product_id'].tolist()[0]),
+                product_name = str(tmp['product_name'].tolist()[0]),
+                category = str(tmp['category_name'].tolist()[0]),
+                subcategory = str(tmp['subcategory_name'].tolist()[0]),
+                quantity = int(tmp['quantity'].tolist()[0]),
+                price = float(tmp['product_selling_price'].tolist()[0]),
+                total = float(tmp['cost'].tolist()[0])
             ))
 
             # update abo next_delivery
@@ -498,72 +767,9 @@ def book(data:dict, language = app.config['DEFAULT_LANGUAGE']) -> dict:
     # add to add to the session
     session.add_all(toAdd)
 
-    # create product overviews
-    # group on granularest level
-    granular = _prepare_granular(df)
-
-    # create category overview
-    overview_category = _category_overview(granular, to_dict=True)
-
-    # create product overview
-    overview_product = _product_overview(granular, to_dict = True)
-
-    # build townbased
-    townbased = {
-            t:df[df['customer_town'] == t].to_dict("list") for t in df['customer_town'].unique().tolist()
-        } 
-
-    # create excel
-    cover = xlsx.print_cover(
-        category_overview = overview_category,
-        product_overview = overview_product,
-        path = None,
-        tomorrow = True,
-        language = language
-    )
-
-    orderDetails = xlsx.print_order_list(
-        townbased,
-        path = None,
-        tomorrow = True,
-        language = language
-    )
-
-    # zip the files
-    archive = io.BytesIO()
-
-    # get today
-    useDate = time.to_string(
-                time.utc_to_local(
-                    time.utcnow() + datetime.timedelta(days=1),
-                    tz = app.config['TZ_INFO']
-                    ), 
-                "%Y-%m-%d"
-                )
-
-    with zipfile.ZipFile(archive, "w") as zip_archive:
-
-        # add the files
-        with zip_archive.open("/cover_" + useDate + ".xlsx", "w") as file1:
-            file1.write(cover.read())
-        
-        with zip_archive.open("/order_details_" + useDate + ".xlsx", "w") as file2:
-            file2.write(orderDetails.read())
-
-    archive.seek(0)
-
-
-    if False: 
-        """
-        CAUTION:
-        Write the archive to disk by using the writing mode
-        'wb' for -> 'write binary'.
-
-        """
-
-        # write the buffer to the disk
-        with open(str(app.config['CWD'].parent/"vorlagen/archive.zip"), "wb") as f:
-            f.write(archive.getbuffer())
+    # generate excel files
+    excel = _process_excel(df, True, True, language)
+    if not excel['success']: return excel
 
     # commit
     try: session.commit()
@@ -589,13 +795,14 @@ def book(data:dict, language = app.config['DEFAULT_LANGUAGE']) -> dict:
         'success':True,
         'error':"",
         'data':{
-            'zip':archive,
-            'date':useDate
+            'msg':excel['data']['path']
         }
     }
 
-def print_order_details(
+def save_data(
         data:dict,
+        save_cover:bool = True,
+        save_overview:bool = True,
         language = app.config['DEFAULT_LANGUAGE']
     ) -> dict:
     """Create order details overview
@@ -628,6 +835,12 @@ def print_order_details(
                     'id':list[int] # -> the abo_id
                     }
             }
+    save_cover : bool, optional
+        If true, the excel cover is printed.
+        (default is True)
+    save_overview : bool, optional
+        If true, the excel overview is printed.
+        (default is True)
     language : str, optional
         language ISO code for the errors.
         (default is app.config['DEFAULT_LANGUAGE])
@@ -636,201 +849,32 @@ def print_order_details(
     -------
     dict
         success, error & data:{
-            'file':io.BytesIO,
-            'date':str
+            'msg':str
             }
 
     """
 
     # get language errorcodes
-    try: errors = language_files[language]['error_codes']
-    except: errors = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
+    try: translation = language_files[language]
+    except: translation = language_files[app.config['DEFAULT_LANGUAGE']]
+    errors = translation['error_codes']
 
-    # data empty?
-    if not bool(data): return {'success':False, 'error':errors['noEntry'], 'data':{}}
+    processed = _process_received(data, errors)
+    if not processed['success']: return processed
 
-    # all relevant columns in the data?
-    relCols = [
-        'customer_approach',
-        'customer_street', 
-        'customer_nr',
-        'customer_town',
-        'customer_name',
-        'customer_surname',
-        'customer_id',
-        'customer_phone',
-        'customer_mobile',
-        'quantity', 
-        'product_name', 
-        'product_id',
-        'product_selling_price',
-        'subcategory_name',
-        'category_name',
-        'cost',
-        'total_cost',
-        'customer_notes',
-        'id'
-        ]
-    for col in relCols:
+    # get df & delete processed
+    df = processed['data']['df']
+    del processed
 
-        if col not in data.keys(): return {
-            'success':False, 
-            'error':errors['missingData'].format(column=str(col)), 
-            'data':{}
-            }
-
-    # turn into pd.dataFrame
-    df = pd.DataFrame(data)
-
-    # sort
-    df = df.sort_values(['customer_town', 'customer_approach', 'product_name'])
-
-    # build townbased
-    townbased = {
-            t:df[df['customer_town'] == t].to_dict("list") for t in df['customer_town'].unique().tolist()
-        } 
-
-    orderDetails = xlsx.print_order_list(
-        townbased,
-        path = None,
-        tomorrow = True,
-        language = language
-    )
+    # generate excel files
+    excel = _process_excel(df, save_cover, save_overview, language)
+    if not excel['success']: return excel
 
     return {
         'success':True,
         'error':"",
         'data':{
-            'file':orderDetails,
-            'date':time.to_string(
-                time.utc_to_local(
-                    time.utcnow() + datetime.timedelta(days=1),
-                    tz = app.config['TZ_INFO']
-                    ), 
-                "%Y-%m-%d"
-                )
-            }
-    }
-
-def print_cover(
-        data:dict,
-        language = app.config['DEFAULT_LANGUAGE']
-    ) -> dict:
-    """Create the cover excel sheet
-
-    Creates the excel cover and returns it.
-
-    params:
-    -------
-    data : dict
-        The town based data for each abo.
-            Format: {
-                    'customer_approach':list[int], 
-                    'customer_street':list[str], 
-                    'customer_nr':list[int],
-                    'customer_town':list[str],
-                    'customer_name':list[str],
-                    'customer_surname':list[str],
-                    'customer_id':list[int],
-                    'customer_phone':list[str],
-                    'customer_mobile':list[str],
-                    'quantity':list[int], 
-                    'product_name':list[str], 
-                    'product_id':list[int],
-                    'category_name':list[str],
-                    'subcategory_name':list[str],
-                    'product_selling_price':list[float],
-                    'cost':list[float],
-                    'total_cost':list[float],
-                    'notes':list[str]
-                    'id':list[int] # -> the abo_id
-                    }
-            }
-    language : str, optional
-        language ISO code for the errors.
-        (default is app.config['DEFAULT_LANGUAGE])
- 
-    returns:
-    -------
-    dict
-        success, error & data:{
-            'file':io.BytesIO,
-            'date':str
-            }
-
-    """
-
-    # get language errorcodes
-    try: errors = language_files[language]['error_codes']
-    except: errors = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
-
-    # data empty?
-    if not bool(data): return {'success':False, 'error':errors['noEntry'], 'data':{}}
-
-    # all relevant columns in the data?
-    relCols = [
-        'customer_approach',
-        'customer_street', 
-        'customer_nr',
-        'customer_town',
-        'customer_name',
-        'customer_surname',
-        'customer_id',
-        'customer_phone',
-        'customer_mobile',
-        'quantity', 
-        'product_name', 
-        'product_id',
-        'product_selling_price',
-        'subcategory_name',
-        'category_name',
-        'cost',
-        'total_cost',
-        'customer_notes',
-        'id'
-        ]
-    for col in relCols:
-
-        if col not in data.keys(): return {
-            'success':False, 
-            'error':errors['missingData'].format(column=str(col)), 
-            'data':{}
-            }
-
-    # turn into pd.dataFrame
-    df = pd.DataFrame(data)
-
-    # create product overviews
-    # group on granularest level
-    granular = _prepare_granular(df)
-
-    # create category overview
-    overview_category = _category_overview(granular, to_dict=True)
-
-    # create product overview
-    overview_product = _product_overview(granular, to_dict = True)
-
-    # create excel
-    cover = xlsx.print_cover(
-        category_overview = overview_category,
-        product_overview = overview_product,
-        path = None,
-        tomorrow = True,
-        language = language
-    )
-
-    return {
-        'success':True,
-        'error':"",
-        'data':{
-            'file':cover,
-            'date':time.to_string(
-                time.utc_to_local(
-                    time.utcnow() + datetime.timedelta(days=1),
-                    tz = app.config['TZ_INFO']
-                    ), 
-                "%Y-%m-%d"
-                )
+            'msg':excel['data']['path']
             }
     }
 

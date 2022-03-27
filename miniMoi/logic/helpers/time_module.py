@@ -125,8 +125,12 @@ def calculate_next_delivery(date:datetime.datetime, cycle_type:str, interval:int
     try: errors = language_files[language]['error_codes']
     except: errors = language_files['EN']['error_codes']
 
-    # cycle time none?
+    # cycle time none (or the alternatives)?
     if cycle_type is None: return None
+
+    elif cycle_type == "None": return None
+
+    elif cycle_type == "": return None
     
     # cycle time day?
     elif cycle_type == "day":

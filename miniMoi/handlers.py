@@ -4,12 +4,14 @@ Contains the handler logic for the api
 """
 
 # imports
-from flask import send_file
+import json
+import base64
+from flask import send_file, make_response
 
 from miniMoi import app
 from miniMoi.language import language_files
 from miniMoi.logic.helpers import tools
-from miniMoi.logic.functions import customer, products, categories, abo, delivery
+from miniMoi.logic.functions import customer, products, categories, abo, delivery, system, bulk, reporting
 
 #region 'handler'
 def api(request:dict) -> dict:
@@ -55,54 +57,64 @@ def api(request:dict) -> dict:
             --------
             dict
                 success, error & data {
-                    'overview_category':{
-                        'category_name':[],
-                        'quantity':[],
-                        'cost':[]
-                        },
-                    'overview_product':{
-                        'category_name':{
-                            'product_name':[],
-                            'subcat_1:[],
-                            'subcat_2:[],
-                            'subcat_X:[],
-                            ...
-                        },
-                        'category_name2':{
-                            ...
-                        },
-                        ...
-                        
-                        },
-                    'total_earnigns':int,
-                    'town_based':{
-                        'townName':{
-                            'customer_approach':list[int], 
-                            'customer_street':list[str], 
-                            'customer_nr':list[int],
-                            'customer_town':list[str],
-                            'customer_name':list[str],
-                            'customer_surname':list[str],
-                            'customer_id':list[int],
-                            'customer_phone':list[str],
-                            'customer_mobile':list[str],
-                            'quantity':list[int], 
-                            'product_name':list[str],
-                            'product_id':list[int],
-                            'category_name':list[str],
-                            'subcategory_name':list[str],
-                            'product_selling_price':list[float],
-                            'cost':list[float],
-                            'total_cost':list[float],
-                            'notes':list[str]
-                            'id':list[int] # -> the abo_id
+                            'data':{
+                                'category_name':[],
+                                'quantity':[],
+                                'cost':[]
                             },
-                        'townName':{
-                            ...
+                            'order':[],
+                            'mapping':[]
                             },
-                        ...
+                        'overview_product':{
+                            'category_name':{
+                                'data':{
+                                    'product_name':[],
+                                    'subcat_1:[],
+                                    'subcat_2:[],
+                                    'subcat_X:[],
+                                    ...},
+                                'order':[],
+                                'mapping':[]
+                            },
+                            'category_name2':{
+                            { ...}
+                            },
+                            ...
+                            
+                            },
+                        'total_earnigns':int,
+                        'total_spendings':int,
+                        'town_based':{
+                            'townName':{
+                                'data':{
+                                    'customer_approach':list[int], 
+                                    'customer_street':list[str], 
+                                    'customer_nr':list[int],
+                                    'customer_town':list[str],
+                                    'customer_name':list[str],
+                                    'customer_surname':list[str],
+                                    'customer_id':list[int],
+                                    'customer_phone':list[str],
+                                    'customer_mobile':list[str],
+                                    'quantity':list[int], 
+                                    'product_name':list[str],
+                                    'product_id':list[int],
+                                    'category_name':list[str],
+                                    'subcategory_name':list[str],
+                                    'product_selling_price':list[float],
+                                    'cost':list[float],
+                                    'total_cost':list[float],
+                                    'notes':list[str]
+                                    'id':list[int] # -> the abo_id}
+                                    },
+                                'order':[],
+                                'mapping':[]
+                            'townName':{
+                                ...
+                                },
+                            ...
+                        }
                     }
-
                 } 
             
             """
@@ -117,11 +129,9 @@ def api(request:dict) -> dict:
         elif ressource == "delivery/book":
             """Books the manipulated data
 
-            This function takes the data and adds 
-            the provided info to the 'Orders' table.
-            It also calculates the next delivery
-            date.
-            In the end it returns the printed excel.
+            Function takes the orders data,
+            adds it to the Orders table and
+            saves a excel file to disk.
 
             params:
             -------
@@ -152,29 +162,25 @@ def api(request:dict) -> dict:
         
             returns:
             -------
-            send_file | dict
+            dict
+                success, error & data {
+                    'msg':str
+                }
             
             """
 
+            # got jsonified data. turn into json
+            data = json.loads(request['data']['data'])
+
             response = delivery.book(
-                data = request['data'],
+                data = data,
                 language = app.config['DEFAULT_LANGUAGE']
             )
 
-            if not response['success']: return response
-            else: 
-                
-                # reference: https://stackoverflow.com/questions/27337013/how-to-send-zip-files-in-the-python-flask-framework
-                return send_file(
-                    response['data']['zip'], 
-                    attachment_filename="miniMoi_overview_" + response['data']['date'] + ".zip",
-                    as_attachment=True
-                )
+            return response
 
-        elif ressource == "delivery/cover":
-            """Create the cover excel sheet
-
-            Creates the excel cover and returns it.
+        elif ressource == "delivery/saveData":
+            """Creates the cover & overview and saves it.
 
             params:
             -------
@@ -202,36 +208,33 @@ def api(request:dict) -> dict:
                             'id':list[int] # -> the abo_id
                             }
                     }
+            save_cover : bool, optional
+                If true, the excel cover is printed.
+                (default is True)
+            save_overview : bool, optional
+                If true, the excel overview is printed.
+                (default is True)
         
             returns:
             -------
-            send_file | dict
-                Format:
-                    File: send_file()
-                    Dict: {
-                        success, 
-                        error,
-                        data:{
-                            'file':io.BytesIO,
-                            'date':str
-                        }
+            dict
+                success, error & data {
+                    'msg':str
+                }
 
             """
 
-            response = delivery.print_cover(
-                data = request['data'],
+            # got jsonified data. turn into json
+            data = json.loads(request['data']['data'])
+
+            response = delivery.save_data(
+                data = data,
+                save_cover = True,
+                save_overview = True,
                 language = app.config['DEFAULT_LANGUAGE']
             )
 
-            if not response['success']: return response
-            else: 
-                
-                return send_file(
-                    response['data']['file'], 
-                    attachment_filename="miniMoi_cover_" + response['data']['date'] + ".xlsx",
-                    mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    as_attachment=True
-                )
+            return response
 
         elif ressource == "delivery/orderDetails":
             """Create order details overview
@@ -320,37 +323,40 @@ def api(request:dict) -> dict:
             amount : int | None, optional
                 The number of entries to query.
                 (default is None).
-            language : str, optional
-                the language iso code. Needed for the
-                error msg.
-                (default is app.config['DEFAULT_LANGUAGE])
-
+    
             returns:
             --------
             dict
                 success, error, data {
-                    'result':[
-                        'name':str,
-                        'surname':str,
-                        'street':str,
-                        'nr':int,
-                        'postal':str,
-                        'town':str,
-                        'phone':str,
-                        'mobile':str,
-                        'birthdate':str("%Y.%m.%d)
-                        'notes':str,
+                    'data':[
+                        {
+                            'id':list[int],
+                            'date':list[datetime],
+                            'name':list[str],
+                            'surname':list[str],
+                            'street':list[str],
+                            'nr':list[int],
+                            'postal':list[str],
+                            'town':list[str],
+                            'phone':list[str],
+                            'mobile':list[str],
+                            'birthdate':list[str]("%Y.%m.%d),
+                            'approach':list[int],
+                            'notes':list[str],
+                        },
                         ...
-                    ]
+                    ],
+                    'order':[],
+                    'mapping':[]
                 }
 
             """
 
             response = customer.get(
-                filter_type = request['filter_type'],
-                what = request['what'],
-                amount = request['amount'],
-                language = request['language'],
+                filter_type = request['data']['filter_type'],
+                what = request['data']['what'],
+                amount = request['data']['amount'],
+                language = app.config['DEFAULT_LANGUAGE'],
                 tz = app.config['TZ_INFO']
             )
 
@@ -361,23 +367,21 @@ def api(request:dict) -> dict:
 
             params:
             -------
-            customer_id : int
+            id : int
                 the customer unique id.
-            language : str, optional
-                The language iso. Needed for the error
-                msg.
-                (default is app.config['DEFAULT_LANGUAGE])
-            
+
             returns:
             -------
             dict
-                success, error & data
+                success, error & data {
+                    'msg':str
+                }
             
             """
 
             response = customer.delete(
-                customer_id = request['customer_id'],
-                language = request['language'],
+                customer_id = int(request['data']['id']),
+                language = app.config['DEFAULT_LANGUAGE'],
             )
 
             return response
@@ -390,7 +394,7 @@ def api(request:dict) -> dict:
 
             params:
             -------
-            customers : list
+            to_add : list
                 A list containing every single new
                 customer.
                     Format: [
@@ -403,36 +407,35 @@ def api(request:dict) -> dict:
                             'town':str,
                             'phone':str,
                             'mobile':str,
-                            'birthdate':str("%Y.%m.%d)
+                            'birthdate':str("%Y-%m-%d),
+                            'approach':int,
                             'notes':str
                         },
                         ...
                     ]
-            language : str, optional
-                The language iso. Needed for the error
-                msg.
-                (default is app.config['DEFAULT_LANGUAGE])
-
 
             returns:
             --------
             dict
-                success, error & data {}
+                success, error & data {
+                    'msg':str
+                }
+            
             """
 
             response = customer.add(
-                customers = request['customers'],
-                language = request['language']
+                customers = request['data']['to_add'],
+                language = app.config['DEFAULT_LANGUAGE']
             )
 
             return response
 
-        elif ressource == "customer/update":
+        elif ressource == "customers/update":
             """Updates a single customer
 
             params:
             -------
-            customer_id : int
+            id : int
                 The customer unique id.
             data : dict
                 A dict containing the data
@@ -449,22 +452,20 @@ def api(request:dict) -> dict:
                         'birthdate':str("%Y.%m.%d)
                         'notes':str
                     }
-            language : str, optional
-                the language iso code. Needed for the
-                error msg.
-                (default is app.config['DEFAULT_LANGUAGE])
-
+    
             returns:
             -------
             dict
-                success, error & data
+                success, error & data {
+                    'msg':str
+                }
 
             """
 
             response = customer.update(
-                customer_id = request['customer_id'],
+                customer_id = int(request['data']['id']),
                 data = request['data'],
-                language = request['language']
+                language = app.config['DEFAULT_LANGUAGE']
             )
 
             return response
@@ -495,10 +496,6 @@ def api(request:dict) -> dict:
             amount : int | None, optional
                 The number of entries to query.
                 (default is None).
-            language : str, optional
-                the language iso code. Needed for the
-                error msg.
-                (default is app.config['DEFAULT_LANGUAGE])
 
             returns:
             --------
@@ -521,11 +518,13 @@ def api(request:dict) -> dict:
             """
 
             response = products.get(
-                filter_type = request['filter_type'],
-                what = request['what'],
-                amount = request['amount'],
-                language = request['language'],
+                filter_type = request['data']['filter_type'],
+                what = request['data']['what'],
+                amount = request['data']['amount'],
+                language = app.config['DEFAULT_LANGUAGE']
             )
+
+            return response
 
         elif ressource == "products/add":
             """Adds products to the db
@@ -535,7 +534,7 @@ def api(request:dict) -> dict:
 
             params:
             -------
-            products : list
+            to_add : list
                 A list containing every single new
                 product.
                     Format: [
@@ -549,11 +548,7 @@ def api(request:dict) -> dict:
                         },
                         ...
                     ]
-            language : str, optional
-                The language iso. Needed for the error
-                msg.
-                (default is app.config['DEFAULT_LANGUAGE])
-
+ 
 
             returns:
             --------
@@ -563,8 +558,8 @@ def api(request:dict) -> dict:
             """
 
             response = products.add(
-                products = request['products'],
-                language = request['language']
+                products = request['data']['to_add'],
+                language = app.config['DEFAULT_LANGUAGE']
             )
 
             return response
@@ -574,13 +569,9 @@ def api(request:dict) -> dict:
 
             params:
             -------
-            product_id : int
+            id : int
                 the customer unique id.
-            language : str, optional
-                The language iso. Needed for the error
-                msg.
-                (default is app.config['DEFAULT_LANGUAGE])
-            
+
             returns:
             -------
             dict
@@ -589,8 +580,8 @@ def api(request:dict) -> dict:
             """
 
             response = products.delete(
-                product_id = request['product_id'],
-                language = request['language'],
+                product_id = int(request['data']['id']),
+                language = app.config['DEFAULT_LANGUAGE'],
             )
 
             return response
@@ -600,7 +591,7 @@ def api(request:dict) -> dict:
 
             params:
             -------
-            product_id : int
+            id : int
                 The customer unique id.
             data : dict
                 A dict containing the data
@@ -613,10 +604,6 @@ def api(request:dict) -> dict:
                         'store':str,
                         'phone':str
                     }
-            language : str, optional
-                the language iso code. Needed for the
-                error msg.
-                (default is app.config['DEFAULT_LANGUAGE])
 
             returns:
             -------
@@ -625,10 +612,10 @@ def api(request:dict) -> dict:
     
             """
 
-            response = customer.update(
-                product_id = request['product_id'],
+            response = products.update(
+                product_id = int(request['data']['id']),
                 data = request['data'],
-                language = request['language']
+                language = app.config['DEFAULT_LANGUAGE'],
             )
 
             return response
@@ -647,10 +634,6 @@ def api(request:dict) -> dict:
             amount : int | None, optional
                 The number of entries to query.
                 (default is None).
-            language : str, optional
-                the language iso code. Needed for the
-                error msg.
-                (default is app.config['DEFAULT_LANGUAGE])
 
             returns:
             -------
@@ -668,8 +651,8 @@ def api(request:dict) -> dict:
             """
 
             response = categories.get(
-                amount = request['amount'],
-                language = request['language'],
+                amount = request['data']['amount'],
+                language = app.config['DEFAULT_LANGUAGE']
             )
 
             return response
@@ -682,18 +665,14 @@ def api(request:dict) -> dict:
 
             params:
             -------
-            categories : list
+            to_add : list
                 A list containing every single new
                 category.
                     Format: [
-                        'name',
-                        'name',
+                        {"name":'name'},
+                        {"name":'name'},
                         ...
                     ]
-            language : str, optional
-                The language iso. Needed for the error
-                msg.
-                (default is app.config['DEFAULT_LANGUAGE])
 
             returns:
             --------
@@ -703,8 +682,8 @@ def api(request:dict) -> dict:
             """
 
             response = categories.add(
-                categories = request['categories'],
-                language = request['language']
+                categories = request['data']['to_add'],
+                language = app.config['DEFAULT_LANGUAGE']
             )
 
             return response
@@ -714,13 +693,9 @@ def api(request:dict) -> dict:
 
             params:
             -------
-            category_id : int
+            id : int
                 the category unique id.
-            language : str, optional
-                The language iso. Needed for the error
-                msg.
-                (default is app.config['DEFAULT_LANGUAGE])
-            
+
             returns:
             -------
             dict
@@ -729,8 +704,8 @@ def api(request:dict) -> dict:
             """
 
             response = categories.delete(
-                category_id = request['category_id'],
-                language = request['language'],
+                category_id = int(request['data']['id']),
+                language = app.config['DEFAULT_LANGUAGE']
             )
 
             return response
@@ -740,14 +715,10 @@ def api(request:dict) -> dict:
 
             params:
             -------
-            category_id : int
+            id : int
                 The customer unique id.
             name : str
                 The new category name
-            language : str, optional
-                the language iso code. Needed for the
-                error msg.
-                (default is app.config['DEFAULT_LANGUAGE])
 
             returns:
             -------
@@ -757,9 +728,9 @@ def api(request:dict) -> dict:
             """
 
             response = categories.update(
-                category_id = request['category_id'],
-                name = request['name'],
-                language = request['language']
+                category_id = int(request['data']['id']),
+                name = request['data']['name'],
+                language = app.config['DEFAULT_LANGUAGE']
             )
 
             return response
@@ -778,10 +749,6 @@ def api(request:dict) -> dict:
             amount : int | None, optional
                 The number of entries to query.
                 (default is None).
-            language : str, optional
-                the language iso code. Needed for the
-                error msg.
-                (default is app.config['DEFAULT_LANGUAGE])
 
             returns:
             -------
@@ -800,8 +767,8 @@ def api(request:dict) -> dict:
 
             response = categories.get(
                 category_type = "subcategory",
-                amount = request['amount'],
-                language = request['language'],
+                amount = request['data']['amount'],
+                language = app.config['DEFAULT_LANGUAGE'],
             )
 
             return response
@@ -814,18 +781,14 @@ def api(request:dict) -> dict:
 
             params:
             -------
-            categories : list
+            to_add : list
                 A list containing every single new
                 category.
                     Format: [
-                        'name',
-                        'name',
+                        {"name":'name'},
+                        {"name":'name'},
                         ...
                     ]
-            language : str, optional
-                The language iso. Needed for the error
-                msg.
-                (default is app.config['DEFAULT_LANGUAGE])
 
             returns:
             --------
@@ -835,9 +798,9 @@ def api(request:dict) -> dict:
             """
 
             response = categories.add(
-                categories = request['categories'],
+                categories = request['data']['to_add'],
                 category_type = "subcategory",
-                language = request['language']
+                language = app.config['DEFAULT_LANGUAGE']
             )
 
             return response
@@ -847,13 +810,9 @@ def api(request:dict) -> dict:
 
             params:
             -------
-            category_id : int
+            id : int
                 the category unique id.
-            language : str, optional
-                The language iso. Needed for the error
-                msg.
-                (default is app.config['DEFAULT_LANGUAGE])
-            
+
             returns:
             -------
             dict
@@ -862,9 +821,9 @@ def api(request:dict) -> dict:
             """
 
             response = categories.delete(
-                category_id = request['category_id'],
+                category_id = int(request['data']['id']),
                 category_type = "subcategory",
-                language = request['language'],
+                language = app.config['DEFAULT_LANGUAGE'],
             )
 
             return response
@@ -874,14 +833,10 @@ def api(request:dict) -> dict:
 
             params:
             -------
-            category_id : int
+            id : int
                 The customer unique id.
             name : str
                 The new category name
-            language : str, optional
-                the language iso code. Needed for the
-                error msg.
-                (default is app.config['DEFAULT_LANGUAGE])
 
             returns:
             -------
@@ -891,10 +846,10 @@ def api(request:dict) -> dict:
             """
 
             response = categories.update(
-                category_id = request['category_id'],
+                category_id = int(request['data']['id']),
                 category_type = "subcategory",
-                name = request['name'],
-                language = request['language']
+                name = request['data']['name'],
+                language = app.config['DEFAULT_LANGUAGE']
             )
 
             return response
@@ -925,10 +880,6 @@ def api(request:dict) -> dict:
             amount : int | None, optional
                 The number of entries to query.
                 (default is None).
-            language : str, optional
-                the language iso code. Needed for the
-                error msg.
-                (default is app.config['DEFAULT_LANGUAGE'])
 
             returns:
             --------
@@ -952,11 +903,10 @@ def api(request:dict) -> dict:
             """
 
             response = abo.get(
-                filter_type = request['filer_type'],
-                what = request['what'],
-                amount = request['amount'],
-                language = request['language'],
-                tz = app.config['TZ_INFO']
+                filter_type = request['data']['filter_type'],
+                what = request['data']['what'],
+                amount = request['data']['amount'],
+                language = app.config['DEFAULT_LANGUAGE']
             )
 
             return response
@@ -970,25 +920,19 @@ def api(request:dict) -> dict:
 
             params:
             -------
-            customer_id : int
-                The id of the customer to add
-                the abo to.
-            abos : list
+            to_add : list
                 A list containing every single new
                 abo for the customer.
                     Format: [
                         {
+                            'customer_id':int,
                             'cycle_type':str,
                             'interval':int,
                             'product':int,
                         },
                         ...
                     ]
-            language : str, optional
-                The language iso. Needed for the error
-                msg.
-                (default is app.config['DEFAULT_LANGUAGE])
-
+            
             returns:
             --------
             dict
@@ -997,10 +941,8 @@ def api(request:dict) -> dict:
             """
 
             response = abo.add(
-                customer_id = request['customer_id'],
-                abos = request['abos'],
-                language = request['language'],
-                tz = app.config['TZ_INFO']
+                abos = request['data']['to_add'],
+                language = app.config['DEFAULT_LANGUAGE']
             )
 
             return response
@@ -1012,11 +954,7 @@ def api(request:dict) -> dict:
             -------
             abo_id : int
                 the abo unique id.
-            language : str, optional
-                The language iso. Needed for the error
-                msg.
-                (default is app.config['DEFAULT_LANGUAGE])
-            
+
             returns:
             -------
             dict
@@ -1025,8 +963,8 @@ def api(request:dict) -> dict:
             """
 
             response = abo.delete(
-                abo_id = request['abo_id'],
-                language = request['language'],
+                abo_id = int(request['data']['id']),
+                language = app.config['DEFAULT_LANGUAGE'],
             )
 
             return response
@@ -1047,10 +985,6 @@ def api(request:dict) -> dict:
                         'product':int,
                         'custom_next_delivery':str | None
                     }
-            language : str, optional
-                the language iso code. Needed for the
-                error msg.
-                (default is app.config['DEFAULT_LANGUAGE])
 
             returns:
             -------
@@ -1060,10 +994,9 @@ def api(request:dict) -> dict:
             """
 
             response = abo.update(
-                abo_id = request['abo_id'],
+                abo_id = int(request['data']['id']),
                 data = request['data'],
-                language = request['language'],
-                tz = app.config['TZ_INFO']
+                language = app.config['DEFAULT_LANGUAGE']
             )
 
             return response
@@ -1076,7 +1009,111 @@ def api(request:dict) -> dict:
 
         #endregion
 
-        else: return {'success':False, 'error':errors['404'].format(ressource=ressource), 'data':{}}
+        #region 'system'
+        elif ressource == "system/dbBackup":
+            """Copies the mini-moi db to the documents folder """
+
+            response = system.make_db_copy()
+
+            return response
+
+        elif ressource == "system/dbRollback":
+            """Rollback the db with old backup
+            
+            params:
+            ------
+            filename : str
+                The name of the file to import
+
+            returns:
+            --------
+            dict    
+                success, error & data {msg}
+
+            """
+
+            response = system.rollback_db_save(
+                filename = request['data']['filename']
+            )
+
+            return response 
+            
+        #endregion
+
+        #region 'bulk'
+        elif ressource == "bulk/createBlueprint":
+            """Creates a blueprint for given table
+    
+            This function creates a blueprint for the
+            given sql table.
+            The blueprint is a empty excel with the correct
+            columns in the specified app.config language.
+            
+            params:
+            -------
+            blueprint : str
+                The name of the blueprint to create.
+                    Options: { 'customers', 'category'
+                            'subcategory', 'products',
+                            'abo' }
+
+            returns:
+            --------
+            dict
+                success, error & datat {msg:str}
+            
+            """
+
+            response = bulk.create_blueprint(
+                blueprint = request['data']['blueprint'],
+                file_type=app.config['FILE_TYPE']
+            )
+
+            return response
+
+        elif ressource == "bulk/update":
+            """Reads all blueprints and updates the tables
+    
+            This function reads all tables in the
+            directory '~/mini-moi/blueprints'
+            and updates the tables
+            
+            params:
+            -------
+            None
+
+            returns:
+            -------
+            dict
+                success, error & data {
+                    'msg':str
+                }
+
+            """
+
+            response = bulk.update(file_type=app.config['FILE_TYPE'])
+
+            return response
+
+        #endregion
+
+        #region 'report'
+        elif ressource == "reporting/get":
+            """Creates the report """
+
+            response = reporting.get_report()
+
+            return response
+        
+        #endregion
+
+        else: 
+            
+            # grab the language files
+            try: errors = language_files[request['language']]['error_codes']
+            except: errors = language_files[app.config['DEFAULT_LANGUAGE']]['error_codes']
+
+            return {'success':False, 'error':errors['404'].format(ressource=ressource), 'data':{}}
 
 
     except Exception as e: 

@@ -1,0 +1,459 @@
+{% extends "html/base.html" %}
+
+{% block title %} {{ reporting_title }} {% endblock %}
+
+{%block thirdParty %}
+
+<script src='https://cdn.plot.ly/plotly-2.9.0.min.js'></script>
+
+{% endblock %}
+
+{% block body %}
+
+<!-- Header -->
+<div class="settings-header px-3 pt-3 pt-md-5 pb-md-4 mx-auto text-center" style="margin-bottom:100px;">
+    <h1 class="display-4">{{ reporting_title }}</h1>
+    <p class="lead">{{ reporting_lead }}</p>
+</div>
+
+
+<!-- content -->
+<div class="container" id="content">
+    
+    <!-- content will be added here -->
+
+</div>
+
+{% endblock %}
+
+{% block script %} 
+<script>
+
+    // init state variables
+    const titles = {
+        current_week:"{{ reporting_current_week }}",
+        last_week:"{{ reporting_last_week }}",
+        month:"{{ reporting_month }}",
+        year:"{{ reporting_year }}"
+    };
+    const report_names = {
+        earnings:"{{ reporting_earning_spending }}",
+        revenue_sources:"{{ reporting_revenue_source }}",
+        selling_overview:"{{ reporting_selling_count }}",
+    }
+    const section_order = ['current_week', 'last_week', 'month', 'year'];
+    const chart_order = ['earnings', 'revenue_sources', 'selling_overview'];
+    var data = {};
+
+    // create holding element for created plotly charts
+    plotly_charts = [];
+
+    // get container id
+    var container = document.getElementById('content');
+
+    function create_title(state_section) {
+        /* creates the header elements 
+
+        Creates the header text for the section
+
+        params:
+        -------
+        state_section : str
+            The name of the card to print.
+                Options: { 'current_week', 'last_week',
+                           'month', 'year' }
+        
+        returns:
+        --------
+        html element
+        
+        */
+
+        // create div bootstrap row
+        var row = document.createElement('div');
+        row.classList.add("row", "mb-2");
+
+        // create the div col
+        var col = document.createElement('div');
+        row.classList.add("col-12");
+
+        // create the header tag
+        var h3 = document.createElement('div');
+        h3.innerHTML = titles[state_section];
+
+        // append together and return
+        col.appendChild(h3);
+        row.appendChild(col);
+
+        return row
+
+    };
+
+    function create_card(state_section, card_type) {
+        /* creates a card element for a chart 
+
+        params:
+        -------
+        state_section : str
+            The data to print.
+                Options: { 'current_week', 'last_week',
+                           'month', 'year' }
+        card_type : str
+            The name of the card to print.
+                Options: { 'earnings', 'revenue_sources',
+                           'selling_overview' }
+                
+        
+        returns:
+        --------
+        html element
+        
+        */
+
+        // create card div
+        var card = document.createElement('div');
+        card.classList.add("card", "w-50", "mb-4", "box-shadow");
+
+        // create card header
+        var header = document.createElement('div');
+        header.classList.add("card-header");
+
+        // create card header h4
+        var h4 = document.createElement('h4');
+        h4.classList.add("my-0", "font-weight-normal");
+        h4.innerHTML = report_names[card_type];
+
+        // create card body
+        var body = document.createElement('div');
+        body.classList.add("card-body");
+
+        // create chart tag
+        var chart = document.createElement('div');
+        chart.setAttribute('id', state_section + card_type);
+
+        // put together
+        header.appendChild(h4);
+        body.appendChild(chart);
+        card.appendChild(header);
+        card.appendChild(body);
+
+        return card
+
+    };
+
+    function create_no_data(card_type) {
+        /* creates the no-data indicator 
+        
+        params:
+        -------
+        card_type : str
+            The name of the card to print.
+                Options: { 'earnings', 'revenue_sources',
+                           'selling_overview' }
+        
+        returns:
+        --------
+        html element
+        
+        */ 
+
+        // create card
+        var card = document.createElement('div');
+        card.classList.add("card", "mb-4", "box-shadow");
+
+        // create card header
+        var header = document.createElement('div');
+        header.classList.add("card-header");
+
+        // create card header h4
+        var h4 = document.createElement('h4');
+        h4.classList.add("my-0", "font-weight-normal");
+        h4.innerHTML = report_names[card_type];
+
+        // create card body
+        var body = document.createElement('div');
+        body.classList.add("card-body");
+
+        // create p tag
+        var p = document.createElement('p');
+        p.classList.add("card-text");
+        p.innerHTML = "{{ reporting_no_data_available }}";
+
+        // create img
+        var img = document.createElement('img');
+        img.classList.add("card-img-top");
+        img.setAttribute('style', "opacity:.5; width:50px;")
+        img.setAttribute('src', "{{ url_for('static', filename='img/alarm.png') }}");
+
+        // put together
+        header.appendChild(h4);
+        body.appendChild(p);
+        body.appendChild(img);
+        card.appendChild(header);
+        card.appendChild(body);
+
+        return card
+
+    };
+
+    function create_card_deck() {
+        /* creates a bootstrap row with card deck */
+
+        // create bootstrap row
+        var row = document.createElement('div');
+        row.classList.add("row", "mb-4");
+
+        // create card deck
+        var deck = document.createElement('div');
+        deck.classList.add("card-deck", "mb-3", "text-center");
+
+        return deck
+    };
+
+    function bar_chart(idx, values, horizontal=false) {
+        /* creates a bar chart and adds it to the id 
+        
+        params:
+        -------
+        idx : array
+            The array containing the names of the cols
+        values : array
+            The array containing the values
+        horizontal : bool, optional
+            If true, the bar chart is horizontal
+            (default is false)
+
+        returns:
+        --------
+        json object
+            Format: {
+                'data'
+                'layout'
+            }
+
+        */
+
+        // create trace
+        if (horizontal) {
+
+            var trace = {
+                x:values,
+                y:idx,
+                type:'bar',
+                orientation: 'h',
+                marker: {
+                    color: 'rgb(49,130,189)',
+                    opacity: 0.7,
+                }
+            };
+
+        }
+        else {
+
+            var trace = {
+                x:idx,
+                y:values,
+                type:'bar',
+                marker: {
+                    color: 'rgb(49,130,189)',
+                    opacity: 0.7,
+                }
+            };
+
+        };
+        
+
+        // create data object
+        var data = [trace];
+
+        // define layout;
+        var layout = {
+            showlegend:false,
+        };
+
+        
+        return {
+            data:data,
+            layout:layout,
+        }
+
+
+    };
+
+    function donut_chart(idx, values) {
+        /* Creates a donut chart 
+
+        params:
+        -------
+        idx : array
+            The array containing the names of the cols
+        values : array
+            The array containing the values
+        horizontal : bool, optional
+            If true, the bar chart is horizontal
+            (default is false)
+
+        returns:
+        --------
+        json object
+            Format: {
+                'data'
+                'layout'
+            }
+
+        */
+
+        // create trace
+        var trace = {
+            values:values,
+            labels:idx,
+            hole:.4,
+            type:'pie'
+        };
+
+        // create data object
+        var data = [trace];
+
+        // define layout;
+        var layout = {
+            showlegend:false,
+        };
+
+        
+        return {
+            data:data,
+            layout:layout,
+        }
+
+    };
+
+
+
+    $(document).ready(function() {
+
+        // kill container
+        $(container).empty();
+
+        // kill chart info
+        plotly_charts = [];
+
+        // populate the graphs
+        $.ajax({
+            method: 'POST',
+            url: "{{ url_for('to_api', ressource='reporting/get') }}",
+            data: {}
+        }).done(function(response) {
+
+            if (response.success) {
+
+                console.log(response.data);
+
+                // add data to 'data'
+                data = response.data;
+
+                // for each data section in 'section_order' make elements
+                $.each(section_order, function(so, section_name) {
+
+                    // get current section
+                    //var section_name = section_name;
+
+                    // create title and append to display container
+                    container.appendChild(create_title(section_name));
+
+                    // create card deck
+                    var card_deck = create_card_deck();
+
+                    // for each data source within data, draw the chart
+                    $.each(chart_order, function(co, card_type) {
+
+                        // check if we have data
+                        if (data[section_name]['data'][card_type]['index'].length > 0) {
+
+                            // create card with data & append to deck
+                            card_deck.appendChild(create_card(section_name, card_type))
+
+                            // get data index & values
+                            var data_index = data[section_name]['data'][card_type]['index'];
+                            var data_values = data[section_name]['data'][card_type]['values'];
+
+                            // create chart from data (plotly) & append to id
+                            // card id is always 'section_name + $(this)'
+                            //https://plotly.com/javascript/
+                            if (card_type == "earnings") {
+                                
+                                var tmp_chart_data = bar_chart(
+                                    data_index, 
+                                    data_values, 
+                                    horizontal=false
+                                    );
+                            }
+                            else if (card_type == "revenue_sources") {
+
+                                var tmp_chart_data = donut_chart(
+                                    data_index,
+                                    data_values
+                                );
+
+                            }
+                            else if (card_type == "selling_overview") {
+                                var tmp_chart_data = bar_chart(
+                                    data_index, 
+                                    data_values, 
+                                    horizontal=true
+                                    );
+                            }
+                            else {
+
+                                // type not valid, make empty
+                                card_deck.appendChild(create_no_data(card_type));
+                            };
+
+                            // append chart data for later drawing
+                            plotly_charts.push({
+                                'tag_id':section_name + card_type,
+                                'data':tmp_chart_data
+                            });
+
+                        }
+                        else {
+
+                            // no data available -> create & append to deck
+                            card_deck.appendChild(create_no_data(card_type));
+
+                        };
+
+                    });
+
+                    // add card deck to container
+                    container.appendChild(card_deck);
+
+                });
+
+                // draw plotly charts
+                $.each(plotly_charts, function(pc, plotly_chart) {
+
+                    // draw
+                    Plotly.newPlot(
+                        plotly_chart['tag_id'], 
+                        plotly_chart['data']['data'], 
+                        plotly_chart['data']['layout'],
+                        {responsive:true}
+                    );
+                });
+
+            }
+            else {
+                
+                console.log(response.error);
+            };
+        });
+
+
+    });
+
+    
+
+</script>
+
+
+{% endblock %}
