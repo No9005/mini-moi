@@ -471,7 +471,7 @@ class TestProducts(unittest.TestCase):
 
             # check entries
             self.assertEqual(result.filter_by(id = 3).first().name, "Apfel")
-            self.assertEqual(result.filter_by(id = 4).first().margin, 15.667)
+            self.assertEqual(result.filter_by(id = 4).first().margin, 15.67)
             self.assertEqual(result.filter_by(id=4).first().purchase_price, 1.50)
             self.assertEqual(result.filter_by(id=3).first().selling_price, 25.0)
 

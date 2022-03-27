@@ -184,9 +184,11 @@
 
                 Toastify({
                         text: response.data.msg,
-                        duration: 3000,
+                        duration: 8000,
                         position:'right',
                         gravity:'top',
+                        stopOnFocus:true,
+                        close:true,
                         style: {
                             background: "linear-gradient(to right, #16a085, #2ecc71)",
                         },

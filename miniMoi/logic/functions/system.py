@@ -21,9 +21,10 @@ def make_db_copy():
 
     # create home path
     home = Path().home()
+    fullPath = home / "mini-moi/backups"
 
     # create a folder in the Downloads folder
-    (home/"mini-moi").mkdir(exist_ok=True)
+    fullPath.mkdir(exist_ok=True)
 
     # create the today date in local time
     today = time.to_string(
@@ -32,14 +33,14 @@ def make_db_copy():
         )
 
     # copy the mini-moi app to the database
-    shutil.copyfile(str(app.config['CWD']/"db/app.db"), (home/("mini-moi/app_backup_" + today + ".db")))
+    shutil.copyfile(str(app.config['CWD']/"db/app.db"), (fullPath/("app_backup_" + today + ".db")))
 
     return {
         'success':True,
         'error':"",
         'data':{
             'msg':translation['notification']['db_backup_success'].format(
-                directory = str(home/"mini-moi")
+                directory = str(fullPath)
                 )
         }
     }

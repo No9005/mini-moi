@@ -39,8 +39,12 @@
     <div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom box-shadow">
       <img src="https://user-images.githubusercontent.com/52833906/159451562-de17a088-1438-4198-8e90-0cda45ef307a.png" style="width:60px" class="pr-1">  
       <h5 class="my-0 mr-md-auto font-weight-normal"> 
-        <a href="{{ url_for('index') }}" class="text-dark no-link-underline"><b>{{ base_app_name }}</b></a>
-      </h5>
+        {% if request.path != "/bulk" %}
+          <a href="{{ url_for('index') }}" class="text-dark no-link-underline"><b>{{ base_app_name }}</b></a>
+        {% else %} 
+          <p class="text-dark no-link-underline"><b>{{ base_app_name }}</b></p>
+        {% endif %}
+        </h5>
         {% if request.path != "/bulk" %}
         <nav class="my-2 my-md-0 mr-md-3">
           <a class="p-2 text-dark" href="{{ url_for('delivery') }}">{{ base_delivery }}</a>

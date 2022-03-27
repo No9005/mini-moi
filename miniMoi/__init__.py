@@ -44,6 +44,7 @@ app.config['ACTION_LOGGING'] = settings['action_logging'] == "True"
 app.config['CWD'] = cwd
 app.config['HOME'] = Path().home()
 app.config['BLUEPRINT_PATH'] = Path().home() /"mini-moi/blueprints"
+app.config['FILE_TYPE'] = "xlsx"
 
 app.config['TZ_INFO'] = get_localzone_name()
 print("TIMEZONE: ", get_localzone_name())

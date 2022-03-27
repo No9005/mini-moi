@@ -249,7 +249,7 @@ def update(product_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAG
         else:
 
             # try to parse to float
-            try: float_values.update({val:float(".".join(data[val].split(",")))})
+            try: float_values.update({val:float(".".join(str(data[val]).split(",")))})
             except ValueError as e: return {
                 'success':False,
                 'error':errors['wrongType'].format(
@@ -308,7 +308,7 @@ def update(product_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAG
         product.phone = str(data['phone'])
         product.margin = round(
             (float_values['selling_price'] - float_values['purchase_price']) / float_values['purchase_price'],
-            3
+            2
             )
 
         session.commit()
@@ -431,7 +431,7 @@ def add(products:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
             if isinstance(product[val], float): float_values.update({val:product[val]})
             else:
 
-                try: float_values.update({val: float(".".join(product[val].split(",")))})
+                try: float_values.update({val: float(".".join(str(product[val]).split(",")))})
                 except ValueError as e: return {
                     'success':False,
                     'error':errors['wrongType'].format(
@@ -446,7 +446,7 @@ def add(products:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
         float_values.update({
             'margin': round(
                 (float_values['selling_price'] - float_values['purchase_price']) / float_values['purchase_price'],
-                3
+                2
             )
         })
 

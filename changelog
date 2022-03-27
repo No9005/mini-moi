@@ -1,3 +1,13 @@
+v.0.5.1: Bulk update foxes. See changelog.
+    Changed Bulk update to be xlsx ready.
+    Manual integration tests do look correct.
+    Missing language file for DE & FR.
+    Everything else is currently marked as 'nice-to-have':
+        - Reporting tool, to report the last week/month
+          as table and info graphics.
+        - exporting queried sheets as excel tables
+
+------------ old versions ----------------------------------
 v.0.5.0: Bulk update. See changelog.
     Integration tests are needed still needed.
     Bulk import unittests needed (?)
@@ -7,7 +17,6 @@ v.0.5.0: Bulk update. See changelog.
           as table and info graphics.
         - exporting queried sheets as excel tables
 
------------- old versions ----------------------------------
 v.0.4.10: Updated Unittests. See changelog.
     Integration tests are needed.
     Everything else is currently marked as 'nice-to-have':

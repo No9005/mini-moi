@@ -25,6 +25,7 @@ mapping = {
         'missingData':"There is data missing: {column}",
         'blueprintUnkonwn':"The selected blueprint is not known ('{blueprint}'",
         'noBlueprintFound':"There was no blueprint to import. Please create first one.",
+        'wrongFileType':"Only files in format '.{format}' are allowed.",
         '500':"An error occured: {c}: {m}",
         '404':"Endpoint '{ressource}' not found.",
     },

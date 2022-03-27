@@ -1044,7 +1044,8 @@ def api(request:dict) -> dict:
             """
 
             response = bulk.create_blueprint(
-                blueprint = request['data']['blueprint']
+                blueprint = request['data']['blueprint'],
+                file_type=app.config['FILE_TYPE']
             )
 
             return response
@@ -1069,7 +1070,7 @@ def api(request:dict) -> dict:
 
             """
 
-            response = bulk.update()
+            response = bulk.update(file_type=app.config['FILE_TYPE'])
 
             return response
 

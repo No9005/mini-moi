@@ -195,9 +195,10 @@ def _process_excel(
 
     # get HOME
     home = app.config['HOME']
+    fullPath = home/"mini-moi/delivery"
 
     # create 'mini-moi' folder if available
-    (home/"mini-moi").mkdir(exist_ok=True)
+    fullPath.mkdir(exist_ok=True)
 
     # create product overviews
     # group on granularest level
@@ -214,7 +215,7 @@ def _process_excel(
         cover = xlsx.print_cover(
             category_overview = overview_category,
             product_overview = overview_product,
-            path = str(home/"mini-moi/cover_{date}.xlsx".format(date=date)),
+            path = str(fullPath / "cover_{date}.xlsx".format(date=date)),
             tomorrow = True,
             language = language
     )
@@ -228,7 +229,7 @@ def _process_excel(
 
         orderDetails = xlsx.print_order_list(
             townbased,
-            path = str(home/"mini-moi/overview_{date}.xlsx".format(date=date)),
+            path = str(fullPath / "overview_{date}.xlsx".format(date=date)),
             tomorrow = True,
             language = language
         )
@@ -238,7 +239,7 @@ def _process_excel(
         'success':True,
         'error':"",
         'data':{
-            'path':translation['notification']['save_path'].format(path=str(home/"mini-moi"))
+            'path':translation['notification']['save_path'].format(path=str(fullPath))
         }
     }
 
