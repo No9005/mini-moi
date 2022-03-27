@@ -134,6 +134,12 @@ def bulk():
     """Displays the bulk upload system """
 
     return render_template("html/bulk.html")
+
+@app.route("/demo", methods=["GET"])
+def demo():
+    """Displays the demo popup """
+
+    return render_template("html/demo.html")
     
 @app.route("/reporting", methods=["GET", "POST"])
 def reporting():

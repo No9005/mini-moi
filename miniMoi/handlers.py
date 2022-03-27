@@ -11,7 +11,7 @@ from flask import send_file, make_response
 from miniMoi import app
 from miniMoi.language import language_files
 from miniMoi.logic.helpers import tools
-from miniMoi.logic.functions import customer, products, categories, abo, delivery, system, bulk, reporting
+from miniMoi.logic.functions import customer, products, categories, abo, delivery, system, bulk, reporting, demo
 
 #region 'handler'
 def api(request:dict) -> dict:
@@ -1105,6 +1105,16 @@ def api(request:dict) -> dict:
 
             return response
         
+        #endregion
+
+        #region 'demo'
+        elif ressource == "demo":
+            """ runs the demo process """
+
+            response = demo.run()
+
+            return response
+
         #endregion
 
         else: 

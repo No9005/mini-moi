@@ -116,7 +116,7 @@ class Orders(base):
     __tablename__ = "orders"
 
     id = Column(Integer, primary_key = True)
-    customer_id = Column(Integer, ForeignKey("customers.id"), nullable=False)
+    customer_id = Column(Integer, ForeignKey("customers.id"))
     date = Column(DateTime, default=datetime.utcnow)
 
     product = Column(Integer, ForeignKey("products.id"), nullable=False)
