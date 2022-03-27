@@ -4,7 +4,7 @@
 
 {%block thirdParty %}
 
-<script src="{{ url_for('static', filename='js/plotly/v2.9.0/plotly-2.9.0.min.js') }}"></script>
+<script src='https://cdn.plot.ly/plotly-2.9.0.min.js'></script>
 
 {% endblock %}
 
@@ -19,216 +19,8 @@
 
 <!-- content -->
 <div class="container" id="content">
-
-    <!-- current week -->
-    <div class="" id="current_week_container">
-        <div class="row">
-            <div class="col-12">
-                <h3>{{ reporting_current_week }}</h3>
-            </div>
-        </div>
     
-        <div class="row">
-            <div class="card-deck mb-3 text-center">
-        
-                <!-- earnings & spendings -->
-                <div class="card w-50 mb-4 box-shadow">
-                    <div class="card-header">
-                        <h4 class="my-0 font-weight-normal">{{ reporting_earning_spending }}</h4>
-                    </div>
-                    <div class="card-body">
-                        <div id="current_week_earnings">
-                            
-                        </div>
-                    </div>
-                </div>
-    
-                <!-- revenue source -->
-                <div class="card w-25 mb-4 box-shadow">
-                    <div class="card-header">
-                        <h4 class="my-0 font-weight-normal">{{ reporting_revenue_source }}</h4>
-                    </div>
-                    <div class="card-body">
-                        <div id="current_week_source">
-                            
-                        </div>
-                    </div>
-                </div>
-    
-                <!-- top seller -->
-                <div class="card w-25 mb-4 box-shadow">
-                    <div class="card-header">
-                        <h4 class="my-0 font-weight-normal">{{ reporting_selling_count }}</h4>
-                    </div>
-                    <div class="card-body">
-                        <div id="current_week_selling">
-                            
-                        </div>
-                    </div>
-                </div>
-                
-            </div>
-        </div>
-    </div>
-    
-
-    <!-- last week -->
-    <div id="last_week_container">
-        <div class="row">
-            <div class="col-12">
-                <h3>{{ reporting_last_week }}</h3>
-            </div>
-        </div>
-    
-        <div class="row">
-            <div class="card-deck mb-3 text-center">
-        
-                <!-- earnings & spendings -->
-                <div class="card w-50 mb-4 box-shadow">
-                    <div class="card-header">
-                        <h4 class="my-0 font-weight-normal">{{ reporting_earning_spending }}</h4>
-                    </div>
-                    <div class="card-body">
-                        <div>
-                            
-                        </div>
-                    </div>
-                </div>
-    
-                <!-- revenue source -->
-                <div class="card w-25 mb-4 box-shadow">
-                    <div class="card-header">
-                        <h4 class="my-0 font-weight-normal">{{ reporting_revenue_source }}</h4>
-                    </div>
-                    <div class="card-body">
-                        <div>
-                            
-                        </div>
-                    </div>
-                </div>
-    
-                <!-- top seller -->
-                <div class="card w-25 mb-4 box-shadow">
-                    <div class="card-header">
-                        <h4 class="my-0 font-weight-normal">{{ reporting_selling_count }}</h4>
-                    </div>
-                    <div class="card-body">
-                        <div>
-                            
-                        </div>
-                    </div>
-                </div>
-                
-            </div>
-        </div>
-
-    </div>
-    
-
-    <!-- month -->
-    <div>
-        <div class="row">
-            <div class="col-12">
-                <h3>{{ reporting_month }}</h3>
-            </div>
-        </div>
-    
-        <div class="row">
-            <div class="card-deck mb-3 text-center">
-        
-                <!-- earnings & spendings -->
-                <div class="card w-50 mb-4 box-shadow">
-                    <div class="card-header">
-                        <h4 class="my-0 font-weight-normal">{{ reporting_earning_spending }}</h4>
-                    </div>
-                    <div class="card-body">
-                        <div>
-                            
-                        </div>
-                    </div>
-                </div>
-    
-                <!-- revenue source -->
-                <div class="card w-25 mb-4 box-shadow">
-                    <div class="card-header">
-                        <h4 class="my-0 font-weight-normal">{{ reporting_revenue_source }}</h4>
-                    </div>
-                    <div class="card-body">
-                        <div>
-                            
-                        </div>
-                    </div>
-                </div>
-    
-                <!-- top seller -->
-                <div class="card w-25 mb-4 box-shadow">
-                    <div class="card-header">
-                        <h4 class="my-0 font-weight-normal">{{ reporting_selling_count }}</h4>
-                    </div>
-                    <div class="card-body">
-                        <div>
-                            
-                        </div>
-                    </div>
-                </div>
-                
-            </div>
-        </div>
-
-    </div>
-    
-
-    <!-- year -->
-    <div>
-        <div class="row">
-            <div class="col-12">
-                <h3>{{ reporting_year }}</h3>
-            </div>
-        </div>
-    
-        <div class="row">
-            <div class="card-deck mb-3 text-center">
-        
-                <!-- earnings & spendings -->
-                <div class="card w-50 mb-4 box-shadow">
-                    <div class="card-header">
-                        <h4 class="my-0 font-weight-normal">{{ reporting_earning_spending }}</h4>
-                    </div>
-                    <div class="card-body">
-                        <div>
-                            
-                        </div>
-                    </div>
-                </div>
-    
-                <!-- revenue source -->
-                <div class="card w-25 mb-4 box-shadow">
-                    <div class="card-header">
-                        <h4 class="my-0 font-weight-normal">{{ reporting_revenue_source }}</h4>
-                    </div>
-                    <div class="card-body">
-                        <div>
-                            
-                        </div>
-                    </div>
-                </div>
-    
-                <!-- top seller -->
-                <div class="card w-25 mb-4 box-shadow">
-                    <div class="card-header">
-                        <h4 class="my-0 font-weight-normal">{{ reporting_selling_count }}</h4>
-                    </div>
-                    <div class="card-body">
-                        <div>
-                            
-                        </div>
-                    </div>
-                </div>
-                
-            </div>
-        </div>
-    </div>
-    
+    <!-- content will be added here -->
 
 </div>
 
@@ -252,6 +44,9 @@
     const section_order = ['current_week', 'last_week', 'month', 'year'];
     const chart_order = ['earnings', 'revenue_sources', 'selling_overview'];
     var data = {};
+
+    // create holding element for created plotly charts
+    plotly_charts = [];
 
     // get container id
     var container = document.getElementById('content');
@@ -346,20 +141,6 @@
 
     };
 
-    function create_card_deck() {
-        /* creates a bootstrap row with card deck */
-
-        // create bootstrap row
-        var row = document.createElement('div');
-        row.classList.add("row", "mb-4");
-
-        // create card deck
-        var deck = document.createElement('div');
-        deck.classList.add("card-deck", "mb-3", "text-center");
-
-        return deck
-    };
-
     function create_no_data(card_type) {
         /* creates the no-data indicator 
         
@@ -415,12 +196,146 @@
 
     };
 
+    function create_card_deck() {
+        /* creates a bootstrap row with card deck */
+
+        // create bootstrap row
+        var row = document.createElement('div');
+        row.classList.add("row", "mb-4");
+
+        // create card deck
+        var deck = document.createElement('div');
+        deck.classList.add("card-deck", "mb-3", "text-center");
+
+        return deck
+    };
+
+    function bar_chart(idx, values, horizontal=false) {
+        /* creates a bar chart and adds it to the id 
+        
+        params:
+        -------
+        idx : array
+            The array containing the names of the cols
+        values : array
+            The array containing the values
+        horizontal : bool, optional
+            If true, the bar chart is horizontal
+            (default is false)
+
+        returns:
+        --------
+        json object
+            Format: {
+                'data'
+                'layout'
+            }
+
+        */
+
+        // create trace
+        if (horizontal) {
+
+            var trace = {
+                x:values,
+                y:idx,
+                type:'bar',
+                orientation: 'h',
+                marker: {
+                    color: 'rgb(49,130,189)',
+                    opacity: 0.7,
+                }
+            };
+
+        }
+        else {
+
+            var trace = {
+                x:idx,
+                y:values,
+                type:'bar',
+                marker: {
+                    color: 'rgb(49,130,189)',
+                    opacity: 0.7,
+                }
+            };
+
+        };
+        
+
+        // create data object
+        var data = [trace];
+
+        // define layout;
+        var layout = {
+            showlegend:false,
+        };
+
+        
+        return {
+            data:data,
+            layout:layout,
+        }
+
+
+    };
+
+    function donut_chart(idx, values) {
+        /* Creates a donut chart 
+
+        params:
+        -------
+        idx : array
+            The array containing the names of the cols
+        values : array
+            The array containing the values
+        horizontal : bool, optional
+            If true, the bar chart is horizontal
+            (default is false)
+
+        returns:
+        --------
+        json object
+            Format: {
+                'data'
+                'layout'
+            }
+
+        */
+
+        // create trace
+        var trace = {
+            values:values,
+            labels:idx,
+            hole:.4,
+            type:'pie'
+        };
+
+        // create data object
+        var data = [trace];
+
+        // define layout;
+        var layout = {
+            showlegend:false,
+        };
+
+        
+        return {
+            data:data,
+            layout:layout,
+        }
+
+    };
+
 
 
     $(document).ready(function() {
 
         // kill container
         $(container).empty();
+
+        // kill chart info
+        plotly_charts = [];
 
         // populate the graphs
         $.ajax({
@@ -457,9 +372,47 @@
                             // create card with data & append to deck
                             card_deck.appendChild(create_card(section_name, card_type))
 
+                            // get data index & values
+                            var data_index = data[section_name]['data'][card_type]['index'];
+                            var data_values = data[section_name]['data'][card_type]['values'];
+
                             // create chart from data (plotly) & append to id
                             // card id is always 'section_name + $(this)'
                             //https://plotly.com/javascript/
+                            if (card_type == "earnings") {
+                                
+                                var tmp_chart_data = bar_chart(
+                                    data_index, 
+                                    data_values, 
+                                    horizontal=false
+                                    );
+                            }
+                            else if (card_type == "revenue_sources") {
+
+                                var tmp_chart_data = donut_chart(
+                                    data_index,
+                                    data_values
+                                );
+
+                            }
+                            else if (card_type == "selling_overview") {
+                                var tmp_chart_data = bar_chart(
+                                    data_index, 
+                                    data_values, 
+                                    horizontal=true
+                                    );
+                            }
+                            else {
+
+                                // type not valid, make empty
+                                card_deck.appendChild(create_no_data(card_type));
+                            };
+
+                            // append chart data for later drawing
+                            plotly_charts.push({
+                                'tag_id':section_name + card_type,
+                                'data':tmp_chart_data
+                            });
 
                         }
                         else {
@@ -474,6 +427,18 @@
                     // add card deck to container
                     container.appendChild(card_deck);
 
+                });
+
+                // draw plotly charts
+                $.each(plotly_charts, function(pc, plotly_chart) {
+
+                    // draw
+                    Plotly.newPlot(
+                        plotly_chart['tag_id'], 
+                        plotly_chart['data']['data'], 
+                        plotly_chart['data']['layout'],
+                        {responsive:true}
+                    );
                 });
 
             }

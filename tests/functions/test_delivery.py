@@ -524,7 +524,7 @@ class TestDelivery(unittest.TestCase):
 
             self.assertEqual(orders.count(), 5)
             self.assertEqual(orders.first().customer_id, 1)
-            self.assertEqual(orders.first().name, "Fitnessbrot")
+            self.assertEqual(orders.first().product_name, "Fitnessbrot")
             self.assertEqual(orders.first().total, 50.0)
 
             # check if abos where updated

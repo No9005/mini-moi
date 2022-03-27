@@ -386,7 +386,7 @@ class TestProducts(unittest.TestCase):
             result = session.query(Products).filter_by(id = 1).first()
             self.assertEqual(result.name, "Apfel")
             self.assertEqual(result.category, 2)
-            self.assertEqual(result.margin, .250)
+            self.assertEqual(result.margin, .2)
 
 
         #endregion
@@ -471,7 +471,7 @@ class TestProducts(unittest.TestCase):
 
             # check entries
             self.assertEqual(result.filter_by(id = 3).first().name, "Apfel")
-            self.assertEqual(result.filter_by(id = 4).first().margin, 15.67)
+            self.assertEqual(result.filter_by(id = 4).first().margin, .94)
             self.assertEqual(result.filter_by(id=4).first().purchase_price, 1.50)
             self.assertEqual(result.filter_by(id=3).first().selling_price, 25.0)
 

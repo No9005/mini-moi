@@ -45,15 +45,15 @@
           <p class="text-dark no-link-underline"><b>{{ base_app_name }}</b></p>
         {% endif %}
         </h5>
-        {% if request.path != "/bulk" %}
+        {% if request.path != "/shutdown/app" and request.path != "/bulk" %}
         <nav class="my-2 my-md-0 mr-md-3">
           <a class="p-2 text-dark" href="{{ url_for('delivery') }}">{{ base_delivery }}</a>
           <a class="p-2 text-dark" href="{{ url_for('management') }}">{{ base_tables }}</a>
-          <a class="p-2 text-dark text-muted disabled" href="{{ url_for('reporting') }}">{{ base_reporting }}</a>
+          <a class="p-2 text-dark" href="{{ url_for('reporting') }}">{{ base_reporting }}</a>
           <a class="p-2 text-dark" href="{{ url_for('settings') }}">{{ base_settings }}</a>
         </nav>
         {% endif %}
-        {% if request.path != "/shutdown" and request.path != "/bulk" %}
+        {% if request.path != "/shutdown/app" and request.path != "/bulk" %}
           <a class="btn btn-outline-danger" href="{{ url_for('shutdown') }}">{{ base_shutdown }}</a>
         {% endif %}
       </div>
@@ -68,7 +68,7 @@
           <div class="row">
             <div class="col-12 col-md">
               <a onClick="window.open('https://www.layers-of-life.com')">
-                <img class="mb-2" src="{{ url_for('static', filename='/img/LoL_black.png') }}" alt="" width="80px;">
+                <img class="mb-2" src="https://user-images.githubusercontent.com/52833906/160291224-d6b215b9-6f6f-4dc3-9e95-a25492341705.png" alt="" width="80px;">
               </a>
               
               <small class="d-block mb-3 text-muted">
@@ -79,13 +79,13 @@
             <div class="col-6 col-md">
               <h5>{{ base_documentation }}</h5>
               <ul class="list-unstyled text-small">
-                <li><a class="text-muted" href="#">github</a></li>
+                <li><a class="text-muted" href="https://github.com/No9005/mini-moi">github</a></li>
               </ul>
             </div>
             <div class="col-6 col-md">
               <h5>{{ base_update }}</h5>
               <ul class="list-unstyled text-small">
-                <li><a class="text-muted" href="#">{{ base_releases }}</a></li>
+                <li><a class="text-muted" href="https://github.com/No9005/mini-moi/releases">{{ base_releases }}</a></li>
               </ul>
             </div>
             <div class="col-6 col-md">

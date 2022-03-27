@@ -1,3 +1,11 @@
+v.0.6.0: Reporting done. See changelog.
+    Reporting is missing its unittest, but it works for now.
+    Missing documentation in README.md
+    Missing button in the footer to create demo files.
+    Everything else is currently marked as 'nice-to-have':
+        - exporting queried sheets as excel tables
+
+------------ old versions ----------------------------------
 v.0.5.2: Reporting generating (start). See changelog.
     First elements from the reporting are implemented.
     Need testdate though.
@@ -6,7 +14,6 @@ v.0.5.2: Reporting generating (start). See changelog.
           as table and info graphics.
         - exporting queried sheets as excel tables
 
------------- old versions ----------------------------------
 v.0.5.1: Bulk update foxes. See changelog.
     Changed Bulk update to be xlsx ready.
     Manual integration tests do look correct.

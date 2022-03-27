@@ -93,13 +93,20 @@ class Orders(base):
     product : int
         product id.
             ForeignKey: Product -> id
-    name : str
+    product_name : str
         The product name at the time of
         order.
+    category : str
+        The name of the category
+        of the product (during time of
+        ordering)
+    subcategory : str
+        The subcategory at the time of
+        ordering (name)
     quantity : int
         The amount of the ordered product.
     price : float
-        The price of the product at the moment.
+        The selling price of the product at the moment.
     total : float
         The total cost for the amount of
         products ordered.

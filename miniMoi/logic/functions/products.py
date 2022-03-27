@@ -15,7 +15,41 @@ from miniMoi.models.Models import Products, Category
 from miniMoi.language import language_files
 from miniMoi.logic.helpers import tools
 
-#region 'functions'
+
+#region 'private functions' -----------------------
+def _margin(revenue:float, cost:float, decimals:int = 2) -> float:
+    """Calulates the margin 
+    
+    Calculates the margin and returns it.
+    The margin is defined as
+    
+        (revenue - cost) / revenue
+        
+    REFERENCE:
+        [1] https://www.patriotsoftware.com/blog/accounting/margin-vs-markup-chart-infographic/#:~:text=To%20find%20the%20margin%2C%20divide%20gross%20profit%20by%20the%20revenue.&text=To%20make%20the%20margin%20a%20percentage%2C%20multiply%20the%20result%20by%20100.&text=The%20margin%20is%2025%25.,25%25%20of%20your%20total%20revenue.
+
+    params:
+    ------
+    revenue : float
+        The selling price of the item.
+    cost : float
+        The purchase price of the item.
+    decimals : int, optional
+        The number of decimals.
+        (default is 2)
+
+    returns:
+    --------
+    float
+        margin
+
+    """
+
+    return (revenue - cost) / revenue
+
+#endregion
+
+#region 'public functions' ------------------------
 def get(
         filter_type:typing.Union[str, None], 
         what:typing.Union[str, None],
@@ -306,10 +340,7 @@ def update(product_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAG
         product.selling_price = float_values['selling_price']
         product.store = str(data['store'])
         product.phone = str(data['phone'])
-        product.margin = round(
-            (float_values['selling_price'] - float_values['purchase_price']) / float_values['purchase_price'],
-            2
-            )
+        product.margin = _margin(float_values['selling_price'], float_values['purchase_price'])
 
         session.commit()
 
@@ -444,10 +475,7 @@ def add(products:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
 
         # calculate margin
         float_values.update({
-            'margin': round(
-                (float_values['selling_price'] - float_values['purchase_price']) / float_values['purchase_price'],
-                2
-            )
+            'margin': _margin(float_values['selling_price'], float_values['purchase_price'])
         })
 
         #endregion

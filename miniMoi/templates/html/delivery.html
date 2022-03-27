@@ -259,6 +259,7 @@
                 // create meta div for table-responsive
                 var div = document.createElement('div');
                 div.classList.add("table-responsive");
+                div.setAttribute('style', "margin-bottom:75px;")
 
                 // create table for data
                 var tbl = create_table(data[products[p]], is_editable, relevant_columns, not_editable_cols);

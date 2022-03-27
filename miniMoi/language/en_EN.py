@@ -172,7 +172,7 @@ mapping = {
                 "Book locks your current report and moves the products "
                 "to the 'Orders' table. Additionally the dates for the "
                 "next deliveries are calculated for "
-                "your customers (based on the set abos). CAUTION: "
+                "your customers (based on the set abos in the data base!). CAUTION: "
                 "You can not undo or re-create the report once you have "
                 "'booked' your deliveries!!!"
                 ),
