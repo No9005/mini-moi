@@ -6,8 +6,6 @@ Collection of function which handle the delivery
 # import
 import typing
 import datetime
-import zipfile
-import io
 
 import numpy as np
 import pandas as pd
@@ -194,8 +192,8 @@ def _process_excel(
                 )
 
     # get HOME
-    home = app.config['HOME']
-    fullPath = home/"mini-moi/delivery"
+    home = app.config['MINI_MOI_HOME']
+    fullPath = home / "delivery"
 
     # create 'mini-moi' folder if available
     fullPath.mkdir(exist_ok=True)
