@@ -236,7 +236,8 @@ class TestCategories(unittest.TestCase):
         #region 'id not found, type = categories'
         result = categories.update(
             category_id = 5,
-            name = ""
+            name = "",
+            language="EN"
         )
 
         # assert
@@ -248,7 +249,8 @@ class TestCategories(unittest.TestCase):
         result = categories.update(
             category_id = 5,
             category_type = "subcategory",
-            name = ""
+            name = "",
+            language="EN"
         )
 
         # assert
@@ -259,7 +261,8 @@ class TestCategories(unittest.TestCase):
         #region 'wrong type'
         result = categories.update(
             category_id = 1,
-            name = None
+            name = None,
+            language="EN"
         )
 
         # assert
@@ -277,7 +280,8 @@ class TestCategories(unittest.TestCase):
         #region 'success, type = category'
         result = categories.update(
             category_id = 2,
-            name = "Wurst"
+            name = "Wurst",
+            language="EN"
         )
 
         # assert
@@ -297,7 +301,8 @@ class TestCategories(unittest.TestCase):
         result = categories.update(
             category_id = 1,
             category_type="subcategory",
-            name = "DifferentName"
+            name = "DifferentName",
+            language="EN"
         )
 
         # assert

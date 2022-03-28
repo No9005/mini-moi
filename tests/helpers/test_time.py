@@ -38,6 +38,8 @@ class TestTime(unittest.TestCase):
         Calculate date based on interval
     test_clalculate_next_delivery
         Calculate next delivery
+    test_parse_UI_date
+        Tests the ui parsing
 
     """
 
@@ -155,7 +157,7 @@ class TestTime(unittest.TestCase):
             )
         
         # assert
-        self.assertEqual(str(e.exception), "The 'interval' is not allowed to be None if the 'cycle_type' indicates a 'day' or 'interval'.")
+        self.assertEqual(str(e.exception), "The 'Interval' is not allowed to be empty if the 'Cycle type' indicates a 'Weekday' or 'Interval'.")
 
         #endregion
 
@@ -210,7 +212,7 @@ class TestTime(unittest.TestCase):
             )
         
         # assert
-        self.assertEqual(str(e.exception), "The 'interval' is not allowed to be None if the 'cycle_type' indicates a 'day' or 'interval'.")
+        self.assertEqual(str(e.exception), "The 'Interval' is not allowed to be empty if the 'Cycle type' indicates a 'Weekday' or 'Interval'.")
 
         #endregion
 
@@ -256,6 +258,70 @@ class TestTime(unittest.TestCase):
         result = time.utc_to_local(today, "Europe/Berlin")
 
         self.assertEqual(result.strftime("%Y.%m.%d %H:%M"), "2022.03.23 14:00")
+
+    def test_parse_UI_date(self):
+        """Tests the date parsing """
+
+        #region 'use 'Year.Month.Day'
+        result = time.parse_UI_date(
+            ui_string='2022.12.12',
+            language = "EN",
+            tz = "Europe/Berlin",
+        )
+
+        # assert
+        self.assertEqual(result['data']['date'].strftime("%Y.%m.%d"), "2022.12.11")
+
+        #endregion
+
+        #region 'use 'Day.Month.Year'
+        result = time.parse_UI_date(
+            ui_string='12.12.2021',
+            language = "EN",
+            tz = "Europe/Berlin",
+        )
+
+        # assert
+        self.assertEqual(result['data']['date'].strftime("%Y.%m.%d"), "2021.12.11")
+
+        #endregion
+
+        #region 'use 'Day-Month.Year'
+        result = time.parse_UI_date(
+            ui_string='14-12.2021',
+            language = "EN",
+            tz = "Europe/Berlin",
+        )
+
+        # assert
+        self.assertEqual(result['data']['date'].strftime("%Y.%m.%d"), "2021.12.13")
+
+        #endregion
+
+        #region 'use datetime'
+        result = time.parse_UI_date(
+            ui_string='15-12.2021',
+            language = "EN",
+            tz = "Europe/Berlin",
+        )
+
+        # assert
+        self.assertEqual(result['data']['date'].strftime("%Y.%m.%d"), "2021.12.14")
+
+        #endregion
+
+        #region 'crash'
+        result = time.parse_UI_date(
+            ui_string='15:12.2021',
+            language = "EN",
+            tz = "Europe/Berlin",
+            
+        )
+
+        # assert
+        self.assertEqual(result['error'], "'{var}' needs to be in the format '{format}'.")
+        
+        #endregion
 
     #endregion
 

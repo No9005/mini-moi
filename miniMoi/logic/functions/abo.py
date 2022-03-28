@@ -252,11 +252,21 @@ def update(abo_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE'],
     # check if the list is not empty
     if not bool(data): return {'success':False, 'error':errors['noEntry'], 'data':{}}
 
+    # check abo_id
+    if abo_id == translation['html_text']['/management']['management_auto_text']: return {
+        'success':False,
+        'error':errors['pageRefresh'],
+        'data':{}
+    }
+
+    # parse to int
+    aboId = int(abo_id)
+
     # create a session
     session = Session()
 
     # try to find the abo
-    abo = session.query(Abo).filter_by(id = abo_id).first()
+    abo = session.query(Abo).filter_by(id = aboId).first()
     if abo is None:
 
         # close session & return error
@@ -327,21 +337,19 @@ def update(abo_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE'],
     if next_delivery in ['', 'None', None, auto]: next_delivery = None
 
     if next_delivery is not None:
+        
+        # parse from string into datetime
+        next_delivery = time.parse_UI_date(next_delivery, language, tz)
+        if not next_delivery['success']: return {
+            'success':False,
+            'error':next_delivery['error'].format(
+                var=translation['column_mapping']['abo']['next_delivery'],
+                format=translation['formats']['birthdate']
+            ),
+            'data':{}
+        }
 
-        try: 
-            # parse delivery into correct format
-            next_delivery = "-".join(next_delivery.split("."))
-
-            # parse to datetime
-            next_delivery = time.local_to_utc(
-                time.parse_date_string(next_delivery),
-                tz
-                )
-
-        except: return {'success':False, 'error':errors['wrongFormat'].format(
-            var=translation['column_mapping']['abo']['next_delivery'],
-            format="Year.Month.Day"
-        )}
+        next_delivery = next_delivery['data']['date']
 
     else:
 
@@ -353,6 +361,17 @@ def update(abo_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE'],
             interval = interval,
             language = language
         )
+
+        # check if next_delivery is none
+        if next_delivery is None: return {
+            'success':False,
+            'error':errors['nextDeliveryMismatch'].format(
+                next_delivery = translation['column_mapping']['abo']['next_delivery'],
+                cycle_type = translation['column_mapping']['abo']['cycle_type'],
+                none = translation['cycle_type_mapping']['None']
+            ),
+            'data':{}
+        }
 
     #endregion
 
@@ -590,20 +609,19 @@ def add(abos:list, language:str = app.config['DEFAULT_LANGUAGE'], tz = app.confi
             if next_delivery in ['', 'None', None, auto]: next_delivery = None
 
             if next_delivery is not None:
-                try: 
-                    # parse delivery into correct format
-                    next_delivery = "-".join(next_delivery.split("."))
 
-                    # parse to datetime
-                    next_delivery = time.local_to_utc(
-                        time.parse_date_string(next_delivery),
-                        tz
-                        )
+                # parse from string into datetime
+                next_delivery = time.parse_UI_date(next_delivery, language, tz)
+                if not next_delivery['success']: return {
+                    'success':False,
+                    'error':next_delivery['error'].format(
+                        var=translation['column_mapping']['abo']['next_delivery'],
+                        format=translation['formats']['birthdate']
+                    ),
+                    'data':{}
+                }
 
-                except: return {'success':False, 'error':errors['wrongFormat'].format(
-                    var=translation['column_mapping']['abo']['next_delivery'],
-                    format="Year.Month.Day"
-                )}
+                next_delivery = next_delivery['data']['date']
 
             # endregion
 
@@ -615,6 +633,17 @@ def add(abos:list, language:str = app.config['DEFAULT_LANGUAGE'], tz = app.confi
                     interval = interval,
                     language = language
                 )
+
+                # check if next_delivery is none
+                if next_delivery is None: return {
+                    'success':False,
+                    'error':errors['nextDeliveryMismatch'].format(
+                        next_delivery = translation['column_mapping']['abo']['next_delivery'],
+                        cycle_type = translation['column_mapping']['abo']['cycle_type'],
+                        none = translation['cycle_type_mapping']['None']
+                    ),
+                    'data':{}
+                }
 
             #endregion
 
@@ -708,11 +737,21 @@ def delete(abo_id:int, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
     # get language errorcodes
     errors = translation['error_codes']
 
+    # check abo_id
+    if abo_id == translation['html_text']['/management']['management_auto_text']: return {
+        'success':False,
+        'error':errors['pageRefresh'],
+        'data':{}
+    }
+
+    # parse to int
+    aboId = int(abo_id)
+
     # create session
     session = Session()
 
     # get the user
-    abo = session.query(Abo).filter_by(id = abo_id).first()
+    abo = session.query(Abo).filter_by(id = aboId).first()
     if abo is None: return {
         'success':False, 
         'error':errors['notFound'].format(element="abo"), 

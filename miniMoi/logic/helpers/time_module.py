@@ -122,8 +122,9 @@ def calculate_next_delivery(date:datetime.datetime, cycle_type:str, interval:int
     """
 
     # get language files
-    try: errors = language_files[language]['error_codes']
-    except: errors = language_files['EN']['error_codes']
+    try: translation = language_files[language]
+    except: translation = language_files['EN']
+    errors = translation['error_codes']
 
     # cycle time none (or the alternatives)?
     if cycle_type is None: return None
@@ -136,7 +137,12 @@ def calculate_next_delivery(date:datetime.datetime, cycle_type:str, interval:int
     elif cycle_type == "day":
         
         # interval none?
-        if interval is None: raise AssertionError(errors['cycleMismatch'])
+        if interval is None: raise AssertionError(errors['cycleMismatch'].format(
+            interval = translation['column_mapping']['abo']['interval'],
+            cycle_type = translation['column_mapping']['abo']['cycle_type'],
+            day = translation['cycle_type_mapping']['day'], 
+            interval_value = translation['cycle_type_mapping']['interval']
+        ))
 
         # interval outside of 0-6?
         elif interval < 0 or interval > 6: raise AssertionError(
@@ -156,7 +162,12 @@ def calculate_next_delivery(date:datetime.datetime, cycle_type:str, interval:int
     elif cycle_type == "interval":
         
         # interval none?
-        if interval is None: raise AssertionError(errors['cycleMismatch'])
+        if interval is None: raise AssertionError(errors['cycleMismatch'].format(
+            interval = translation['column_mapping']['abo']['interval'],
+            cycle_type = translation['column_mapping']['abo']['cycle_type'],
+            day = translation['cycle_type_mapping']['day'], 
+            interval_value = translation['cycle_type_mapping']['interval']
+        ))
 
         # generate the next delivery date
         next_delivery = date_by_interval(
@@ -266,5 +277,87 @@ def local_to_utc(date:datetime.datetime, tz:str = "Europe/Paris") -> datetime.da
     localized = local.localize(date, is_dst=None)
 
     return localized.astimezone(pytz.utc)
+
+def parse_UI_date(ui_string:str, language:str= "EN", tz:str = "Europe/Paris") -> dict:
+    """Parses the UI date input into datetime 
+    
+    First dots get exchanged by '-'.
+    Next the format "Year.Month.Day" is tested.
+    If this fails, we try the other way around.
+    If all fails, the algorithmn quits with an
+    error message.
+
+    params:
+    ------
+    ui_string : str
+        The string to parse to datetime
+    tz : str
+        Timezone information
+    language : str, optional
+        The language iso code.
+        (default is app.config['DEFAULT_LANGUAGE])
+
+    returns:
+    --------
+    dict
+        success, error & data {
+            'date':datetime
+        }
+
+    """
+
+    # get language files
+    try: translation = language_files[language]
+    except: translation = language_files["EN"]
+
+    # errors
+    errors = translation['error_codes']
+
+    # is birth_string already a datetime object?
+    if isinstance(ui_string, type(today())): birthdate = local_to_utc(ui_string, tz)
+    else :
+        # create split (acutally double split to catch every type)
+        splitted = "-".join(str(ui_string).split(".")).split("-")
+
+        # try the format 'Year-Month-Day'
+        try: uiInput = local_to_utc(
+                    parse_date_string("-".join(splitted)),
+                    tz
+                    )
+        except: 
+
+            # build reverse
+            reverse = reversed(splitted)
+
+            # try the other way around
+            try: uiInput = local_to_utc(
+                    parse_date_string("-".join(reverse)),
+                    tz
+                    )
+
+            # caution! this is the unmodified text!
+            except: return {
+                'success':False,
+                'error':errors['wrongFormat'],
+                'data':{}
+
+            }
+            """except: return {
+                'success':False,
+                'error':errors['wrongFormat'].format(
+                            var=translation['column_mapping']['customers']['birthdate'],
+                            format=translation['formats']['birthdate']
+                    ),
+                'data': {}
+            }"""
+
+    # success?
+    return {
+        'success':True,
+        'error':"",
+        'data':{
+            'date':uiInput
+        }
+    }
 
 #endregion

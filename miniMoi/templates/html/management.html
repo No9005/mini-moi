@@ -601,9 +601,6 @@
         // get row
         var row = $(element).parent('tr');
 
-        console.log(row);
-        console.log(row.hasClass('new-entry'))
-
         // not a new-entry row?
         if (!row.hasClass('new-entry')) {
 
@@ -825,6 +822,11 @@
                     // get selected value
                     data[col] = cell.children().first().children().filter(":selected").val();
                 }
+
+                // firefox savenet! -> if not a 'select-tag' grab the text...
+                else {
+                    data[col] = cell.text();
+                };
             }
 
             // just add data

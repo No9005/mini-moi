@@ -35,14 +35,19 @@ mapping = {
         'notAllowed':"'{var}' muss eines der folgenden Optionen '{available}' sein.",
         'weekdays':"Montag, Dienstag, Mittwoch, Donnerstag, Freitag, Samstag, Sonntag",
         'cycleMismatch':(
-            "Es ist nicht erlaubt das 'Intervall' auf 'None' zu setzen, sollte der 'Zyklus' "
-            "'Tag' oder 'Intervall' sein."
+            "Es ist nicht erlaubt das '{interval}' leer zu lassen, sollte der '{cycle_type}' "
+            "'{day}' oder '{interval_value}' sein."
         ),
+        'nextDeliveryMismatch':(
+            "Es ist nicht erlaubt die '{next_delivery}' leer zu lassen, wenn "
+            "der '{cycle_type}' {none} ist."
+            ),
         'missingData':"Folgende Daten fehlen: {column}",
         'defaultProtection':"'Standardwerte' können nicht gelöscht werden.",
         'blueprintUnkonwn':"Die ausgewählte Blaupause ist nicht bekannt ('{blueprint}'.",
         'noBlueprintFound':"Es gab keine Blaupausen zum importieren. Bitte erzeugen Sie zuerst eines.",
         'wrongFileType':"Nur Dateien mit Endung '.{format}' sind erlaubt.",
+        'pageRefresh':"Bitte aktualisieren Sie die Seite.",
         '500':"Es trat ein Fehler auf: {c}: {m}",
         '404':"Seite '{ressource}' nicht gefunden.",
     },
@@ -391,6 +396,9 @@ mapping = {
         10:"Oktober",
         11:"November",
         12:"Dezember",
+    },
+    'formats':{
+        'birthdate':"Jahr.Monat.Tag",
     }
     
 }

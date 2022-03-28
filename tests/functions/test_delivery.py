@@ -641,7 +641,7 @@ class TestDelivery(unittest.TestCase):
         }
 
         # run
-        result = delivery.save_data(test, "EN")
+        result = delivery.save_data(test, True, True, "EN")
 
         # assert
         self.assertEqual(result['error'], "There is data missing: customer_town")
@@ -653,7 +653,7 @@ class TestDelivery(unittest.TestCase):
         test = {}
 
         # run
-        result = delivery.save_data(test, "EN")
+        result = delivery.save_data(test, True, True, "EN")
 
         # assert
         self.assertEqual(result['error'], "You did not enter/change anything.")

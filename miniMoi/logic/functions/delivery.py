@@ -801,7 +801,7 @@ def save_data(
         data:dict,
         save_cover:bool = True,
         save_overview:bool = True,
-        language = app.config['DEFAULT_LANGUAGE']
+        language:str = app.config['DEFAULT_LANGUAGE']
     ) -> dict:
     """Create order details overview
 
@@ -855,6 +855,7 @@ def save_data(
     # get language errorcodes
     try: translation = language_files[language]
     except: translation = language_files[app.config['DEFAULT_LANGUAGE']]
+    
     errors = translation['error_codes']
 
     processed = _process_received(data, errors)

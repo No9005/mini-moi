@@ -168,11 +168,21 @@ def update(
         dtype= "str"
     ), 'data':{}}
 
+    # check id
+    if category_id == translation['html_text']['/management']['management_auto_text']: return {
+        'success':False,
+        'error':errors['pageRefresh'],
+        'data':{}
+    }
+
+    # parse to int
+    categoryId = int(category_id)
+
     # create a session
     session = Session()
 
     # try to find the category
-    category = session.query(mapper[category_type]).filter_by(id = category_id).first()
+    category = session.query(mapper[category_type]).filter_by(id = categoryId).first()
     if category is None:
 
         # close session & return error
@@ -369,8 +379,18 @@ def delete(category_id:int, category_type:str = "category", language:str = app.c
     # get language errorcodes
     errors = translation['error_codes']
 
+    # check id
+    if category_id == translation['html_text']['/management']['management_auto_text']: return {
+        'success':False,
+        'error':errors['pageRefresh'],
+        'data':{}
+    }
+
+    # parse to int
+    categoryId = int(category_id)
+
     # prevent deleting defaults (== id 0)
-    if category_id == 0:
+    if categoryId == 0:
         return {
             'success':False,
             'error':errors['defaultProtection'],
@@ -381,7 +401,7 @@ def delete(category_id:int, category_type:str = "category", language:str = app.c
     session = Session()
 
     # get the category
-    category = session.query(mapper[category_type]).filter_by(id = category_id).first()
+    category = session.query(mapper[category_type]).filter_by(id = categoryId).first()
     if category is None: return {
         'success':False, 
         'error':errors['notFound'].format(element=category_type), 

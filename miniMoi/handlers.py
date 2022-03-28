@@ -380,7 +380,7 @@ def api(request:dict) -> dict:
             """
 
             response = customer.delete(
-                customer_id = int(request['data']['id']),
+                customer_id = request['data']['id'],
                 language = app.config['DEFAULT_LANGUAGE'],
             )
 
@@ -463,7 +463,7 @@ def api(request:dict) -> dict:
             """
 
             response = customer.update(
-                customer_id = int(request['data']['id']),
+                customer_id = request['data']['id'],
                 data = request['data'],
                 language = app.config['DEFAULT_LANGUAGE']
             )
@@ -580,7 +580,7 @@ def api(request:dict) -> dict:
             """
 
             response = products.delete(
-                product_id = int(request['data']['id']),
+                product_id = request['data']['id'],
                 language = app.config['DEFAULT_LANGUAGE'],
             )
 
@@ -613,7 +613,7 @@ def api(request:dict) -> dict:
             """
 
             response = products.update(
-                product_id = int(request['data']['id']),
+                product_id = request['data']['id'],
                 data = request['data'],
                 language = app.config['DEFAULT_LANGUAGE'],
             )
@@ -704,7 +704,7 @@ def api(request:dict) -> dict:
             """
 
             response = categories.delete(
-                category_id = int(request['data']['id']),
+                category_id = request['data']['id'],
                 language = app.config['DEFAULT_LANGUAGE']
             )
 
@@ -728,7 +728,7 @@ def api(request:dict) -> dict:
             """
 
             response = categories.update(
-                category_id = int(request['data']['id']),
+                category_id = request['data']['id'],
                 name = request['data']['name'],
                 language = app.config['DEFAULT_LANGUAGE']
             )
@@ -821,7 +821,7 @@ def api(request:dict) -> dict:
             """
 
             response = categories.delete(
-                category_id = int(request['data']['id']),
+                category_id = request['data']['id'],
                 category_type = "subcategory",
                 language = app.config['DEFAULT_LANGUAGE'],
             )
@@ -846,7 +846,7 @@ def api(request:dict) -> dict:
             """
 
             response = categories.update(
-                category_id = int(request['data']['id']),
+                category_id = request['data']['id'],
                 category_type = "subcategory",
                 name = request['data']['name'],
                 language = app.config['DEFAULT_LANGUAGE']
@@ -963,7 +963,7 @@ def api(request:dict) -> dict:
             """
 
             response = abo.delete(
-                abo_id = int(request['data']['id']),
+                abo_id = request['data']['id'],
                 language = app.config['DEFAULT_LANGUAGE'],
             )
 
@@ -994,7 +994,7 @@ def api(request:dict) -> dict:
             """
 
             response = abo.update(
-                abo_id = int(request['data']['id']),
+                abo_id = request['data']['id'],
                 data = request['data'],
                 language = app.config['DEFAULT_LANGUAGE']
             )

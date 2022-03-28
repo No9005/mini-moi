@@ -15,6 +15,7 @@ from miniMoi.language import language_files
 from miniMoi.logic.helpers import tools
 import miniMoi.logic.helpers.time_module as time
 
+
 #region 'functions'
 def get(
         filter_type:typing.Union[str, None], 
@@ -237,11 +238,21 @@ def update(customer_id:int, data:dict, language:str = app.config['DEFAULT_LANGUA
     # check if the list is not empty
     if not bool(data): return {'success':False, 'error':errors['noEntry'], 'data':{}}
 
+    # check id
+    if customer_id == translation['html_text']['/management']['management_auto_text']: return {
+        'success':False,
+        'error':errors['pageRefresh'],
+        'data':{}
+    }
+
+    # parse to int
+    customerId = int(customer_id)
+
     # create a session
     session = Session()
 
     # try to find the customer
-    customer = session.query(Customers).filter_by(id = customer_id).first()
+    customer = session.query(Customers).filter_by(id = customerId).first()
     if customer is None:
 
         # close session & return error
@@ -249,6 +260,22 @@ def update(customer_id:int, data:dict, language:str = app.config['DEFAULT_LANGUA
 
         return {'success':False, 'error':errors['notFound'].format(element="customer"), 'data':{}}
 
+    # parse birthdate
+    birthdate = None
+    if data['birthdate'] != "":
+
+        birthdate = time.parse_UI_date(data['birthdate'], language, tz)
+        if not birthdate['success']: return {
+            'success':False,
+            'error':birthdate['error'].format(
+                var=translation['column_mapping']['customers']['birthdate'],
+                format=translation['formats']['birthdate']
+            ),
+            'data':{}
+        }
+
+        birthdate = birthdate['data']['date']
+    
     try:
         
         # parse to int
@@ -258,25 +285,6 @@ def update(customer_id:int, data:dict, language:str = app.config['DEFAULT_LANGUA
                 var = translation['column_mapping']['customers'][col],
                 dtype="int"
             ), 'data':{}}
-
-        # check if birthdate is not just a empty string
-        birthdate = None
-
-        if data['birthdate'] != "":
-            try: 
-                # parse birthdate into correct format
-                birthdate = "-".join(data['birthdate'].split("."))
-
-                # parse to datetime
-                birthdate = time.local_to_utc(
-                time.parse_date_string(birthdate),
-                tz
-                )
-
-            except: return {'success':False, 'error':errors['wrongFormat'].format(
-                var=translation['column_mapping']['customers']['birthdate'],
-                format="Year.Month.Day"
-            )}
 
         # try to update him
         customer.name = str(data['name'])
@@ -397,26 +405,23 @@ def add(customers:list, language:str = app.config['DEFAULT_LANGUAGE'], tz = app.
                 dtype="int"
             ), 'data':{}}
 
-        try:
-
-            # check if birthdate is just ""
-            birthdate = None
-
-            if customer['birthdate'] != "":
-                try: 
-                    # parse birthdate into correct format
-                    birthdate = "-".join(customer['birthdate'].split("."))
-
-                    # parse to datetime
-                    birthdate = time.local_to_utc(
-                    time.parse_date_string(birthdate),
-                    tz
-                    )
-
-                except: return {'success':False, 'error':errors['wrongFormat'].format(
+        # parse birthdate
+        birthdate = None
+        if customer['birthdate'] != "":
+            
+            birthdate = time.parse_UI_date(customer['birthdate'], language, tz)
+            if not birthdate['success']: return {
+                'success':False,
+                'error':birthdate['error'].format(
                     var=translation['column_mapping']['customers']['birthdate'],
-                    format="Year.Month.Day"
-                )}
+                    format=translation['formats']['birthdate']
+                ),
+                'data':{}
+            }
+
+            birthdate = birthdate['data']['date']
+
+        try:
 
             # try to create the new object
             toAdd.append(Customers(
@@ -513,11 +518,21 @@ def delete(customer_id:int, language:str = app.config['DEFAULT_LANGUAGE']) -> di
     # get language errorcodes
     errors = translation['error_codes']
 
+    # check id
+    if customer_id == translation['html_text']['/management']['management_auto_text']: return {
+        'success':False,
+        'error':errors['pageRefresh'],
+        'data':{}
+    }
+
+    # parse to int
+    customerId = int(customer_id)
+
     # create session
     session = Session()
 
     # get the user
-    customer = session.query(Customers).filter_by(id = customer_id).first()
+    customer = session.query(Customers).filter_by(id = customerId).first()
     if customer is None: return {
         'success':False, 
         'error':errors['notFound'].format(element="customer"), 

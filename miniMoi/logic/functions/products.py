@@ -45,7 +45,7 @@ def _margin(revenue:float, cost:float, decimals:int = 2) -> float:
 
     """
 
-    return (revenue - cost) / revenue
+    return round((revenue - cost) / revenue, decimals)
 
 #endregion
 
@@ -261,6 +261,16 @@ def update(product_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAG
     # check if the list is not empty
     if not bool(data): return {'success':False, 'error':errors['noEntry'], 'data':{}}
 
+    # check id
+    if product_id == translation['html_text']['/management']['management_auto_text']: return {
+        'success':False,
+        'error':errors['pageRefresh'],
+        'data':{}
+    }
+
+    # parse to int
+    productId = int(product_id)
+
     #region 'parse input'
     # try to parse numeric values
     try: category_id = int(data['category'])
@@ -299,7 +309,7 @@ def update(product_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAG
     session = Session()
 
     # try to find the customer
-    product = session.query(Products).filter_by(id = product_id).first()
+    product = session.query(Products).filter_by(id = productId).first()
     if product is None:
 
         # close session & return error
@@ -590,11 +600,21 @@ def delete(product_id:int, language:str = app.config['DEFAULT_LANGUAGE']) -> dic
     # get language errorcodes
     errors = translation['error_codes']
 
+    # check id
+    if product_id == translation['html_text']['/management']['management_auto_text']: return {
+        'success':False,
+        'error':errors['pageRefresh'],
+        'data':{}
+    }
+
+    # parse to int
+    productId = int(product_id)
+
     # create session
     session = Session()
 
     # get the user
-    product = session.query(Products).filter_by(id = product_id).first()
+    product = session.query(Products).filter_by(id = productId).first()
     if product is None: return {
         'success':False, 
         'error':errors['notFound'].format(element="product"), 

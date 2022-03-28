@@ -398,7 +398,9 @@ class TestAbo(unittest.TestCase):
                 'interval':3,
                 'product':1,
                 'custom_next_delivery':None
-            }
+            },
+            language="EN",
+            tz="Europe/Berlin"
         )
 
         # assert
@@ -416,7 +418,9 @@ class TestAbo(unittest.TestCase):
         result = abo.update(
             abo_id = 1,
             data = {
-            }
+            },
+            language="EN",
+            tz="Europe/Berlin"
         )
 
         # assert
@@ -441,7 +445,9 @@ class TestAbo(unittest.TestCase):
                 'next_delivery':None,
                 'subcategory':2.,
                 'quantity':2
-            }
+            },
+            language="EN",
+            tz="Europe/Berlin"
         )
 
         # assert
@@ -472,7 +478,8 @@ class TestAbo(unittest.TestCase):
                 'subcategory':1,
                 'quantity':"3"
             },
-            tz = "Europe/Berlin"
+            language="EN",
+            tz="Europe/Berlin"
         )
 
         # assert
@@ -499,7 +506,9 @@ class TestAbo(unittest.TestCase):
                 'next_delivery':None,
                 'subcategory':1,
                 'quantity':3
-            }
+            },
+            language="EN",
+            tz="Europe/Berlin"
         )
 
         # assert
@@ -518,7 +527,9 @@ class TestAbo(unittest.TestCase):
                 'next_delivery':None,
                 'subcategory':10,
                 'quantity':3.0
-            }
+            },
+            language="EN",
+            tz="Europe/Berlin"
         )
 
         # assert
@@ -559,7 +570,9 @@ class TestAbo(unittest.TestCase):
                 'next_delivery':None,
                 'subcategory':10,
                 'quantity':5
-            }]
+            }],
+            language="EN",
+            tz = "Europe/Berlin"
         )
 
         # assert
@@ -594,6 +607,7 @@ class TestAbo(unittest.TestCase):
                 'quantity':15
                 }
             ],
+            language ="EN",
             tz = "Europe/Berlin"
         )
 

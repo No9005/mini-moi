@@ -21,7 +21,8 @@ mapping = {
         'wrongFormat':"'{var}' needs to be in the format '{format}'.",
         'notAllowed':"'{var}' needs to be one of the following '{available}'.",
         'weekdays':"Monday, Tuesday, Wendsday, Thursday, Friday, Saturday, Sunday",
-        'cycleMismatch':"The 'interval' is not allowed to be None if the 'cycle_type' indicates a 'day' or 'interval'.",
+        'cycleMismatch':"The '{interval}' is not allowed to be empty if the '{cycle_type}' indicates a '{day}' or '{interval_value}'.",
+        'nextDeliveryMismatch':"The '{next_delivery}' is not allowed to be empty if the '{cycle_type}' is {none}.",
         'missingData':"There is data missing: {column}",
         'defaultProtection':"Default values can not be deleted.",
         'blueprintUnkonwn':"The selected blueprint is not known ('{blueprint}'",
@@ -369,6 +370,9 @@ mapping = {
         10:"October",
         11:"November",
         12:"December",
+    },
+    'formats':{
+        'birthdate':"Year.Month.Day",
     }
     
 }

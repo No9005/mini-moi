@@ -11,7 +11,7 @@ import datetime
 
 from sqlalchemy.orm import scoped_session, sessionmaker, Session
 
-from miniMoi import base
+from miniMoi import base, app
 from miniMoi.models.Models import Abo, Customers, Products, Subcategory
 
 from miniMoi.logic.functions import customer
@@ -306,7 +306,7 @@ class TestCustomer(unittest.TestCase):
 
     def test_update(self):
         """Tests the updater """
-
+            
         #region 'id not found'
         result = customer.update(
             customer_id = 5,
@@ -381,35 +381,35 @@ class TestCustomer(unittest.TestCase):
         #endregion
 
         #region 'birthdate wrong format'
-        result = customer.update(
-            customer_id = 1,
-            data = {
-                'name':"Hans",
-                'surname':"Fischkopf",
-                'street':"Weiher",
-                'nr':3,
-                'postal':"0101",
-                'town':"Birdy",
-                'phone':"",
-                'mobile':"",
-                'birthdate':"1832-12:10",
-                'approach':"10",
-                'notes':"Some notes"
-            },
-            language = "EN"
-        )
+            result = customer.update(
+                customer_id = 1,
+                data = {
+                    'name':"Hans",
+                    'surname':"Fischkopf",
+                    'street':"Weiher",
+                    'nr':3,
+                    'postal':"0101",
+                    'town':"Birdy",
+                    'phone':"",
+                    'mobile':"",
+                    'birthdate':"1832-12:10",
+                    'approach':"10",
+                    'notes':"Some notes"
+                },
+                language = "EN"
+            )
 
-        # assert
-        self.assertEqual(result['error'], "'Birthdate' needs to be in the format 'Year.Month.Day'.")
+            # assert
+            self.assertEqual(result['error'], "'Birthdate' needs to be in the format 'Year.Month.Day'.")
 
-        # check db
-        with Session(testEngine) as session:
+            # check db
+            with Session(testEngine) as session:
 
-            result = session.query(Customers).filter_by(id = 1).first()
-            self.assertEqual(result.name, "Peter")
+                result = session.query(Customers).filter_by(id = 1).first()
+                self.assertEqual(result.name, "Peter")
 
-        #endregion
-    
+            #endregion
+        
     def test_add(self):
         """Adds a element to the db """
 
@@ -498,7 +498,8 @@ class TestCustomer(unittest.TestCase):
                     'notes':""
                 },
             ],
-            language = "EN"
+            language = "EN",
+            tz="Europe/Berlin"
         )
 
         # assert

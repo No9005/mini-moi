@@ -401,7 +401,8 @@ class TestProducts(unittest.TestCase):
                 'selling_price':25.0,
                 'store':"AndererLaden",
                 'phone':"+phone"
-            }
+            },
+            language ="EN"
         )
 
         # assert
