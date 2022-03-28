@@ -103,8 +103,8 @@ def settings():
                 }
 
         # save 
-        with open(str(app.config['CWD']/"settings/settings.json"), "w") as outfile:
-            outfile.write(json.dumps(newSettings))
+        with open(str(app.config['SETTINGS_FILE_PATH']), "w") as outfile:
+            json.dump(newSettings, outfile, indent=4)
 
         return {'success':True, 'error':"", 'data':url_for('index')}
 

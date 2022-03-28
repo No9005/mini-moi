@@ -20,8 +20,7 @@ def make_db_copy():
     except: translation = language_files['EN']
 
     # create home path
-    home = Path().home()
-    fullPath = home / "mini-moi/backups"
+    fullPath = app.config['MINI_MOI_HOME'] / "backups"
 
     # create a folder in the Downloads folder
     fullPath.mkdir(exist_ok=True)
@@ -33,7 +32,7 @@ def make_db_copy():
         )
 
     # copy the mini-moi app to the database
-    shutil.copyfile(str(app.config['CWD']/"db/app.db"), (fullPath/("app_backup_" + today + ".db")))
+    shutil.copyfile(str(app.config['DB_FILE_PATH']), (fullPath/("app_backup_" + today + ".db")))
 
     return {
         'success':True,
@@ -72,7 +71,7 @@ def rollback_db_save(filename:str) -> dict:
     sourcePath = app.config['MINI_MOI_HOME'] / "backups" / filename
 
     # copy it to the cwd db
-    shutil.copyfile(str(sourcePath), str(app.config['CWD']/"db/app.db"))
+    shutil.copyfile(str(sourcePath), str(app.config['DB_FILE_PATH']))
 
     return {
         'success':True,
@@ -85,7 +84,7 @@ def rollback_db_save(filename:str) -> dict:
 def delete_db() -> dict:
     """Deletes the database. Handle with care! """
 
-    (app.config['CWD'] / "db/app.db").unlink()
+    app.config['DB_FILE_PATH'].unlink()
     
     return {
         'success':True,

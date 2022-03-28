@@ -18,12 +18,20 @@ from sqlalchemy.orm import scoped_session, sessionmaker, declarative_base
 
 from . import version
 
-#region 'app construction' ---------------------
-# grab cwd
-cwd = Path().cwd() / "miniMoi"
+import miniMoi.setup.setup_process as setup
 
-# create db directory
-(cwd/"db").mkdir(exist_ok=True)
+#region 'app construction' ---------------------
+# grab cwd & home
+cwd = Path().cwd() / "miniMoi"
+home = Path().home()
+
+# first startup?
+if not (home / "mini-moi/system/done.txt").is_file(): 
+    
+    print("START:: running app setup")
+    setup.run()
+
+    print("FINISHED:: app setup done")
 
 # init python app
 app = Flask(
@@ -34,21 +42,29 @@ app = Flask(
     )
 
 # grab the settings json
-with open(cwd/"settings/settings.json", "r") as file:
+with open(home / "mini-moi/system/settings/settings.json", "r") as file:
     settings = json.loads(file.read())
 
 #region 'app config'
+#region 'paths'
+app.config['HOME'] = home
+app.config['MINI_MOI_HOME'] = home / "mini-moi"
+app.config['BLUEPRINT_PATH'] = home /"mini-moi/blueprints"
+app.config['SETTINGS_FILE_PATH'] = home / "mini-moi/system/settings/settings.json"
+app.config['DB_FILE_PATH'] = home / "mini-moi/system/db/app.db"
+
+#endregion
+
+#region 'core & settings file'
 app.config['VERSION'] = version.__version__
 app.config['DEFAULT_LANGUAGE'] = settings['default_language']
-app.config['ACTION_LOGGING'] = settings['action_logging'] == "True"
-app.config['CWD'] = cwd
-app.config['HOME'] = Path().home()
-app.config['MINI_MOI_HOME'] = Path().home() / "mini-moi"
-app.config['BLUEPRINT_PATH'] = Path().home() /"mini-moi/blueprints"
 app.config['FILE_TYPE'] = "xlsx"
-
+app.config['ACTION_LOGGING'] = settings['action_logging'] == "True"
 app.config['TZ_INFO'] = get_localzone_name()
-print("TIMEZONE: ", get_localzone_name())
+print("TIMEZONE:: ", get_localzone_name())
+
+#endregion
+
 
 # add available languages
 from miniMoi.language import language_files
@@ -60,14 +76,14 @@ app.config['AVAILABLE_LANGUAGES'] = [lang for lang in language_files.keys()]
 # get os
 osName = sys.platform
 
-print("OS: ", osName)
+print("OS:: ", osName)
 
-if osName == "win32": dbPath = "sqlite:///" + str(cwd/"db/app.db")
-elif osName == "darwin": dbPath = "sqlite:////" + str(cwd/"db/app.db")
-elif osName == "linux": dbPath = "sqlite:///" + str(cwd/"db/app.db")
+if osName == "win32": dbPath = "sqlite:///" + str(app.config['DB_FILE_PATH'])
+elif osName == "darwin": dbPath = "sqlite:////" + str(app.config['DB_FILE_PATH'])
+elif osName == "linux": dbPath = "sqlite:///" + str(app.config['DB_FILE_PATH'])
 else: raise Exception("Operating system not detectable: " + str(osName))
 
-print("DB PATH: ", dbPath)
+print("DB PATH:: ", dbPath)
 
 # create engine
 engine = create_engine(
@@ -90,8 +106,15 @@ Session = scoped_session(sessionFactory)
 base = declarative_base()
 
 # check if database is available
-from .logic.db.init_database import run_creation
-run_creation(engine, base)
+if not app.config['DB_FILE_PATH'].is_file():
+    
+    print("START:: created db")
+    
+    from .logic.db.init_database import run_creation
+    
+    run_creation(engine, base)
+
+    print("FINISHED:: db created")
 
 #endregion
 
