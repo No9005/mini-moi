@@ -38,6 +38,8 @@ def run():
     # create the mini-moi app
     (homePath / "mini-moi").mkdir(parents=True, exist_ok=True)
 
+    print("CREATED MINI-MOI AT::: ", homePath)
+
     #endregion
 
     #region 'prepare app settings.json'

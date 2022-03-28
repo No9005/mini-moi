@@ -25,6 +25,8 @@ import miniMoi.setup.setup_process as setup
 cwd = Path().cwd() / "miniMoi"
 home = Path().home()
 
+print("HOME:: ", home)
+
 # first startup?
 if not (home / "mini-moi/system/done.txt").is_file(): 
     

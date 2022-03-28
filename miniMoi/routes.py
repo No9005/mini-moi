@@ -12,14 +12,6 @@ from miniMoi import app, Session
 from miniMoi import handlers
 from miniMoi.language import language_files
 
-
-#region 'testwise'
-@app.route("/base", methods=["GET"])
-def base():
-    return render_template("html/base.html")
-
-#endregion
-
 #region 'cleanup, shutdown & context'
 @app.teardown_appcontext
 def shutdown_session(exception=None):

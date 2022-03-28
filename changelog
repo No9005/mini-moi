@@ -1,4 +1,4 @@
-v.0.6.2: Small fixes + app setup. See changelog.
+v.0.6.3: Small fixes + app setup. See changelog.
     Moved all persistant files to the mini-moi directory
     on the users home.
     Reporting is missing its unittest, but it works for now.
@@ -7,6 +7,14 @@ v.0.6.2: Small fixes + app setup. See changelog.
         - exporting queried sheets as excel tables
 
 ------------ old versions ----------------------------------
+v.0.6.2: Small fixes + app setup. See changelog.
+    Moved all persistant files to the mini-moi directory
+    on the users home.
+    Reporting is missing its unittest, but it works for now.
+    Missing documentation in README.md
+    Everything else is currently marked as 'nice-to-have':
+        - exporting queried sheets as excel tables
+
 v.0.6.1: Small fixes. See changelog.
     Fixed a db issue.
     Demo implemented
