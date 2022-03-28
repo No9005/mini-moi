@@ -23,6 +23,7 @@ mapping = {
         'weekdays':"Monday, Tuesday, Wendsday, Thursday, Friday, Saturday, Sunday",
         'cycleMismatch':"The 'interval' is not allowed to be None if the 'cycle_type' indicates a 'day' or 'interval'.",
         'missingData':"There is data missing: {column}",
+        'defaultProtection':"Default values can not be deleted.",
         'blueprintUnkonwn':"The selected blueprint is not known ('{blueprint}'",
         'noBlueprintFound':"There was no blueprint to import. Please create first one.",
         'wrongFileType':"Only files in format '.{format}' are allowed.",
@@ -124,7 +125,7 @@ mapping = {
         },
         '/':{
             'index_title':"Home",
-            'index_hello':"Welcome, Mini Moi user!",
+            'index_hello':"Welcome, <b>Mini Moi</b> user!",
             'index_lead':(
                 "A little assistent to get an overview of "
                 "the next days orders."
@@ -223,11 +224,6 @@ mapping = {
                 "Table</span> (e.g. Customers) by using a excel blueprint."
             ),
             'bulk_select_blueprint':"1. Select the blueprint to create",
-            'bulk_click_me':(
-                "Click me! <br>"
-                "<span><small>Caution: the blueprint(s) get deleted "
-                "afterwards!</small></span>"
-            ),
             'bulk_customers_btn':"Customers",
             'bulk_category_btn':"Category",
             'bulk_subcategory_btn':"Subcategory",
@@ -249,7 +245,7 @@ mapping = {
         },
         '/reporting':{
             'reporting_title':"Dashboard",
-            'reporting_lead':"Overview over past earnings & expenses",
+            'reporting_lead':"Overview over past earnings.",
             'reporting_current_week':"Overview current week",
             'reporting_last_week':"Overview last week",
             'reporting_month':"Overview current month",
@@ -275,7 +271,7 @@ mapping = {
                 "Your current database is "
                 "deleted as soon as you create the demo data. "
                 "If your data is important to you, you should run a backup in the "
-                "settings menu first! <span>"
+                "settings menu first! </span>"
                 ),
             'demo_btn':"Create demo!",
             'demo_creation_successfull':"Done! Demo data created. Have fun testing the app :-)",
@@ -291,7 +287,6 @@ mapping = {
         'blueprint_created':"The blueprint for '{blueprint}' was successfully created as '{path}'",
         'bulkFinished':"Successfull: {success}, Failures: {failures}",
         'is_empty':"is empty",
-
     },
     'column_mapping':{
         'customers':{

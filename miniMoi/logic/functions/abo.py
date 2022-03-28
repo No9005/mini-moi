@@ -177,13 +177,19 @@ def get(
     fetched = []
     for row in result.all():
 
+        # parse cycle type and interval
+        cycle_type = "None"
+        interval = "None"
+        if row.cycle_type is not None: cycle_type = row.cycle_type
+        if row.interval is not None: interval = row.interval 
+
         fetched.append(
             {
               'id':row.id,
               'customer_id':row.customer_id,
               'update_date':time.to_string(time.utc_to_local(row.update_date), "%Y.%m.%d %H:%M"),
-              'cycle_type':row.cycle_type,
-              'interval':row.interval,
+              'cycle_type':cycle_type,
+              'interval':interval,
               'next_delivery':time.to_string(time.utc_to_local(row.next_delivery), "%Y.%m.%d"),
               'product':row.product,
               'subcategory':row.subcategory,

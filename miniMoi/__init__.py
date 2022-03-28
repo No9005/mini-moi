@@ -28,7 +28,11 @@ home = Path().home()
 print("HOME:: ", home)
 
 # first startup?
+setupFlag = False
 if not (home / "mini-moi/system/done.txt").is_file(): 
+
+    # set flag
+    setupFlag = True
     
     print("START:: running app setup")
     setup.run()
@@ -36,13 +40,6 @@ if not (home / "mini-moi/system/done.txt").is_file():
     print("FINISHED:: app setup done")
 
 # init python app
-"""app = Flask(
-    __name__,
-    template_folder = str(cwd/"templates"),
-    static_url_path = str(cwd/"static"),
-    static_folder = "static"
-    )"""
-
 app = Flask(__name__)
 
 # grab the settings json
@@ -110,15 +107,21 @@ Session = scoped_session(sessionFactory)
 base = declarative_base()
 
 # check if database is available
-if not app.config['DB_FILE_PATH'].is_file():
+if setupFlag or app.config['DB_FILE_PATH'].is_file() == False:
+
+    from .logic.db.init_database import run_creation, create_defaults
     
     print("START:: created db")
-    
-    from .logic.db.init_database import run_creation
     
     run_creation(engine, base)
 
     print("FINISHED:: db created")
+
+    if not create_defaults(Session): raise Exception("ERROR:: Not able to create db defaults!")
+    else: print("FINISHED:: created db defaults")
+
+    # write done file
+    setup.set_done()
 
 #endregion
 

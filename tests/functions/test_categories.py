@@ -399,12 +399,24 @@ class TestCategories(unittest.TestCase):
         # add abo
         with Session(testEngine) as session:
 
-            session.add(Category(name = "Noobkanone"))        
+            session.add(Category(name = "Noobkanone"))
+            session.add(Category(id=0, name = "default")) 
     
             session.commit()
 
             # check
-            self.assertEqual(session.query(Category).count(), 3)
+            self.assertEqual(session.query(Category).count(), 4)
+
+        #region 'try to delete default --> fail'
+        result = categories.delete(
+            category_id = 0,
+            language = "EN"
+        )
+
+        # assert
+        self.assertEqual(result['error'], "Default values can not be deleted.")
+
+        #endregion
 
         #region 'abo not found'
         result = categories.delete(
@@ -436,9 +448,13 @@ class TestCategories(unittest.TestCase):
 
             result = session.query(Category)
 
-            self.assertEqual(result.count(), 1)
-            self.assertEqual(result.first().id, 2)
-            self.assertEqual(result.first().name, "Weißwaren")
+            self.assertEqual(result.count(), 2)
+            self.assertEqual(result.first().id, 0)
+            self.assertEqual(result.first().name, "default")
+
+            # id 2 should be still there
+            self.assertEqual(result.get(2).id, 2)
+            self.assertEqual(result.get(2).name, "Weißwaren")
 
             self.assertEqual(session.query(Subcategory).count(), 2)
 
@@ -462,7 +478,7 @@ class TestCategories(unittest.TestCase):
             self.assertEqual(result.count(), 1)
             self.assertEqual(result.first().id, 2)
 
-            self.assertEqual(session.query(Category).count(), 1)
+            self.assertEqual(session.query(Category).count(), 2)
 
 
         #endregion

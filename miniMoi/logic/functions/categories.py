@@ -369,10 +369,18 @@ def delete(category_id:int, category_type:str = "category", language:str = app.c
     # get language errorcodes
     errors = translation['error_codes']
 
+    # prevent deleting defaults (== id 0)
+    if category_id == 0:
+        return {
+            'success':False,
+            'error':errors['defaultProtection'],
+            'data':{}
+        }
+
     # create session
     session = Session()
 
-    # get the user
+    # get the category
     category = session.query(mapper[category_type]).filter_by(id = category_id).first()
     if category is None: return {
         'success':False, 
@@ -395,6 +403,7 @@ def delete(category_id:int, category_type:str = "category", language:str = app.c
             'error':errors['unableOperation'].format(
                 operation = "delete",
                 element = category_type,
+                c="",
                 e=str(code),
                 m=str(msg)
             ), 

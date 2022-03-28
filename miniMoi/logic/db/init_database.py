@@ -4,7 +4,6 @@ Initiate the database (if not already active)
 """
 
 # imports
-from miniMoi import engine, base
 from sqlalchemy_utils import database_exists, create_database
 
 # import models, else create all will fail!
@@ -38,3 +37,51 @@ def run_creation(engine, base) -> None:
     # already created tables are not recreated again
     with engine.connect() as conn:
         base.metadata.create_all(engine)
+
+
+def create_defaults(Session) -> bool:
+    """Creates default db entries
+
+    Some delete operations need onDelete values.
+    This function creates a default value.
+    Relevant for
+        - abo.subcategory
+
+    params:
+    -------
+    Session : sqlalchemy session maker
+        The session maker to create a session
+
+    returns:
+    --------
+    bool
+        True if successfull, else false
+
+    """
+
+    # create session
+    session = Session()
+
+    try:
+
+        # create empty adding list
+        toAdd = []
+
+        # create the default for subcategory
+        toAdd.append(Subcategory(
+            id = 0,
+            name = "None"
+        ))
+
+        # add and commit
+        session.add_all(toAdd)
+        session.commit()
+
+    except Exception as e:
+
+        # terminate the db session!
+        session.remove()
+
+        return False
+
+    return True

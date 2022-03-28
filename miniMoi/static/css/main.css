@@ -43,6 +43,10 @@
     color: #f00;
 }
 
+.table-remove-not-allowed {
+    color: rgb(116, 93, 93);
+}
+
 .table-check-inactive {
     color: rgb(87, 107, 87);
     opacity:50%;

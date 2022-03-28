@@ -1,6 +1,8 @@
-v.0.6.4: Templates setting (deleted).
+v.0.6.5: German language + Bugfixes.
 
 ------------ old versions ----------------------------------
+v.0.6.4: Templates setting (deleted).
+
 v.0.6.3: Small fixes + app setup. See changelog.
     Moved all persistant files to the mini-moi directory
     on the users home.

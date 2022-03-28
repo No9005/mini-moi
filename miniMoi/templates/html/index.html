@@ -7,8 +7,8 @@
 {% block body %} 
 
 <div class="px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
-    <h1 class="display-4">{{ index_hello }}</h1>
-    <p class="lead text-muted">{{ index_lead }}</p>
+    <h1 class="display-4">{{ index_hello|safe }}</h1>
+    <p class="lead text-muted">{{ index_lead|safe }}</p>
 </div>
 
 <div class="py-5">
@@ -19,8 +19,8 @@
         <!-- getting started -->
         <div class="row mb-5">
             <div class="col-12">
-                <h2>{{ index_getting_started }}</h2>
-                <p class="text-muted">{{ index_steps }}</p>
+                <h2>{{ index_getting_started|safe }}</h2>
+                <p class="text-muted">{{ index_steps|safe }}</p>
             </div>
         </div>
 
@@ -34,7 +34,7 @@
             <div class="col-7">
                 <div class="card mb-4 box-shadow border-0">
                 <div class="card-body">
-                    <p class="card-text">{{ index_setup }} <a href="{{ url_for('settings') }}">{{ index_setup_link }}</a></p>
+                    <p class="card-text">{{ index_setup|safe }} <a href="{{ url_for('settings') }}">{{ index_setup_link|safe }}</a></p>
                 </div>
                     <img class="card-img-top" src="{{ url_for('static', filename='img/settings_screen.png') }}" alt="Card image cap">
                 </div>

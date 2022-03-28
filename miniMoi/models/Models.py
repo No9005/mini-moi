@@ -119,7 +119,7 @@ class Orders(base):
     customer_id = Column(Integer, ForeignKey("customers.id"))
     date = Column(DateTime, default=datetime.utcnow)
 
-    product = Column(Integer, ForeignKey("products.id"), nullable=False)
+    product = Column(Integer, ForeignKey("products.id"))
     product_name = Column(String(100), nullable = False)
     category = Column(String(100), default="unknown")
     subcategory = Column(String(100), default="unknown")
@@ -194,7 +194,7 @@ class Abo(base):
     next_delivery = Column(DateTime)
 
     product = Column(Integer, ForeignKey("products.id"), nullable=False)
-    subcategory = Column(Integer, ForeignKey("subcategory.id"), nullable=False)
+    subcategory = Column(Integer, ForeignKey("subcategory.id", ondelete='SET DEFAULT'), default=0, nullable=False)
     quantity = Column(Integer, nullable=False)
 
 class Category(base):
@@ -241,7 +241,7 @@ class Subcategory(base):
     id = Column(Integer, primary_key=True)
     name = Column(String(50), nullable=False, unique=True)
 
-    abo = relationship("Abo", backref="subcategory_abo", cascade=False)
+    abo = relationship("Abo", backref="subcategory_abo", passive_deletes=True) # passive deletes, see here: https://docs.sqlalchemy.org/en/14/orm/cascades.html?highlight=cascade#delete
 
 class Products(base):
     """Contains all available products to order 

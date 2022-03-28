@@ -157,7 +157,7 @@
         col : str, optional
             Name of the column.
             (default is "")
-
+        
         returns:
         --------
         html element
@@ -190,13 +190,6 @@
                 dpdwn.selectedIndex = o;
                 is_new = false;
             };
-
-            /*
-            read the values with the following:
-                $(select).val() --> returns value
-                $(select :selected).text() --> returns text of selected item
-
-            */
 
             // add event listener based on column
             if (col == "cycle_type") { 
@@ -268,6 +261,9 @@
         // create table row
         var tr = document.createElement('tr');
 
+        // create a flag to indicate if we have a default value entry
+        var is_default = false;
+
         
         // create cells
         for (var c = 0; c < cols.length; c++) {
@@ -295,6 +291,8 @@
 
             };
 
+            // check if the column is a default value row --> id == 0
+            if (col == "id" && (row_value == 0 || row_value == "0")) { is_default = true };
 
             // create table cell (first column will be bold)
             if (c == 0) { var cell = document.createElement('th'); }
@@ -370,7 +368,11 @@
 
         // add row-remove button
         var th_remove = document.createElement('td');
-        th_remove.innerHTML = "<i class='fa-solid fa-circle-minus fa-lg table-remove'></i>";
+
+        // check if the id is 0 (indicating default values)
+        if (is_default) { th_remove.innerHTML = "<i class='fa-solid fa-circle-minus fa-lg table-remove-not-allowed'></i>"; }
+        else { th_remove.innerHTML = "<i class='fa-solid fa-circle-minus fa-lg table-remove'></i>"; };
+
         th_remove.classList.add("col_remover", "row_remover", "text-center");
 
         // add confirm on change button
@@ -596,10 +598,22 @@
     function value_changed(element) {
         /* event handler for cell changes */
         
-        // activate active
-        var updater = $(element).parents('tr').find('.table-check-inactive');
-        updater.removeClass('table-check-inactive');
-        updater.addClass('table-check');
+        // get row
+        var row = $(element).parent('tr');
+
+        console.log(row);
+        console.log(row.hasClass('new-entry'))
+
+        // not a new-entry row?
+        if (!row.hasClass('new-entry')) {
+
+            // activate active
+            var updater = row.find('.table-check-inactive');
+            updater.removeClass('table-check-inactive');
+            updater.addClass('table-check');
+
+        };
+        
 
         return
     };

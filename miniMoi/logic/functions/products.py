@@ -616,6 +616,7 @@ def delete(product_id:int, language:str = app.config['DEFAULT_LANGUAGE']) -> dic
             'error':errors['unableOperation'].format(
                 operation = "delete",
                 element = "product",
+                c="",
                 e=str(code),
                 m=str(msg)
             ), 

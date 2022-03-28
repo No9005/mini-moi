@@ -516,9 +516,6 @@ def delete(customer_id:int, language:str = app.config['DEFAULT_LANGUAGE']) -> di
     # create session
     session = Session()
 
-    print("HERE")
-    print(customer_id)
-
     # get the user
     customer = session.query(Customers).filter_by(id = customer_id).first()
     if customer is None: return {
@@ -527,7 +524,6 @@ def delete(customer_id:int, language:str = app.config['DEFAULT_LANGUAGE']) -> di
         'data':{}
         }
 
-    print("HERE3")
     try:
         # delete it
         session.delete(customer)
@@ -537,7 +533,6 @@ def delete(customer_id:int, language:str = app.config['DEFAULT_LANGUAGE']) -> di
     
     except Exception as e:
 
-        print("HERE")
         code, msg = tools._convert_exception(e)
 
         return {
@@ -552,7 +547,6 @@ def delete(customer_id:int, language:str = app.config['DEFAULT_LANGUAGE']) -> di
             'data':{}
             }
 
-    print("HERE2")
     # add logs
     if app.config['ACTION_LOGGING']: tools._update_logs(session, 'miniMoi.logic.functions.customer.delete', str(locals()))
 
