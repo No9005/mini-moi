@@ -36,12 +36,14 @@ if not (home / "mini-moi/system/done.txt").is_file():
     print("FINISHED:: app setup done")
 
 # init python app
-app = Flask(
+"""app = Flask(
     __name__,
     template_folder = str(cwd/"templates"),
     static_url_path = str(cwd/"static"),
     static_folder = "static"
-    )
+    )"""
+
+app = Flask(__name__)
 
 # grab the settings json
 with open(home / "mini-moi/system/settings/settings.json", "r") as file:

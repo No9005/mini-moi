@@ -1,3 +1,6 @@
+v.0.6.4: Templates setting (deleted).
+
+------------ old versions ----------------------------------
 v.0.6.3: Small fixes + app setup. See changelog.
     Moved all persistant files to the mini-moi directory
     on the users home.
@@ -6,7 +9,6 @@ v.0.6.3: Small fixes + app setup. See changelog.
     Everything else is currently marked as 'nice-to-have':
         - exporting queried sheets as excel tables
 
------------- old versions ----------------------------------
 v.0.6.2: Small fixes + app setup. See changelog.
     Moved all persistant files to the mini-moi directory
     on the users home.
