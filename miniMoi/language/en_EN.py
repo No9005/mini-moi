@@ -164,7 +164,7 @@ mapping = {
             'delivery_title':"Delivery",
             'delivery_lead':"Create the order report for the next day delivery.",
             'delivery_create_report':"Create",
-            'delivery_download':"Redownload report",
+            'delivery_download':"Download report",
             'delivery_book':"Book",
             'delivery_create_tooltip':(
                 "Creates the report for the next day. The results are shown below. "

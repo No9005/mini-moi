@@ -4,7 +4,8 @@ Collection of functions to handle bulk imports
 """
 
 # import
-import posixpath
+from time import sleep
+
 import pandas as pd
 
 from miniMoi import app, Session
@@ -123,7 +124,7 @@ def _load(home:PosixPath , errors:dict, file_type:str = "csv") -> dict:
             #print(name+"_blueprint")
             #print(str(path).split("/"))
 
-            if name + "_blueprint." + file_type in str(path).split("/")[-1]: 
+            if name + "_blueprint." + file_type == str(path).split("/")[-1]: 
                 
                 # load the dataframe
                 if file_type == "xlsx": loaded.update({name: {'file':pd.read_excel(str(path)), 'path':path}})
@@ -291,21 +292,29 @@ def update(file_type:str="csv") ->dict:
     if not loaded['success']: return loaded
     loaded = loaded['data']['loaded']
 
+    print()
+    print(loaded.keys())
+
     # create session to get additional info
     session = Session()
-
-    # fallback for the productsmapping
-    productsMapping = {}
 
     # run update
     update_progress = {
         'success':[],
         'failure':[]
     }
-    for file in loaded:
 
-        # grab the file
-        tmp = loaded[file]['file']
+    for file in ["customers", "category", "subcategory", "products", "abo"]:
+
+        print()
+        print("-------------------------")
+        print("IMPORT:", file)
+
+        # try to grab the file. if not available skip to the next
+        try: tmp = loaded[file]['file']
+        except: continue
+
+        print("File found")
 
         # is the file empty?
         if tmp.empty:
@@ -332,7 +341,8 @@ def update(file_type:str="csv") ->dict:
             official = {value:key for key, value in translation['column_mapping']['categories'].items()}
             tmp.rename(columns = official, inplace=True)
 
-            result = categories_add(tmp.to_dict('records'))
+            if file == "category": result = categories_add(tmp.to_dict('records'), "category")
+            else: result = categories_add(tmp.to_dict('records'), "subcategory")
         
         elif file == "products": 
 
@@ -341,12 +351,11 @@ def update(file_type:str="csv") ->dict:
             tmp.rename(columns = official, inplace=True)
 
             # create session & query the Categories from the table
-            # turn also into mapper
-            productsMapping = pd.read_sql_query(session.query(models.Category).statement, session.bind)
-            productsMapping = {row['name']:row['id'] for i, row in productsMapping.iterrows()}
+            categoryMapping = pd.read_sql_query(session.query(models.Category).statement, session.bind)
+            categoryMapping = {row['name']:row['id'] for i, row in categoryMapping.iterrows()}
 
             # turn tmp category into strings & replace it with the mapping
-            try: tmp.loc[:, 'category'] = tmp.loc[:, 'category'].astype(str).replace(productsMapping).astype(int)
+            try: tmp.loc[:, 'category'] = tmp.loc[:, 'category'].astype(str).replace(categoryMapping).astype(int)
             except Exception as e:
                 code, msg = tools._convert_exception(e)
 
@@ -357,7 +366,7 @@ def update(file_type:str="csv") ->dict:
                 continue
 
             result = products_add(loaded[file]['file'].to_dict('records'))
-        
+
         elif file == "abo": 
 
             # rename the columns to the official names
@@ -366,9 +375,8 @@ def update(file_type:str="csv") ->dict:
 
             #region 'clean tmp'
             # query for products and subcategories
-            if not bool(productsMapping):
-                productsMapping = pd.read_sql_query(session.query(models.Products).statement, session.bind)
-                productsMapping = {row['name']:row['id'] for i, row in productsMapping.iterrows()}
+            productsMapping = pd.read_sql_query(session.query(models.Products).statement, session.bind)
+            productsMapping = {row['name']:row['id'] for i, row in productsMapping.iterrows()}
 
             subcatMapping = pd.read_sql_query(session.query(models.Subcategory).statement, session.bind)
             subcatMapping = {row['name']:row['id'] for i, row in subcatMapping.iterrows()}
@@ -384,7 +392,6 @@ def update(file_type:str="csv") ->dict:
 
             # replace integers at positions of 'cycle_type == day' with the int
             tmp.loc[tmp['cycle_type'] == "day", 'interval'] = tmp.loc[tmp['cycle_type'] == "day", 'interval'].astype(str).replace(weekdayMapping)
-            #tmp.loc[~tmp['cycle_type'].isna(), 'cycle_type'] = tmp.loc[~tmp['cycle_type'].isna(), 'cycle_type'].astype(int) 
 
             # fill missing values in 'next_delivery' to "None"
             tmp.loc[:, 'next_delivery'] = tmp.loc[:, 'next_delivery'].fillna("None")
@@ -392,6 +399,8 @@ def update(file_type:str="csv") ->dict:
             #endregion
             
             result = abo_add(loaded[file]['file'].to_dict('records'))
+
+        print("WORKED THROUGH IT, success?", result['success'])
 
         #endregion
 
@@ -404,7 +413,9 @@ def update(file_type:str="csv") ->dict:
             # unlink
             _unlink(loaded[file]['path'])
 
-        else: update_progress['failure'].append(file + ":" + result['error'])
+        else: 
+            print(result['error'])
+            update_progress['failure'].append(file + ":" + result['error'])
 
         
 

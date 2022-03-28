@@ -155,7 +155,7 @@ mapping = {
             ),
             'index_getting_started':"Schnellstart",
             'index_steps':"Nur 3 Schritte nötig.",
-            'index_setup':"App einstellen ",
+            'index_setup':"App einrichten ",
             'index_setup_link':"(Hier)",
             'index_enter_data':(
                 "Daten einpflegen. <br>"

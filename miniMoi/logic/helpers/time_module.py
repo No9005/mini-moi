@@ -314,7 +314,7 @@ def parse_UI_date(ui_string:str, language:str= "EN", tz:str = "Europe/Paris") ->
     errors = translation['error_codes']
 
     # is birth_string already a datetime object?
-    if isinstance(ui_string, type(today())): birthdate = local_to_utc(ui_string, tz)
+    if isinstance(ui_string, type(today())): uiInput = local_to_utc(ui_string, tz)
     else :
         # create split (acutally double split to catch every type)
         splitted = "-".join(str(ui_string).split(".")).split("-")

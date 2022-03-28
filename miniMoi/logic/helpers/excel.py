@@ -92,6 +92,19 @@ def print_cover(
     workbook = xlsx.Workbook(output, {'nan_inf_to_errors': True})
     worksheet = workbook.add_worksheet("overview")
 
+    # create meta data
+    workbook.set_properties({
+        'author':"Daniel Kiermeier",
+        'category':"CRM light, order overview",
+        'keywords':"Mini Moi, order overview",
+        'comments':(
+            "This file was created by using Mini Moi - "
+            "an CRM light app created by Daniel Kiermeier. "
+            "You can checkout the project on "
+            "https://github.com/No9005/mini-moi "
+            )
+    })
+
     # set header image
     worksheet.set_margins(top=1.3)
     worked = worksheet.set_header('&L&G', {'image-left': Path().cwd()/"miniMoi/static/img/miniMoi_logo.png"})
@@ -414,8 +427,21 @@ def print_order_list(
     
     # create workbook & worksheet
     workbook = xlsx.Workbook(output, {'nan_inf_to_errors': True})
-    worksheet = workbook.add_worksheet("overview")
+    worksheet = workbook.add_worksheet("order details")
     worksheet.set_landscape()
+
+    # create meta data
+    workbook.set_properties({
+        'author':"Daniel Kiermeier",
+        'category':"CRM light, order details",
+        'keywords':"Mini Moi, order details",
+        'comments':(
+            "This file was created by using Mini Moi - "
+            "an CRM light app created by Daniel Kiermeier. "
+            "You can checkout the project on "
+            "https://github.com/No9005/mini-moi "
+            )
+    })
 
     # set header image
     worksheet.set_margins(top=1.3)

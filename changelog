@@ -1,6 +1,12 @@
-v.0.6.6: Bugfixes (Firefox) & added new parsing features.
+v.0.7.0: Bugfixes & documentary. See changelog.
+    Bugfixed the mass importer.
+    There is one little issue left. Sometimes the
+    birthdates get screwed. Needs additional testing.
+    Added also some examples for the blueprints.
 
 ------------ old versions ----------------------------------
+v.0.6.6: Bugfixes (Firefox) & added new parsing features.
+
 v.0.6.5: German language + Bugfixes.
 
 v.0.6.4: Templates setting (deleted).

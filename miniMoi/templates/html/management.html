@@ -12,7 +12,7 @@
 
 {% block body %}
 <!-- Header -->
-<div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+<div class="management-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
     <h1 class="display-4">{{ management_title }}</h1>
     <p class="lead">{{ management_lead }}</p>
 </div>
@@ -23,38 +23,40 @@
     <!-- buttons row -->
     <div class="row force-min-height flex justify-content-center">
 
-        <div class="col-2" id="">
-            <button type="button" class="btn btn-lg btn-block btn-secondary" onClick="get_data('customers')" data-toggle="tooltip" data-placement="bottom"> 
+
+        <div class="col-2">
+            <button id="customersBtn" type="button" class="btn btn-lg btn-block btn-secondary" onClick="get_data('customers')"> 
                 {{ management_customers_btn }}
             </button>
         </div>
 
-        <div class="col-2" id="">
-            <button type="button" class="btn btn-lg btn-block btn-secondary" onClick="get_data('category')" data-toggle="tooltip" data-placement="bottom"> 
+        <div class="col-2" >
+            <button type="button" id="categoryBtn" class="btn btn-lg btn-block btn-secondary" onClick="get_data('category')" > 
                 {{ management_category_btn }}
             </button>
         </div>
 
-        <div class="col-2" id="">
-            <button type="button" class="btn btn-lg btn-block btn-secondary" onClick="get_data('subcategory')" data-toggle="tooltip" data-placement="bottom"> 
+        <div class="col-2" >
+            <button type="button" id="subcategoryBtn" class="btn btn-lg btn-block btn-secondary" onClick="get_data('subcategory')"> 
                 {{ management_subcategory_btn }}
             </button>
         </div>
 
-        <div class="col-2" id="">
-            <button type="button" class="btn btn-lg btn-block btn-secondary" onClick="get_data('products')" data-toggle="tooltip" data-placement="bottom" > 
+        <div class="col-2" >
+            <button type="button" id="productsBtn" class="btn btn-lg btn-block btn-secondary" onClick="get_data('products')" > 
                 {{ management_products_btn }}
             </button>
         </div>
 
-        <div class="col-2" id="">
-            <button type="button" class="btn btn-lg btn-block btn-secondary" onClick="get_data('abo')" data-toggle="tooltip" data-placement="bottom" > 
+        <div class="col-2" >
+            <button type="button" id="aboBtn" class="btn btn-lg btn-block btn-secondary" onClick="get_data('abo')" > 
                 {{ management_abo_btn }}
             </button>
         </div>
 
-        <div class="col-4" id="">
-            <button type="button" class="btn btn-lg btn-block btn-light" onClick="bulk_frame()" data-toggle="tooltip" data-placement="management_bulk_btn" > 
+
+        <div class="col-4" id="blukBtn">
+            <button type="button" class="btn btn-lg btn-block btn-light" onClick="bulk_frame()" > 
                 {{ management_bulk_btn }}
             </button>
         </div>
@@ -114,6 +116,7 @@
     var content_placeholder = document.getElementById('contentTablePlaceholder');
     var table_section = document.getElementById("tablesSection");
     var table_name = document.getElementById("shownContentName");
+    const btns = ['#customersBtn', '#categoryBtn', '#subcategoryBtn', '#productsBtn', '#aboBtn'];
 
     // create status variable to track current table type
     var tbl_type = null;
@@ -892,6 +895,12 @@
         $('#createNewTableRow').removeClass("col-6");
         $('#uploadNewRows').addClass("hidden");
 
+        // make all buttons gray
+        $.each(btns, function(idx, value) {
+
+            $(value).removeClass('btn-success').addClass('btn-secondary');
+        });
+
         // create endpoint
         var URL = null;
         if (fetch_table == "customers") { URL = "{{ url_for('to_api', ressource='customers/get') }}";}
@@ -926,6 +935,9 @@
 
             // success, process the tbl data
             if (response.success) {
+
+                // make selected button green
+                $("#"+fetch_table+"Btn").removeClass('btn-secondary').addClass('btn-success');
 
                 // set tbl type
                 tbl_type = fetch_table;
