@@ -73,17 +73,20 @@ The core features are:
 <br>
 
 # <a name='install'></a> Installing <sub><sub>[Back to top](#top)</sub></sub>
-Below are the instructions to use the app on **Windows 10** or on **Linux**.
+Below are the instructions to use the app on **Windows 10**, **Linux**, **MacOS**. <br>
+You can also download the source files, modify the project and execute them.
+
+<br>
+
+> _Note:_
+> _Indepentend of your os of choice, you need a modern Browser installed on your system. **Mini Moi** was tested with Chrome, Firefox and IE_
+
+<br>
 
 ## <a name='win-install'></a> 1. Windows <sub><sub>[Back to top](#top)</sub></sub>
 If you are using **Windows 10** you can download the `.exe` which is a self running executable. <br>
 The App is not installing anything. **Just plug and play!** <br>
 You can find & download the newest release [here](https://github.com/No9005/mini-moi/releases).
-
-<br>
-
-> _Note:_
-> _You need a modern Browser installed on your system. **Mini Moi** was tested with Chrome, Firefox and IE_
 
 <br>
 

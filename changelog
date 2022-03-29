@@ -1,6 +1,8 @@
-v.0.7.3: Added debian '.pkg' to dist folder.
+v.0.7.4: Readme.
 
 ------------ old versions ----------------------------------
+v.0.7.3: Added debian '.pkg' to dist folder.
+
 v.0.7.2: Quality of life improvements. See changelog.
     Added restart instructions on applieng app settings.
     Added some new texts for DE & EN.
