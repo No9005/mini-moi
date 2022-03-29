@@ -17,7 +17,7 @@ Little assistant to organizing deliveries. <br>
 2. [Installing](#install)
     1. [Windows](#win-install)
     2. [Linux](#linux-install)
-    3. [MacOS] (#mac-install)
+    3. [MacOS](#mac-install)
     4. [From Source](#source-install)
 3. [Quickstart](#how)
 4. [Manual](#manual)
