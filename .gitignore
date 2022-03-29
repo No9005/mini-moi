@@ -8,7 +8,7 @@ Pipfile.lock
 app.db
 
 vorlagen
-dist
-/dist
+build
+/build
 
 notes
