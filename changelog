@@ -1,3 +1,8 @@
+v.0.7.2: Quality of life improvements. See changelog.
+    Added restart instructions on applieng app settings.
+    Added some new texts for DE & EN.
+
+------------ old versions ----------------------------------
 v.0.7.1: Bugfixes & documentary. See changelog.
     - adds:
         - Language files display texts.
@@ -10,9 +15,7 @@ v.0.7.1: Bugfixes & documentary. See changelog.
           text displays
         - time_module returns now the date input if its none
           (relevant for database entries where the date is none)
-        
 
------------- old versions ----------------------------------
 v.0.7.0: Bugfixes & documentary. See changelog.
     Bugfixed the mass importer.
     There is one little issue left. Sometimes the

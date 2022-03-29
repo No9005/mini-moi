@@ -7,7 +7,7 @@
 <!-- Header -->
 <div class="settings-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
     <h1 class="display-4">{{ settings_title }}</h1>
-    <p class="lead">{{ settings_lead }}</p>
+    <p class="lead">{{ settings_lead|safe }}</p>
 </div>
 
 <!-- settings -->
@@ -181,7 +181,7 @@
         }).done(function(data){
             if (data.success) {
                 
-                // re direct to index
+                // re direct to restart, cause window close does not work!
                 window.location.href = data.data;
             }
             else {

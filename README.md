@@ -15,6 +15,10 @@ Little assistant to organizing deliveries. <br>
 1. [Introduction](#whats-it)
 2. [Features](#features)
 2. [Installing](#install)
+    1. [Windows](#win-install)
+    2. [Linux](#linux-install)
+    3. [MacOS] (#mac-install)
+    4. [From Source](#source-install)
 3. [Quickstart](#how)
 4. [Manual](#manual)
 5. [Additional infos](#why)
@@ -68,23 +72,48 @@ The core features are:
 
 <br>
 
-# <a name='install'></a> Installing <sub><sub>[Back to top](#top)</sub></sub> 
+# <a name='install'></a> Installing <sub><sub>[Back to top](#top)</sub></sub>
+Below are the instructions to use the app on **Windows 10** or on **Linux**.
+
+## <a name='win-install'></a> 1. Windows <sub><sub>[Back to top](#top)</sub></sub>
+If you are using **Windows 10** you can download the `.exe` which is a self running executable. <br>
+The App is not installing anything. **Just plug and play!** <br>
+You can find & download the newest release [here](https://github.com/No9005/mini-moi/releases).
+
+<br>
+
+> _Note:_
+> _You need a modern Browser installed on your system. **Mini Moi** was tested with Chrome, Firefox and IE_
+
+<br>
+
+## <a name='linux-install'></a> 2. Linux <sub><sub>[Back to top](#top)</sub></sub>
+A runnable file will be available soon. Please follow the instructions [From Source](#source-install) in the meantime.
+
+<br>
+
+## <a name='mac-install'></a> 3. Mac <sub><sub>[Back to top](#top)</sub></sub>
+A runnable file will be available soon. Please follow the instructions [From Source](#source-install) in the meantime.
+
+<br>
+
+## <a name='source-install'></a> 4. From source <sub><sub>[Back to top](#top)</sub></sub>
 
 If you have already Python (at least 3.8) installed on your machine, you can directly download & install the app in a few steps:
-- Download the latest release
+- Download the [latest](https://github.com/No9005/mini-moi/releases) release
 - Install the `pip` requirements
 - Run the app
 
 <br>
 
-## 1. Download the latest release
+### Download the latest release
 
 Download the latest (release)[https://github.com/No9005/mini-moi/releases] or `git clone` the project. It's up to you. <br>
 After downloading (and unzipping the file) you are ready for: 
 
 <br>
 
-## 2. Install requirements
+### Install requirements
 
 Jump into your terminal and `cd` into the project folder. There you use the command
 
@@ -111,7 +140,7 @@ $ python app.py
 
 <br>
 
-## FAQ: Tips during install
+### FAQ: Tips during install from source
 
 Below are some tips & tricks.
 

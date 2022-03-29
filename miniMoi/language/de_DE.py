@@ -109,7 +109,11 @@ mapping = {
         },
         '/settings':{
             'settings_title':"Einstellungen",
-            'settings_lead':"Stellen Sie die App nach Ihren wünschen ein.",
+            'settings_lead':(
+                "Stellen Sie die App nach Ihren wünschen ein. <br>"
+                "Sobald Sie die Einstellungen anwenden, wird die App "
+                "beendet und Sie müssen diese neustarten."
+                ),
             'settings_language':"Sprache",
             'settings_language_description':"Stellen Sie die App Sprache ein.",
             'settings_logging':"Logging",
@@ -180,10 +184,16 @@ mapping = {
                 ),
             'index_create_report':"Bestellübersicht für den nächsten Tag erstellen ('Lieferungen')!"
         },
-        '/shutdown/app':{
+        '/shutdown':{
             'shutdown_title':"App beendet",
             'shutdown_bye':"Aufwiedersehen, Nutzer!",
-            'shutdown_lead':"Auf ein balidges Wiedersehen bei den nächsten Lieferungen &#128513"
+            'shutdown_lead':"Auf ein balidges Wiedersehen bei den nächsten Lieferungen &#128513",
+            'shutdown_success':"App erfolgreich beendet. Sie können das Browser Fenster nun schließen!"
+        },
+        '/please_restart':{
+            'restart_title':"App neustarten",
+            'restart_instruction':"Bitte starten Sie die App erneut.",
+            'restart_success':"Sie können die App nun neu starten!"
         },
         '/delivery':{
             'delivery_title':"Lieferungen",

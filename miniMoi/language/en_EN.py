@@ -90,7 +90,11 @@ mapping = {
         },
         '/settings':{
             'settings_title':"Settings",
-            'settings_lead':"Adjust your app by changing your settings.",
+            'settings_lead':(
+                "Adjust your app by changing your settings. <br>"
+                "When you apply the settings, the app will close and "
+                "you have to restart it."
+            ),
             'settings_language':"Language",
             'settings_language_description':"Set the app language.",
             'settings_logging':"Logging",
@@ -156,10 +160,16 @@ mapping = {
                 ),
             'index_create_report':"Create the report for the next day deliveries!"
         },
-        '/shutdown/app':{
+        '/shutdown':{
             'shutdown_title':"Ended app",
             'shutdown_bye':"Goodby, User!",
-            'shutdown_lead':"See you soon for the next deliveries &#128513"
+            'shutdown_lead':"See you soon for the next deliveries &#128513",
+            'shutdown_success':"App sucessfully terminated. You can close the window now!"
+        },
+        '/please_restart':{
+            'restart_title':"Restart app",
+            'restart_instruction':"Please restart the app.",
+            'restart_success':"You can restart the app now!"
         },
         '/delivery':{
             'delivery_title':"Delivery",

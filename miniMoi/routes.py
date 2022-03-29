@@ -22,17 +22,40 @@ def shutdown_session(exception=None):
     # and .remove() closes the connection to db
     Session.remove()
 
-@app.route("/shutdown/app",  methods=["GET"])
-def shutdown():
-    """Shutsdown the app """
+@app.route("/kill", methods = ["POST"])
+def kill():
+    """Shutdown the app 
+    
+    This method is puls the plug.
+    bye bye Mini Moi!
+    
+    params:
+    ------
+    None
+
+    returns:
+    --------
+    None
+
+    """
 
     func = request.environ.get('werkzeug.server.shutdown')
     if func is None: raise RuntimeError('Not running with the Werkzeug server')
-    
+
     # kill the server
     func()
 
-    return render_template("html/shutdown.html")
+    return {
+        'success':True,
+        'error':"",
+        'data':{}
+    }
+
+@app.route("/shutdown",  methods=["GET", "POST"])
+def shutdown():
+    """Shutsdown the app """
+
+    return render_template("html/shutdown.html", mute_home=True, mute_nav=True)
 
 @app.context_processor
 def inject_to_all_templates():
@@ -98,7 +121,7 @@ def settings():
         with open(str(app.config['SETTINGS_FILE_PATH']), "w") as outfile:
             json.dump(newSettings, outfile, indent=4)
 
-        return {'success':True, 'error':"", 'data':url_for('index')}
+        return {'success':True, 'error':"", 'data':url_for('restart_instruction')}
 
     # create context
     context = {
@@ -108,6 +131,12 @@ def settings():
     }
 
     return render_template("html/settings.html", **context)
+
+@app.route("/please_restart", methods = ["GET"])
+def restart_instruction():
+    """This shows the instruction to restart the app. """
+
+    return render_template("html/restart.html", mute_home=True, mute_nav=True)
 
 @app.route("/delivery", methods=["GET"])
 def delivery():
@@ -125,13 +154,13 @@ def management():
 def bulk():
     """Displays the bulk upload system """
 
-    return render_template("html/bulk.html")
+    return render_template("html/bulk.html", mute_home=True, mute_nav=True)
 
 @app.route("/demo", methods=["GET"])
 def demo():
     """Displays the demo popup """
 
-    return render_template("html/demo.html")
+    return render_template("html/demo.html", mute_home=True, mute_nav=True)
     
 @app.route("/reporting", methods=["GET", "POST"])
 def reporting():
