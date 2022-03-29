@@ -154,7 +154,7 @@ def get(
                 'success':False, 
                 'error':errors['wrongType'].format(
                     var = "what",
-                    dtype = "int"
+                    dtype = translation['type_mapping']['int']
                 ),
                 'data':{}
                 }
@@ -278,7 +278,7 @@ def update(product_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAG
             'success':False,
             'error':errors['wrongType'].format(
                 var = translation['column_mapping']['products']['category'],
-                dtype = 'int',
+                dtype = translation['type_mapping']['int'],
             ),
             'data':{}
         }
@@ -298,7 +298,7 @@ def update(product_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAG
                 'success':False,
                 'error':errors['wrongType'].format(
                     var = translation['column_mapping']['products'][val],
-                    dtype = 'float',
+                    dtype = translation['type_mapping']['float'],
                 ),
                 'data':{}
             }
@@ -315,7 +315,11 @@ def update(product_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAG
         # close session & return error
         session.close()
 
-        return {'success':False, 'error':errors['notFound'].format(element="product"), 'data':{}}
+        return {
+            'success':False, 
+            'error':errors['notFound'].format(element=translation['table_mapping']['product']), 
+            'data':{}
+            }
 
     # fetch all possible categories
     categories = pd.read_sql_query(
@@ -358,19 +362,28 @@ def update(product_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAG
 
         code, msg = tools._convert_exception(e)
 
-        # close session
+        # check if sqlite3.IntegrityError -> sql msg
+        if code == "IntegrityError": errorMsg = errors['notUnique'].format(
+                table = translation['table_mapping']['product'],
+                nonUnique = msg.split("parameters")[-1].split("]")[0].lstrip()
+            )
+
+        # send normal msg
+        else: errorMsg = errors['unableOperation'].format(
+                operation = "update",
+                element = translation['table_mapping']['product'],
+                e=str(code),
+                m=str(msg)
+            )
+
+        # close the session
         session.close()
 
         return {
-            'success':False, 
-            'error':errors['unableOperation'].format(
-                operation = "update",
-                element = "product",
-                e=str(code),
-                m=str(msg)
-            ),
+            'success':False,
+            'error':errorMsg,
             'data':{}
-            }
+        }
 
     # add logs
     if app.config['ACTION_LOGGING']: tools._update_logs(session, 'miniMoi.logic.functions.products.update', str(locals()))
@@ -459,7 +472,7 @@ def add(products:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
                 'success':False,
                 'error':errors['wrongType'].format(
                     var = translation['column_mapping']['products']['category'],
-                    dtype = 'int',
+                    dtype = translation['type_mapping']['int'],
                 ),
                 'data':{}
             }
@@ -477,7 +490,7 @@ def add(products:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
                     'success':False,
                     'error':errors['wrongType'].format(
                         var = translation['column_mapping']['products'][val],
-                        dtype = 'float',
+                        dtype = translation['type_mapping']['float'],
                     ),
                     'data':{}
             }
@@ -532,14 +545,15 @@ def add(products:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
             return {
                 'success':False, 
                 'error':errors['unableOperation'].format(
-                    operation = "add",
-                    element = "product",
+                    operation = translation['operation_mapping']['add'],
+                    element = translation['table_mapping']['product'],
                     c=str(product['name']),
                     e=str(code),
                     m=str(msg)
                     ), 
                 'data':{}
                     }
+   
     # append to session
     session.add_all(toAdd)
 
@@ -549,15 +563,25 @@ def add(products:list, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
 
         code, msg = tools._convert_exception(e)
 
+        # check if sqlite3.IntegrityError -> sql msg
+        if code == "IntegrityError": errorMsg = errors['notUnique'].format(
+                table = translation['table_mapping']['product'],
+                nonUnique = msg.split("parameters")[-1].split("]")[0].lstrip()
+            )
+
+        # send normal msg
+        else: errorMsg = errors['noCommit'].format(
+                e=str(code),
+                m=str(msg)
+            )
+
         # close the session
         session.close()
 
         return {
             'success':False,
-            'error':errors['noCommit'].format(
-                e=str(code),
-                m=str(msg)
-            )
+            'error':errorMsg,
+            'data':{}
         }
 
     # add logs
@@ -617,7 +641,9 @@ def delete(product_id:int, language:str = app.config['DEFAULT_LANGUAGE']) -> dic
     product = session.query(Products).filter_by(id = productId).first()
     if product is None: return {
         'success':False, 
-        'error':errors['notFound'].format(element="product"), 
+        'error':errors['notFound'].format(
+            element=translation['table_mapping']['product']
+            ), 
         'data':{}
         }
     
@@ -634,9 +660,9 @@ def delete(product_id:int, language:str = app.config['DEFAULT_LANGUAGE']) -> dic
         return {
             'success':False, 
             'error':errors['unableOperation'].format(
-                operation = "delete",
-                element = "product",
-                c="",
+                operation = translation['operation_mapping']['delete'],
+                element = translation['table_mapping']['product'],
+                c=translation['column_mapping']['products']['id'] + " : " + str(productId),
                 e=str(code),
                 m=str(msg)
             ), 

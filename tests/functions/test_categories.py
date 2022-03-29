@@ -241,7 +241,7 @@ class TestCategories(unittest.TestCase):
         )
 
         # assert
-        self.assertEqual(result['error'], "The category was not found.")
+        self.assertEqual(result['error'], "The Category was not found.")
 
         #endregion
 
@@ -254,7 +254,7 @@ class TestCategories(unittest.TestCase):
         )
 
         # assert
-        self.assertEqual(result['error'], "The subcategory was not found.")
+        self.assertEqual(result['error'], "The Subcategory was not found.")
 
         #endregion
 
@@ -266,7 +266,7 @@ class TestCategories(unittest.TestCase):
         )
 
         # assert
-        self.assertEqual(result['error'], "'name' needs to be a(n) str.")
+        self.assertEqual(result['error'], "'Name' needs to be a(n) text.")
 
         # check db
         with Session(testEngine) as session:
@@ -430,7 +430,7 @@ class TestCategories(unittest.TestCase):
         )
 
         # assert
-        self.assertEqual(result['error'], "The category was not found.")
+        self.assertEqual(result['error'], "The Category was not found.")
 
         #endregion
 

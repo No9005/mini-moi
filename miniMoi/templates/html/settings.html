@@ -188,12 +188,13 @@
                 
                 Toastify({
                     text: data.error,
-                    duration: 5000,
+                    duration: 8000,
                     close: true,
                     gravity: "top", // `top` or `bottom`
-                    position: "right", // `left`, `center` or `right`
+                    position: "center", // `left`, `center` or `right`
                     backgroundColor: "linear-gradient(to right, #d9534f, #D1504B)", // alternative: #592220
                     stopOnFocus: true, // Prevents dismissing of toast on hover
+                    close: true,
                     onClick: function(){} // Callback after click
                 }).showToast();
 
@@ -240,8 +241,10 @@
                 Toastify({
                         text: response.data.msg,
                         duration: 3000,
-                        position:'right',
+                        position:'center',
                         gravity:'top',
+                        stopOnFocus:true,
+                        close: true,
                         style: {
                             background: "linear-gradient(to right, #16a085, #2ecc71)",
                         },
@@ -251,10 +254,10 @@
                 
                 Toastify({
                     text: response.error,
-                    duration: 5000,
+                    duration: 8000,
                     close: true,
                     gravity: "top", // `top` or `bottom`
-                    position: "right", // `left`, `center` or `right`
+                    position: "center", // `left`, `center` or `right`
                     backgroundColor: "linear-gradient(to right, #d9534f, #D1504B)", // alternative: #592220
                     stopOnFocus: true, // Prevents dismissing of toast on hover
                     onClick: function(){} // Callback after click
@@ -285,8 +288,10 @@
                 Toastify({
                         text: response.data.msg,
                         duration: 3000,
-                        position:'right',
+                        position:'center',
                         gravity:'top',
+                        stopOnFocus:true,
+                        close: true,
                         style: {
                             background: "linear-gradient(to right, #16a085, #2ecc71)",
                         },
@@ -299,10 +304,10 @@
 
                 Toastify({
                     text: response.error,
-                    duration: 5000,
+                    duration: 8000,
                     close: true,
                     gravity: "top", // `top` or `bottom`
-                    position: "right", // `left`, `center` or `right`
+                    position: "center", // `left`, `center` or `right`
                     backgroundColor: "linear-gradient(to right, #d9534f, #D1504B)", // alternative: #592220
                     stopOnFocus: true, // Prevents dismissing of toast on hover
                     onClick: function(){} // Callback after click

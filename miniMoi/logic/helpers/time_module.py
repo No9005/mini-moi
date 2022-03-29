@@ -223,6 +223,10 @@ def to_string(date:datetime.datetime, str_format:str = "%Y.%m.%d") -> str:
     
     """
 
+    # check if date is None
+    if date is None: return date
+
+    # else return the formatted time
     return date.strftime(str_format)
 
 def utc_to_local(date:datetime.datetime, tz:str = "Europe/Paris") -> datetime.datetime:
@@ -242,6 +246,9 @@ def utc_to_local(date:datetime.datetime, tz:str = "Europe/Paris") -> datetime.da
         In local time
     
     """
+
+    # check if date is None
+    if date is None: return date
 
     # get timezone info
     tzInfo = pytz.timezone(tz)
@@ -270,6 +277,9 @@ def local_to_utc(date:datetime.datetime, tz:str = "Europe/Paris") -> datetime.da
 
     """
 
+    # if date is None, just return the object
+    if date is None: return date
+    
     # create local timezone
     local = pytz.timezone(tz)
     

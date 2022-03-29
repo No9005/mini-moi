@@ -44,6 +44,7 @@ mapping = {
             ),
         'missingData':"Folgende Daten fehlen: {column}",
         'defaultProtection':"'Standardwerte' können nicht gelöscht werden.",
+        'notUnique':"Ihre Einträge für {table} waren nicht einzigartig: {nonUnique}.",
         'blueprintUnkonwn':"Die ausgewählte Blaupause ist nicht bekannt ('{blueprint}'.",
         'noBlueprintFound':"Es gab keine Blaupausen zum importieren. Bitte erzeugen Sie zuerst eines.",
         'wrongFileType':"Nur Dateien mit Endung '.{format}' sind erlaubt.",
@@ -62,7 +63,7 @@ mapping = {
         'end':"Ende",
         'product_name':"Name",
         'total':"Total",
-        'quantity':"#",
+        'quantity':"Qnt.",
         'category_name':"Kategorie",
         'days':{
             0:"Montag",
@@ -354,7 +355,7 @@ mapping = {
             'next_delivery':"Nächste Lieferung",
             'product':"Produkt",
             'subcategory':"Subkategorie",
-            'quantity':"#"
+            'quantity':"Qnt."
         }
     },
     'table_mapping': {
@@ -399,6 +400,16 @@ mapping = {
     },
     'formats':{
         'birthdate':"Jahr.Monat.Tag",
+    },
+    'type_mapping':{
+        'str':"Text",
+        'int':"Zahl (ganz)",
+        'float':"Dezimalzahl"
+    },
+    'operation_mapping':{
+        'add':"hinzufügen",
+        'update':"aktualisieren",
+        'delete':"löschen"
     }
     
 }

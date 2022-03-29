@@ -164,9 +164,10 @@ def update(
 
     # check if the name is a string
     if not isinstance(name, str): return {'success':False, 'error':errors['wrongType'].format(
-        var = "name",
-        dtype= "str"
-    ), 'data':{}}
+        var = translation['column_mapping']['categories']['name'],
+        dtype= translation['type_mapping']['str']
+    ), 'data':{}
+    }
 
     # check id
     if category_id == translation['html_text']['/management']['management_auto_text']: return {
@@ -188,7 +189,9 @@ def update(
         # close session & return error
         session.close()
 
-        return {'success':False, 'error':errors['notFound'].format(element=category_type), 'data':{}}
+        return {'success':False, 'error':errors['notFound'].format(
+            element=translation['table_mapping'][category_type]
+            ), 'data':{}}
 
     # try to update
     try: 
@@ -200,22 +203,27 @@ def update(
 
         code, msg = tools._convert_exception(e)
 
-        # close session
+        # check if sqlite3.IntegrityError -> sql msg
+        if code == "IntegrityError": errorMsg = errors['notUnique'].format(
+                table = translation['table_mapping'][category_type],
+                nonUnique = msg.split("parameters")[-1].split("]")[0].lstrip()
+            )
+
+        # send normal msg
+        else: errorMsg = errors['unableOperation'].format(
+                operation = "update",
+                element = translation['table_mapping'][category_type],
+                e=str(code),
+                m=str(msg)
+            )
+
+        # close the session
         session.close()
 
         return {
-            'success':False, 
-            'error':errors['unableOperation'].format(
-                operation = "update",
-                element = category_type,
-                e=str(code),
-                m=str(msg)
-            ),
-            'data':{
-                'msg':translation['notification']['update_to_db'].format(
-                element=translation['table_mapping'][category_type]
-            )
-            }
+            'success':False,
+            'error':errorMsg,
+            'data':{}
         }
 
     # add logs
@@ -273,7 +281,7 @@ def add(categories:list, category_type:str = "category", language:str = app.conf
 
     # check if the list is not empty
     if not bool(categories): return {'success':False, 'error':errors['noEntry'].format(
-        element = "category"
+        element = translation['table_mapping']['category']
     ), 'data':{}}
 
     # create session
@@ -303,7 +311,7 @@ def add(categories:list, category_type:str = "category", language:str = app.conf
                 'success':False, 
                 'error':errors['unableOperation'].format(
                     operation = "add",
-                    element = category_type,
+                    element = translation['table_mapping'][category_type],
                     c=str(name),
                     e=str(code),
                     m=str(msg)
@@ -320,15 +328,25 @@ def add(categories:list, category_type:str = "category", language:str = app.conf
 
         code, msg = tools._convert_exception(e)
 
+        # check if sqlite3.IntegrityError -> sql msg
+        if code == "IntegrityError": errorMsg = errors['notUnique'].format(
+                table = translation['table_mapping'][category_type],
+                nonUnique = msg.split("parameters")[-1].split("]")[0].lstrip()
+            )
+
+        # send normal msg
+        else: errorMsg = errors['noCommit'].format(
+                e=str(code),
+                m=str(msg)
+            )
+
         # close the session
         session.close()
 
         return {
             'success':False,
-            'error':errors['noCommit'].format(
-                e=str(code),
-                m=str(msg)
-            )
+            'error':errorMsg,
+            'data':{}
         }
 
     # add logs
@@ -404,7 +422,9 @@ def delete(category_id:int, category_type:str = "category", language:str = app.c
     category = session.query(mapper[category_type]).filter_by(id = categoryId).first()
     if category is None: return {
         'success':False, 
-        'error':errors['notFound'].format(element=category_type), 
+        'error':errors['notFound'].format(
+            element= translation['table_mapping'][category_type]
+            ), 
         'data':{}
         }
     
@@ -421,9 +441,9 @@ def delete(category_id:int, category_type:str = "category", language:str = app.c
         return {
             'success':False, 
             'error':errors['unableOperation'].format(
-                operation = "delete",
-                element = category_type,
-                c="",
+                operation = translation['operation_mapping']['delete'],
+                element = translation['table_mapping'][category_type],
+                c=translation['column_mapping']['categories']['id'] + " : " + str(categoryId),
                 e=str(code),
                 m=str(msg)
             ), 

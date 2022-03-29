@@ -59,7 +59,7 @@ app.config['DB_FILE_PATH'] = home / "mini-moi/system/db/app.db"
 #region 'core & settings file'
 app.config['VERSION'] = version.__version__
 app.config['DEFAULT_LANGUAGE'] = settings['default_language']
-app.config['FILE_TYPE'] = "xlsx"
+app.config['FILE_TYPE'] = "csv" # -> "xlsx" or "csv"
 app.config['ACTION_LOGGING'] = settings['action_logging'] == "True"
 app.config['TZ_INFO'] = get_localzone_name()
 print("TIMEZONE:: ", get_localzone_name())

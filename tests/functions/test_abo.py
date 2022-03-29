@@ -404,7 +404,7 @@ class TestAbo(unittest.TestCase):
         )
 
         # assert
-        self.assertEqual(result['error'], "The abo was not found.")
+        self.assertEqual(result['error'], "The Abo was not found.")
 
         # check db
         with Session(testEngine) as session:
@@ -675,7 +675,7 @@ class TestAbo(unittest.TestCase):
         )
 
         # assert
-        self.assertEqual(result['error'], "The abo was not found.")
+        self.assertEqual(result['error'], "The Abo was not found.")
 
         #endregion
 

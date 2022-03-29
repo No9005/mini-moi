@@ -16,7 +16,8 @@ Little assistant to organizing deliveries. <br>
 2. [Features](#features)
 2. [Installing](#install)
 3. [Quickstart](#how)
-4. [Additional infos](#why)
+4. [Manual](#manual)
+5. [Additional infos](#why)
  
 
 <br>
@@ -252,6 +253,224 @@ You must have already seen the yellow button which says `Book`, right? This butt
 > _After pressing `Book` you are not able to edit or redownload your deliveries for tomorrow! So handle with care!_
 
 <br>
+
+# <a name='manual'></a> Manual <sub><sub>[Back to top](#top)</sub></sub> 
+The core functionality is already explained in the [Quickstart](#how) section. <br>
+
+This section provides you additional infos for:
+- Terminology
+- `Reporting` tab
+- Blueprint format
+- Allowed types and formats
+- How the next delivery date gets calculated & its options
+- What the 'approach' column is for
+- Nice to knows about the `Customers` & `Abo` input masks
+- Columns & their meaning
+
+<br>
+
+## Terminology
+**Mini Moi** is acutally a database with additional business logic. This business logic enables you to trach deliveries, download your overvies, etc. <br>
+The graphical interface you see after starting the app is nothing more than a fancy input mask to perform typical database processes (which are `create`, `read`, `update`, `delete`). <br>
+When we talk about tables, this means the data tables within the database.
+
+## Reporting Tab
+The `Reporting` tab summarizes all previous orders. These orders are displayed for the following time periods:
+- **current week**: Orders between today and the last Sunday (inclusive)
+- **last week**: Orders between Sunday to Sunday of last week (both)
+- **current month**: Orders within the current month
+- **current year**: Orders within the current year
+
+For each of these periods you see:
+- **Earnings**: Total income.
+- **Revenue sources**: Revenues by product category.
+- **Selling overview**: Number of sales per product.
+
+<br>
+
+## Blueprint format
+The `Blueprint` (created in the `Bulk upload` menu on the `Management` tab) is a `.csv` file containing the column heads of the table you would like to write data to. Each row represents one database entry to create. <br>
+The below table shows an example for the `Abo` table:<br>
+
+<br>
+
+id | Customer id | Update data | Cycle type | Interval | Next delivery | Product | Subcategory | Qnt.
+:--:|:---------:|:-----------:|:-----------:|:--------:|:-------------:|:-------:|:-----------:|:-----------:
+Auto. | Auto. | Auto. | Weekday | Monday | | Bread | cutted | 2
+Auto. | Auto. | Auto. | Interval | 4 | | Milk | None | 1
+
+<br>
+
+As you can see, the `Blueprint` has two rows. This means the database will add two entries to the `Abo` table (after the blueprint was successfully uploaded you can see them in the `Abo` input mask on the `Management` tab.). <br>
+You can add as many lines as you prefere. Upon uploading, all rows in the csv will be added to the database. <br>
+
+<br>
+
+It is recommended to create the `Blueprints` by using the `Bulk upload` menu (which you can find in the `Management` tab). However, you can also create a blueprint yourself by writing the table column names from the input mask (found in the `Management` tab) into the first row, followed by the database entries you would like to create. <br>
+
+<br>
+
+Please keep in mind, that you have to save the bluprint as `.csv` with semicolons (';') as separators.
+
+<br>
+
+The created file has to be named according to the name of the database table you want to manipulate and the addition *_blueprint* (e.g. for abo its *abo_blueprint.csv*). The database tables are named: <br>
+
+<br>
+
+**table name** | abo | category | subcategory | customers | products
+:-------------:|:---:|:--------:|:-----------:|:---------:|:--------:
+**file name** | abo_blueprint.csv | category_blueprint.csv | subcategory_blueprint.csv | customers_blueprint.csv | products_blueprint.csv 
+
+<br>
+
+To upload the file you have to move the created file(s) to your home directory `~/mini-moi/blueprints`and hit the red `Push me!` button in the `Bulk upload` menu (located in the `Management` tab). <br>
+
+<br>
+
+As soon as the file was successfully uploaded to your database it gets deleted from the blueprints folder. <br>
+
+<br>
+
+If you would like to see examples, you can check out the (examples)[https://github.com/No9005/mini-moi/tree/main/example] folder of this github project.
+
+<br>
+
+## Allowed types and formats
+**Mini Moi** accepts only the following formats:
+- Integers (int): whole numbers. Example: 5
+- Floats (float): decimals. Example: .8 or 0.8
+- Text (str): Normal text. Example: Michael
+- python Datetime: A DateTime object. You do not need this type. If you want to provide dates (like 01.10.1988) you can just pass the value and **Mini Moi** tries to convert it to a DateTime object.
+
+If you want to provide a date, you can do this by normally adding your date. However, **Mini Moi** needs one of the following formats to be able to understand it:
+- **Year.Month.Day**, for example: 1988.08.20
+- **Day.Month.Year**, for example: 20.08.1988
+- **Year-Month-Day**, for example: 1988-08-20
+- **Day-Month-Year**, for example: 20-08-1988
+
+<br>
+<br>
+
+## How the next delivery Date gets calculated & its options
+The next delivery date is calculated automatically after you booked the orders. <br>
+
+<br>
+
+> _Note_: <br>
+> _Only customers in the current booking process are calculated. This means that customers with delivery dates in the past are not considered!_ <br>
+> _To include these customers in future delivery tracking, you need to edit these dates so that they are in the futur!_
+
+<br>
+
+**Mini Moi** recognizes three types for the calculation process:
+- Weekly on a specific weekday (e.g. every Friday)
+- Every n-days (e.g. every 3 days)
+- One time
+
+<br>
+
+Deliveries based on **one time** abonements (`abo`) are only tracked until they are booked. From on onwards they are inactive until you edit the **Next delivery** to be in the futur. <br>
+These types of deliveries are market in the `abo` input mask of the `Management` tab as **Cycle type** None.
+
+<br>
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/52833906/160556164-6335f4d3-4e59-4e5c-8d81-01202847bad3.png"/>
+</p>
+
+<br>
+
+Other **Cycle types** trigger the calculation of a new delivery date. These are:
+- Weekday: You have to provide the day for the delivery. The delivery is calculated to be on the next weeks indicated day.
+- Interval: You have to provide the time period for the interval. The next delivery is calculated to be n-days after the current one, where n is the number you provided. <br>
+
+<br>
+
+To sum it all up:
+- **Cycle type**: Sets the type of time period for the next delivery calculation
+    - Weekday: Every week on the specified day in the **Interval** column.
+    - Interval: Every n-days, where n is the specified number in the **Interval** column.
+    - None: A one time delivery.
+
+<br>
+
+## What the 'approach' column is for
+You can find this column in the `customers` input mask. This number in this column indicates the order of delivery addresses within one city. E.g. If you have two customers for the city of *Berlin* you can set the order of appearance in the delivery overviews as follows:
+
+<br>
+
+id | Date | Name | Surname | Street | Nr | Postal | City | ... | Approach | Notes
+:-:|:---:|:-----:|:-------:|:------:|:--:|:------:|:----:|:----:|:-------:|:-----:
+1 | - | Hans | Peter | Maximilianstraße | 5 | 83064 | Neuholm | ... | 2 | \<- This customer will be second in the delivery overview
+2 | - | Michael | Meier | Baumstr. | 88 | 83064 | Neuholm | ... | 1 | \<- This customer will be first in the delivery overview
+
+<br>
+
+## Nice to knows about the `Customers` & `Abo` input masks
+The `customers` input mask has a button in the column **special** which is linked to his abos.
+
+<br>
+
+Special button |  Customer's abos 
+:-------------------------:|:-------------------------:
+<img src="https://user-images.githubusercontent.com/52833906/160558479-f7c1e9f4-1d1a-42ef-b18b-6f6d43533bf0.png" width="250" />  |  <img src="https://user-images.githubusercontent.com/52833906/160559276-8fd2543b-5522-40aa-a362-6f52dcccfc28.png" width="200" /> 
+
+<br>
+
+If you are adding new entries to the `Abo` table (by the input mask or the bulk importer) you have to supply the **Customer_id**. You can either lookup the customer in the `Customers` input mask tab, or you can just click on **abo button**. <br>
+The second method only works for you the selected customer has already at least one abonement.
+
+<br>
+
+## Columns & their meaning
+Below is a list of each column (EN version of the app) and their meaning:
+- `Customers`:
+    - **id**: The unique identifier of the customer within the database. *Automatically assigned by the database*.
+    - **date**: The date on which the customer was added. *Automatically added by the database*.
+    - **Name**: The first name of the customer.
+    - **Surname**: The last name of the customer.
+    - **Street**: The street in which the customer lives.
+    - **Nr**: The house nr. (as a number)
+    - **Postal**: The postal code of the city
+    - **City**: The name of the city
+    - **Phone**: The phone number of your customer. *optional*
+    - **Mobile**: The mobil number of your customer. *optional*
+    - **Birthdate**: The Birthdate of your customer.
+    - **Approach**: The ordering of appearance in the delivery overview. For further details see: 'What the 'approach' column is for'.
+    - **Notes**: Space to add some notes. *optional*
+- `Categories`:
+    - **id**: The unique identifier. *Automatically added*
+    - **name**: The category name. *Needs to be unique*
+- `Subcategories`:
+    - **id**: The unique identifier. *Automatically added*
+    - **name**: The subcategory name. *Needs to be unique*
+- `Products`:
+    - **id**: The unique identifier. *Automatically added*
+    - **Name**: The product name.
+    - **Category**: The product category.
+    - **Purchase price**: The purchase price of the product (needed for the reporting & overviews).
+    - **Selling price**: The selling price of the product (-> your price; needed for the reporting & overview).
+    - **Margin**: The margin of the product. **Automatically added*
+    - **Store**: The name of the store you buy the product from. *optional*
+    - **Phone**: The phone number of the store you buy the product from. *optional*
+- `Abos`:
+    - **id**: The unique identifier. *Automatically added*
+    - **Customer id**: The unique identifier of the customer. _See `Customers`_ _**id**_
+    - **Update date**: The date of the last update. *Automatically added*
+    - **Cycle type**: The type of the abo interval. *For further information see: How the next delivery Date gets calculated & its options*
+        - Options:
+            - Weekday: deliveries are set to the specific weekday
+            - Interval: deliveries are set to be every n-days.
+            - None: One time deliveries.
+    - **Interval**: The interval between deliveries. _Applies only if the **Cycle type** is either 'Weekday' or 'Interval'_
+    - **Next delivery**: Date of the next delivery.
+    - **Product**: The product to deliver.
+    - **Subcategory**: The subcategory of the product to deliver (e.g. cutted, whole, etc).
+    - **Qnt.**: The quantity of the product.
+
+<br>
+
 
 # <a name='why'></a> Additional info <sub><sub>[Back to top](#top)</sub></sub> 
 This project was created to help out a frind of mine aaaaaaannnddd... also to check out what I am able to work in 48h. <br>

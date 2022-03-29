@@ -326,7 +326,7 @@ class TestCustomer(unittest.TestCase):
         )
 
         # assert
-        self.assertEqual(result['error'], "The customer was not found.")
+        self.assertEqual(result['error'], "The Customer was not found.")
 
         # check db
         with Session(testEngine) as session:
@@ -564,7 +564,7 @@ class TestCustomer(unittest.TestCase):
         )
 
         # assert
-        self.assertEqual(result['error'], "The customer was not found.")
+        self.assertEqual(result['error'], "The Customer was not found.")
 
         #endregion
 

@@ -1,10 +1,24 @@
+v.0.7.1: Bugfixes & documentary. See changelog.
+    - adds:
+        - Language files display texts.
+    - Changes:
+        - Toastify display time & position
+        - README.md
+    - Bugfixes:
+        - input mask (managment.html) on change for dropdowns.
+        - Table scripts (abo, customer, categories, products)
+          text displays
+        - time_module returns now the date input if its none
+          (relevant for database entries where the date is none)
+        
+
+------------ old versions ----------------------------------
 v.0.7.0: Bugfixes & documentary. See changelog.
     Bugfixed the mass importer.
     There is one little issue left. Sometimes the
     birthdates get screwed. Needs additional testing.
     Added also some examples for the blueprints.
 
------------- old versions ----------------------------------
 v.0.6.6: Bugfixes (Firefox) & added new parsing features.
 
 v.0.6.5: German language + Bugfixes.

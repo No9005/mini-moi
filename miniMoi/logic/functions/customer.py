@@ -258,7 +258,13 @@ def update(customer_id:int, data:dict, language:str = app.config['DEFAULT_LANGUA
         # close session & return error
         session.close()
 
-        return {'success':False, 'error':errors['notFound'].format(element="customer"), 'data':{}}
+        return {
+            'success':False, 
+            'error':errors['notFound'].format(
+                element=translation['table_mapping']['customer']
+            ), 
+            'data':{}
+        }
 
     # parse birthdate
     birthdate = None
@@ -283,7 +289,7 @@ def update(customer_id:int, data:dict, language:str = app.config['DEFAULT_LANGUA
             try: int(data[col])
             except ValueError as e: return {'success':False, 'error':errors['wrongType'].format(
                 var = translation['column_mapping']['customers'][col],
-                dtype="int"
+                dtype= translation['type_mapping']['int']
             ), 'data':{}}
 
         # try to update him
@@ -303,22 +309,30 @@ def update(customer_id:int, data:dict, language:str = app.config['DEFAULT_LANGUA
 
     except Exception as e:
 
-            code, msg = tools._convert_exception(e)
+        code, msg = tools._convert_exception(e)
 
-            # close session
-            session.close()
+        # check if sqlite3.IntegrityError -> sql msg
+        if code == "IntegrityError": errorMsg = errors['notUnique'].format(
+                table = translation['table_mapping']['customer'],
+                nonUnique = msg.split("parameters")[-1].split("]")[0].lstrip()
+            )
 
-            return {
-                'success':False, 
-                'error':errors['unableOperation'].format(
-                    operation = "update",
-                    element = "customer",
-                    c = "",
-                    e=str(code),
-                    m=str(msg)
-                ),
-                'data':{}
-                }
+        # send normal msg
+        else: errorMsg = errors['unableOperation'].format(
+                operation = "update",
+                element = translation['table_mapping']['customer'],
+                e=str(code),
+                m=str(msg)
+            )
+
+        # close the session
+        session.close()
+
+        return {
+            'success':False,
+            'error':errorMsg,
+            'data':{}
+        }
 
     # add logs
     if app.config['ACTION_LOGGING']: tools._update_logs(session, 'miniMoi.logic.functions.customer.update', str(locals()))
@@ -402,7 +416,7 @@ def add(customers:list, language:str = app.config['DEFAULT_LANGUAGE'], tz = app.
             try: int(customer[col])
             except ValueError as e: return {'success':False, 'error':errors['wrongType'].format(
                 var = translation['column_mapping']['customers'][col],
-                dtype="int"
+                dtype=translation['type_mapping']['int']
             ), 'data':{}}
 
         # parse birthdate
@@ -440,23 +454,28 @@ def add(customers:list, language:str = app.config['DEFAULT_LANGUAGE'], tz = app.
 
         except Exception as e:
 
-            # get msg & code
             code, msg = tools._convert_exception(e)
+
+            # check if sqlite3.IntegrityError -> sql msg
+            if code == "IntegrityError": errorMsg = errors['notUnique'].format(
+                    table = translation['table_mapping']['customer'],
+                    nonUnique = msg.split("parameters")[-1].split("]")[0].lstrip()
+                )
+
+            # send normal msg
+            else: errorMsg = errors['noCommit'].format(
+                    e=str(code),
+                    m=str(msg)
+                )
 
             # close the session
             session.close()
 
             return {
-                'success':False, 
-                'error':errors['unableOperation'].format(
-                    operation = "add",
-                    element = "customer",
-                    c=str(customer['name']),
-                    e=str(code),
-                    m=str(msg)
-                    ), 
+                'success':False,
+                'error':errorMsg,
                 'data':{}
-                    }
+            }
         
     # append to session
     session.add_all(toAdd)
@@ -535,7 +554,9 @@ def delete(customer_id:int, language:str = app.config['DEFAULT_LANGUAGE']) -> di
     customer = session.query(Customers).filter_by(id = customerId).first()
     if customer is None: return {
         'success':False, 
-        'error':errors['notFound'].format(element="customer"), 
+        'error':errors['notFound'].format(
+            element=translation['table_mapping']['customer']
+            ), 
         'data':{}
         }
 
@@ -553,9 +574,9 @@ def delete(customer_id:int, language:str = app.config['DEFAULT_LANGUAGE']) -> di
         return {
             'success':False, 
             'error':errors['unableOperation'].format(
-                operation = "delete",
-                element = "customer",
-                c="",
+                operation = translation['operation_mapping']['delete'],
+                element = translation['table_mapping']['customer'],
+                c=translation['column_mapping']['customers']['id'] + " : " + str(customerId),
                 e=str(code),
                 m=str(msg)
             ), 

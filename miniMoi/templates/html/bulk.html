@@ -133,8 +133,10 @@
                 Toastify({
                         text: response.data.msg,
                         duration: 3000,
-                        position:'right',
+                        position:'center',
                         gravity:'top',
+                        stopOnFocus:true,
+                        close: true,
                         style: {
                             background: "linear-gradient(to right, #16a085, #2ecc71)",
                         },
@@ -147,9 +149,11 @@
                 
                 Toastify({
                         text: response.error,
-                        duration: 3000,
-                        position:'right',
+                        duration: 8000,
+                        position:'center',
                         gravity:'top',
+                        close: true,
+                        stopOnFocus:true,
                         style: {
                             background: "linear-gradient(to right, #e74c3c, #c0392b)",
                         },
@@ -185,13 +189,10 @@
                 Toastify({
                         text: response.data.msg,
                         duration: 8000,
-                        position:'right',
+                        position:'center',
                         gravity:'top',
                         stopOnFocus:true,
                         close:true,
-                        style: {
-                            background: "linear-gradient(to right, #16a085, #2ecc71)",
-                        },
                     }).showToast();
 
             }
@@ -201,9 +202,11 @@
                 
                 Toastify({
                         text: response.error,
-                        duration: 3000,
-                        position:'right',
+                        duration: 8000,
+                        position:'center',
                         gravity:'top',
+                        close: true,
+                        stopOnFocus:true,
                         style: {
                             background: "linear-gradient(to right, #e74c3c, #c0392b)",
                         },

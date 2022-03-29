@@ -272,7 +272,13 @@ def update(abo_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE'],
         # close session & return error
         session.close()
 
-        return {'success':False, 'error':errors['notFound'].format(element="abo"), 'data':{}}
+        return {
+            'success':False, 
+            'error':errors['notFound'].format(
+                element=translation['table_mapping']['abo']
+            ),
+            'data':{}
+            }
 
     #region 'fetch additional info'
     # fetch all available products
@@ -305,7 +311,7 @@ def update(abo_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE'],
             'success':False, 
             'error':errors['wrongType'].format(
                 var = translation['column_mapping']['abo'][val],
-                dtype="int"
+                dtype= translation['type_mapping']['int']
             ), 
             'data':{}
         }
@@ -324,7 +330,7 @@ def update(abo_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE'],
             'success':False, 
             'error':errors['wrongType'].format(
                 var = translation['column_mapping']['abo']['interval'],
-                dtype="int"
+                dtype= translation['type_mapping']['int']
             ), 
             'data':{}
         }
@@ -415,19 +421,28 @@ def update(abo_id:int, data:dict, language:str = app.config['DEFAULT_LANGUAGE'],
     except Exception as e:
         code, msg = tools._convert_exception(e)
 
-        # close session
+        # check if sqlite3.IntegrityError -> sql msg
+        if code == "IntegrityError": errorMsg = errors['notUnique'].format(
+                table = translation['table_mapping']['abo'],
+                nonUnique = msg.split("parameters")[-1].split("]")[0].lstrip()
+            )
+
+        # send normal msg
+        else: errorMsg = errors['unableOperation'].format(
+                operation = "update",
+                element = translation['table_mapping']['abo'],
+                e=str(code),
+                m=str(msg)
+            )
+
+        # close the session
         session.close()
 
         return {
-            'success':False, 
-            'error':errors['unableOperation'].format(
-                operation = "update",
-                element = "abo",
-                e=str(code),
-                m=str(msg)
-            ),
+            'success':False,
+            'error':errorMsg,
             'data':{}
-            }
+        }
 
     # add logs
     if app.config['ACTION_LOGGING']: tools._update_logs(session, 'miniMoi.logic.functions.abo.update', str(locals()))
@@ -494,7 +509,7 @@ def add(abos:list, language:str = app.config['DEFAULT_LANGUAGE'], tz = app.confi
 
     # check if the list is not empty
     if not bool(abos): return {'success':False, 'error':errors['noEntry'].format(
-        element = "abo"
+        element = translation['table_mapping']['abo']
     ), 'data':{}}
 
     # create session
@@ -536,7 +551,7 @@ def add(abos:list, language:str = app.config['DEFAULT_LANGUAGE'], tz = app.confi
                 'success':False, 
                 'error':errors['wrongType'].format(
                     var = translation['column_mapping']['abo'][val],
-                    dtype="int"
+                    dtype= translation['type_mapping']['int']
                 ), 
                 'data':{}
             }            
@@ -548,7 +563,7 @@ def add(abos:list, language:str = app.config['DEFAULT_LANGUAGE'], tz = app.confi
             if customer is None: return {
                 'success':False, 
                 'error':errors['notFoundWithId'].format(
-                    element="customer",
+                    element= translation['table_mapping']['customer'],
                     id = int_values['customer_id']
                     ), 
                 'data':{}
@@ -599,7 +614,7 @@ def add(abos:list, language:str = app.config['DEFAULT_LANGUAGE'], tz = app.confi
                     'success':False, 
                     'error':errors['wrongType'].format(
                         var = translation['column_mapping']['abo']['interval'],
-                        dtype="int"
+                        dtype= translation['type_mapping']['int']
                     ), 
                     'data':{}
                 }     
@@ -668,9 +683,14 @@ def add(abos:list, language:str = app.config['DEFAULT_LANGUAGE'], tz = app.confi
             return {
                 'success':False, 
                 'error':errors['unableOperation'].format(
-                    operation = "add",
-                    element = "abo",
-                    c=str(""),
+                    operation = translation['operation_mapping']['add'],
+                    element = translation['table_mapping']['abo'],
+                    c= "{el1} : {val1}; {el2} : {val2}".format(
+                        el1 = translation['column_mapping']['abo']['customer_id'],
+                        val1 = str(abo['customer_id']),
+                        el2 = translation['column_mapping']['abo']['product'],
+                        val2 = str(abo['product'])
+                        ),
                     e=str(code),
                     m=str(msg)
                     ), 
@@ -686,15 +706,25 @@ def add(abos:list, language:str = app.config['DEFAULT_LANGUAGE'], tz = app.confi
 
         code, msg = tools._convert_exception(e)
 
+        # check if sqlite3.IntegrityError -> sql msg
+        if code == "IntegrityError": errorMsg = errors['notUnique'].format(
+                table = translation['table_mapping']['abo'],
+                nonUnique = msg.split("parameters")[-1].split("]")[0].lstrip()
+            )
+
+        # send normal msg
+        else: errorMsg = errors['noCommit'].format(
+                e=str(code),
+                m=str(msg)
+            )
+
         # close the session
         session.close()
 
         return {
             'success':False,
-            'error':errors['noCommit'].format(
-                e=str(code),
-                m=str(msg)
-            )
+            'error':errorMsg,
+            'data':{}
         }
 
     # add logs
@@ -754,7 +784,7 @@ def delete(abo_id:int, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
     abo = session.query(Abo).filter_by(id = aboId).first()
     if abo is None: return {
         'success':False, 
-        'error':errors['notFound'].format(element="abo"), 
+        'error':errors['notFound'].format(element=translation['table_mapping']['abo']), 
         'data':{}
         }
     
@@ -771,8 +801,9 @@ def delete(abo_id:int, language:str = app.config['DEFAULT_LANGUAGE']) -> dict:
         return {
             'success':False, 
             'error':errors['unableOperation'].format(
-                operation = "delete",
-                element = "abo",
+                operation = translation['operation_mapping']['delete'],
+                element = translation['table_mapping']['abo'],
+                c=translation['column_mapping']['abo']['id'] + " : " + str(aboId),
                 e=str(code),
                 m=str(msg)
             ), 

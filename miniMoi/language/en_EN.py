@@ -25,6 +25,7 @@ mapping = {
         'nextDeliveryMismatch':"The '{next_delivery}' is not allowed to be empty if the '{cycle_type}' is {none}.",
         'missingData':"There is data missing: {column}",
         'defaultProtection':"Default values can not be deleted.",
+        'notUnique':"Your {table} entry was not unique: {nonUnique}.",
         'blueprintUnkonwn':"The selected blueprint is not known ('{blueprint}'",
         'noBlueprintFound':"There was no blueprint to import. Please create first one.",
         'wrongFileType':"Only files in format '.{format}' are allowed.",
@@ -373,6 +374,16 @@ mapping = {
     },
     'formats':{
         'birthdate':"Year.Month.Day",
+    },
+    'type_mapping':{
+        'str':"text",
+        'int':"number (whole)",
+        'float':"decimal"
+    },
+    'operation_mapping':{
+        'add':"add",
+        'update':"update",
+        'delete':"delete"
     }
     
 }

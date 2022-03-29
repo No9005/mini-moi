@@ -340,7 +340,7 @@ class TestProducts(unittest.TestCase):
         )
 
         # assert
-        self.assertEqual(result['error'], "The product was not found.")
+        self.assertEqual(result['error'], "The Product was not found.")
 
         #endregion
 
@@ -490,7 +490,7 @@ class TestProducts(unittest.TestCase):
         )
 
         # assert
-        self.assertEqual(result['error'], "The product was not found.")
+        self.assertEqual(result['error'], "The Product was not found.")
 
         #endregion
 
