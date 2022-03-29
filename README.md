@@ -88,7 +88,23 @@ You can find & download the newest release [here](https://github.com/No9005/mini
 <br>
 
 ## <a name='linux-install'></a> 2. Linux <sub><sub>[Back to top](#top)</sub></sub>
-A runnable file will be available soon. Please follow the instructions [From Source](#source-install) in the meantime.
+Download the `.pkg` for Debian, make it executable
+
+<br>
+
+```terminal
+$ chmod +x miniMoi 
+```
+
+<br>
+
+and start it.
+
+<br>
+
+```terminal
+$ ./miniMoi
+```
 
 <br>
 
