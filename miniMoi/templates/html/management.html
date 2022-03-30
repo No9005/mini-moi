@@ -600,6 +600,8 @@
 
     function value_changed(element) {
         /* event handler for cell changes */
+
+        console.log("VALUE CHANGED");
         
 
         // get row
@@ -677,16 +679,15 @@
             }
         else { 
 
+            // update interval_value
+            interval_value = interval.text();
+
             // check if interval_value is not the management_auto_text
             if (interval_value == "{{ management_auto_text }}") {
 
                 interval_value = 0;
-            }
-            else {
-
-                interval_value = interval.text(); 
-
             };
+
         };
 
         // empty interval
@@ -699,12 +700,18 @@
             interval.append(
                 create_dropdown_element(dropdown['weekday_interval'], interval_value, "interval")
                 );
+            
+            // kill the onchange for the interval (which contains now the select tag)
+            interval.attr('contenteditable', "false");
 
         }
         else if (selected_value == "interval") {
 
             // empty text
             interval.text(interval_value);
+
+            // add the onchange
+            interval.attr('contenteditable', "true");
 
         }
         else {

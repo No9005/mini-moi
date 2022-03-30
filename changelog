@@ -1,6 +1,14 @@
-v.0.7.4: Readme.
+v.0.7.5: Firefox editable fix. See changelog.
+    There was an issue with the abo input mask on mozilla.
+    If the parent (where the select tag is located in) was
+    'contenteditabl=true', the access to the select tag
+    within the parent was denied.
+    Changed this by adding a attribute change during the
+    process_weekday() function.
 
 ------------ old versions ----------------------------------
+v.0.7.4: Readme.
+
 v.0.7.3: Added debian '.pkg' to dist folder.
 
 v.0.7.2: Quality of life improvements. See changelog.
