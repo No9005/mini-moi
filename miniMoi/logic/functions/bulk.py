@@ -124,7 +124,7 @@ def _load(home:PosixPath , errors:dict, file_type:str = "csv") -> dict:
             #print(name+"_blueprint")
             #print(str(path).split("/"))
 
-            if name + "_blueprint." + file_type == str(path).split("/")[-1]: 
+            if name + "_blueprint." + file_type == path.name: 
                 
                 # load the dataframe
                 if file_type == "xlsx": loaded.update({name: {'file':pd.read_excel(str(path)), 'path':path}})

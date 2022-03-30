@@ -17,7 +17,6 @@ Little assistant to organizing deliveries. <br>
 2. [Installing](#install)
     1. [Windows](#win-install)
     2. [Linux](#linux-install)
-    3. [MacOS](#mac-install)
     4. [From Source](#source-install)
 3. [Quickstart](#how)
 4. [Manual](#manual)
@@ -73,7 +72,7 @@ The core features are:
 <br>
 
 # <a name='install'></a> Installing <sub><sub>[Back to top](#top)</sub></sub>
-Below are the instructions to use the app on **Windows 10**, **Linux**, **MacOS**. <br>
+Below are the instructions to use the app on **Windows 10** & **Linux** <br>
 You can also download the source files, modify the project and execute them.
 
 <br>
@@ -108,11 +107,6 @@ and start it.
 ```terminal
 $ ./miniMoi
 ```
-
-<br>
-
-## <a name='mac-install'></a> 3. Mac <sub><sub>[Back to top](#top)</sub></sub>
-A runnable file will be available soon. Please follow the instructions [From Source](#source-install) in the meantime.
 
 <br>
 
