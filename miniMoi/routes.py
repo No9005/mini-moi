@@ -6,7 +6,7 @@ Contains the app routing
 # imports
 import json
 
-from flask import render_template, request, url_for
+from flask import render_template, request, url_for, send_from_directory
 
 from miniMoi import app, Session
 from miniMoi import handlers
@@ -167,6 +167,12 @@ def reporting():
     """Displays the reporting page """
 
     return render_template("html/reporting.html")
+
+@app.route("/favicon.ico", methods=["GET"])
+def favicon():
+    """Sends the favicon if requested """
+
+    return send_from_directory(directory=str(app.config['CWD'] / "static/icons"), path="favicon.ico")
 
 #endregion
 

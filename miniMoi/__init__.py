@@ -53,6 +53,7 @@ app.config['MINI_MOI_HOME'] = home / "mini-moi"
 app.config['BLUEPRINT_PATH'] = home /"mini-moi/blueprints"
 app.config['SETTINGS_FILE_PATH'] = home / "mini-moi/system/settings/settings.json"
 app.config['DB_FILE_PATH'] = home / "mini-moi/system/db/app.db"
+app.config['CWD'] = cwd
 
 #endregion
 
