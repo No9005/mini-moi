@@ -195,7 +195,8 @@ def get(
         'mapping':[mappedCols[col] for col in intendedOrder],
         'dropdown':{
             'category':dropdown_category
-        }
+        },
+        'table_name':translation['table_mapping']['products']
     }
 
     #endregion

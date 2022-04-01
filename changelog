@@ -1,6 +1,8 @@
-v.0.7.6: Windows path fix
+v.0.7.7: Wordings, bugfixes & building for betatests.
 
 ------------ old versions ----------------------------------
+v.0.7.6: Windows path fix
+
 v.0.7.5: Firefox editable fix. See changelog.
     There was an issue with the abo input mask on mozilla.
     If the parent (where the select tag is located in) was

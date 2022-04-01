@@ -386,7 +386,7 @@ class TestDelivery(unittest.TestCase):
             'mapping':[
                 'Approach', 'Street', 'Nr.', 'City', 'Name', 'Surname', 'Product', 'Qnt.', 
                 'Type', 'Category', 'selling price', 'Cost', 'Total', 'Phone', 'Mobile', 
-                'Notes', 'Product id', 'Customer id', 'Abo'
+                'Notes', 'Product id', 'Customer id', 'Subscription'
             ]
         })
 
@@ -422,7 +422,7 @@ class TestDelivery(unittest.TestCase):
                 'mapping':[
                     'Approach', 'Street', 'Nr.', 'City', 'Name', 'Surname', 'Product', 'Qnt.', 
                     'Type', 'Category', 'selling price', 'Cost', 'Total', 'Phone', 'Mobile', 
-                    'Notes', 'Product id', 'Customer id', 'Abo'
+                    'Notes', 'Product id', 'Customer id', 'Subscription'
                     ]
         })
 

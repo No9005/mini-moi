@@ -219,7 +219,8 @@ class TestAbo(unittest.TestCase):
                 'subcategory': {
                     1: 'Sub1', 2: 'Sub2'
                     }
-                }
+                },
+            'table_name':"Subscriptions"
         })
 
         #endregion
@@ -344,7 +345,8 @@ class TestAbo(unittest.TestCase):
                 'subcategory': {
                     1: 'Sub1', 2: 'Sub2'
                     }
-                }
+                },
+            'table_name':"Subscriptions"
             }})
 
         #endregion
@@ -382,7 +384,8 @@ class TestAbo(unittest.TestCase):
                 'subcategory': {
                     1: 'Sub1', 2: 'Sub2'
                     }
-                }
+                },
+            'table_name':"Subscriptions"
         })
 
         #endregion
@@ -404,7 +407,7 @@ class TestAbo(unittest.TestCase):
         )
 
         # assert
-        self.assertEqual(result['error'], "The Abo was not found.")
+        self.assertEqual(result['error'], "The Subscription was not found.")
 
         # check db
         with Session(testEngine) as session:
@@ -675,7 +678,7 @@ class TestAbo(unittest.TestCase):
         )
 
         # assert
-        self.assertEqual(result['error'], "The Abo was not found.")
+        self.assertEqual(result['error'], "The Subscription was not found.")
 
         #endregion
 

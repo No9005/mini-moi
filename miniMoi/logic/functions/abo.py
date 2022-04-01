@@ -165,7 +165,8 @@ def get(
             'weekday_interval':translation['weekday_mapping'],
             'product':dropdown_products,
             'subcategory':dropdown_subcateogry
-        }
+        },
+        'table_name':translation['table_mapping']['abos']
     }
 
     #endregion

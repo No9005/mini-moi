@@ -1,0 +1,5 @@
+id;Customer id;Update date;Cycle type;Interval;Next delivery;Product;Subcategory;Qnt.
+;4;;Interval;2;28.03.2022;Milk 1l;None;2
+;4;;Weekday;Wendsday;;White Bread;Cutted;1
+;2;;None;;30.08.2022;Orange Juice;None;5
+;4;;Interval;3;;Berry Juice;None;6

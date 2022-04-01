@@ -112,6 +112,11 @@
 
 <script>
 
+    /*
+    Note:
+    Abbreviation 'abo' used for the german word 'Abonnement' aka subscription
+    */
+
     // get html elements
     var content_placeholder = document.getElementById('contentTablePlaceholder');
     var table_section = document.getElementById("tablesSection");
@@ -342,7 +347,7 @@
 
 
         // create and add ui-buttons
-        // abo fetching for 'customers' table on customer id (--> shortcut)
+        // sub. fetching for 'customers' table on customer id (--> shortcut)
         if (tbl_type == "customers") {
 
             var th_shortcut = document.createElement('td');
@@ -951,7 +956,7 @@
                 tbl_type = fetch_table;
 
                 // set tbl name
-                table_name.innerHTML = fetch_table.charAt(0).toUpperCase() + fetch_table.slice(1);
+                table_name.innerHTML = response.data.table_name;
 
                 // create the table to add
                 const tbl = table_from_dict(response.data)

@@ -85,7 +85,7 @@ def _to_excel(df:pd.DataFrame, path:str) -> dict:
         'data':{}
     }
 
-def _load(home:PosixPath , errors:dict, file_type:str = "csv") -> dict:
+def _load(home:PosixPath , errors:dict, relevant_blueprints:list, file_type:str = "csv") -> dict:
     """Loads all blueprints from disk
 
     params:
@@ -94,6 +94,12 @@ def _load(home:PosixPath , errors:dict, file_type:str = "csv") -> dict:
         The posixpath to load from.
     errors : dict
         The language file error dict.
+    relevant_blueprints : list
+        List containing the names of the tables
+        in the app language.
+    file_type : str, optional
+        The file type to search for.
+        (default is 'csv')
 
     returns:
     -------
@@ -103,9 +109,6 @@ def _load(home:PosixPath , errors:dict, file_type:str = "csv") -> dict:
         }
     
     """
-
-    # create variable with relevant blueprints
-    relevantBlueprints = ["customers", "category", "subcategory", "products", "abo"]
 
     # get all *.csv files
     loaded = {}
@@ -119,7 +122,7 @@ def _load(home:PosixPath , errors:dict, file_type:str = "csv") -> dict:
     for path in collected:
         
         # check if one of the blueprint names is in the filename
-        for name in relevantBlueprints:
+        for name in relevant_blueprints:
 
             #print(name+"_blueprint")
             #print(str(path).split("/"))
@@ -231,9 +234,12 @@ def create_blueprint(blueprint:str, file_type:str="csv") -> dict:
     # create empty frame out of the columns
     df = pd.DataFrame(columns=translated_cols)
 
+    # translate blueprint
+    blueprint_translated = translation['table_mapping'][blueprint]
+
     # save to disk
     if file_type == "csv":
-        fullPath = str(home/ (blueprint + "_blueprint.csv"))
+        fullPath = str(home/ (blueprint_translated + "_blueprint.csv"))
         saved = _to_csv(df, str(fullPath))
     elif file_type == "xlsx":
         fullPath = str(home/ (blueprint + "_blueprint.xlsx"))
@@ -287,8 +293,12 @@ def update(file_type:str="csv") ->dict:
     # create the directory path
     home = app.config['BLUEPRINT_PATH']
 
+    # translate table names
+    originalNames = ["customers", "category", "subcategory", "products", "abo"]
+    tablenames = [translation['table_mapping'][name] for name in originalNames]
+
     # load files & convert it to dfs
-    loaded = _load(home, errors, file_type)
+    loaded = _load(home, errors, tablenames, file_type)
     if not loaded['success']: return loaded
     loaded = loaded['data']['loaded']
 
@@ -304,14 +314,28 @@ def update(file_type:str="csv") ->dict:
         'failure':[]
     }
 
-    for file in ["customers", "category", "subcategory", "products", "abo"]:
+    for file in originalNames:
 
         print()
         print("-------------------------")
         print("IMPORT:", file)
 
+
+        # create file name translation
+        """
+        CAUTION:
+        To provide the user the blueprints in his language,
+        we saved them in the current selected language.
+        Therefore we have to query the 'loaded' files with
+        the translated names!
+
+        """
+        
+        translatedFileName = translation['table_mapping'][file]
+
         # try to grab the file. if not available skip to the next
-        try: tmp = loaded[file]['file']
+        # Caution: has to be the translated name!
+        try: tmp = loaded[translatedFileName]['file']
         except: continue
 
         print("File found")
@@ -320,7 +344,7 @@ def update(file_type:str="csv") ->dict:
         if tmp.empty:
             
             # add to failure
-            update_progress['failure'].append(file + " " + translation['notification']['is_empty'])
+            update_progress['failure'].append(translatedFileName + " " + translation['notification']['is_empty'])
 
             # jump to the next
             continue
@@ -365,7 +389,7 @@ def update(file_type:str="csv") ->dict:
 
                 continue
 
-            result = products_add(loaded[file]['file'].to_dict('records'))
+            result = products_add(loaded[translatedFileName]['file'].to_dict('records'))
 
         elif file == "abo": 
 
@@ -398,7 +422,7 @@ def update(file_type:str="csv") ->dict:
             
             #endregion
             
-            result = abo_add(loaded[file]['file'].to_dict('records'))
+            result = abo_add(loaded[translatedFileName]['file'].to_dict('records'))
 
         print("WORKED THROUGH IT, success?", result['success'])
 
@@ -408,14 +432,14 @@ def update(file_type:str="csv") ->dict:
         if result['success']:
 
             # push to success
-            update_progress['success'].append(file)
+            update_progress['success'].append(translatedFileName)
 
             # unlink
-            _unlink(loaded[file]['path'])
+            _unlink(loaded[translatedFileName]['path'])
 
         else: 
             print(result['error'])
-            update_progress['failure'].append(file + ":" + result['error'])
+            update_progress['failure'].append(translatedFileName + ":" + result['error'])
 
         
 

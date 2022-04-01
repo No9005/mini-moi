@@ -178,8 +178,8 @@ class TestProducts(unittest.TestCase):
                     'id', 'Name', 'Category', 'Purchase price', 'Selling price', 
                     'Margin', 'Store', 'Phone'
                     ],
-                'dropdown': {'category': {1: 'Brot', 2: 'Weißwaren'}}
-
+                'dropdown': {'category': {1: 'Brot', 2: 'Weißwaren'}},
+                'table_name':"Products"
                 }
         })
 
@@ -202,7 +202,8 @@ class TestProducts(unittest.TestCase):
                 'id', 'Name', 'Category', 'Purchase price', 'Selling price', 
                 'Margin', 'Store', 'Phone'
                 ],
-            'dropdown': {'category': {1: 'Brot', 2: 'Weißwaren'}}
+            'dropdown': {'category': {1: 'Brot', 2: 'Weißwaren'}},
+            'table_name':"Products"
         })
 
         #endregion
@@ -235,7 +236,8 @@ class TestProducts(unittest.TestCase):
                 'id', 'Name', 'Category', 'Purchase price', 'Selling price', 
                 'Margin', 'Store', 'Phone'
                 ],
-            'dropdown': {'category': {1: 'Brot', 2: 'Weißwaren'}}
+            'dropdown': {'category': {1: 'Brot', 2: 'Weißwaren'}},
+            'table_name':"Products"
             }})
 
         #endregion
@@ -293,7 +295,8 @@ class TestProducts(unittest.TestCase):
                 'id', 'Name', 'Category', 'Purchase price', 'Selling price', 
                 'Margin', 'Store', 'Phone'
                 ],
-            'dropdown': {'category': {1: 'Brot', 2: 'Weißwaren'}}
+            'dropdown': {'category': {1: 'Brot', 2: 'Weißwaren'}},
+            'table_name':"Products"
             }})
 
         #endregion
@@ -317,7 +320,8 @@ class TestProducts(unittest.TestCase):
                 'id', 'Name', 'Category', 'Purchase price', 'Selling price', 
                 'Margin', 'Store', 'Phone'
                 ],
-            'dropdown': {'category': {1: 'Brot', 2: 'Weißwaren'}}
+            'dropdown': {'category': {1: 'Brot', 2: 'Weißwaren'}},
+            'table_name':"Products"
         })
 
         #endregion

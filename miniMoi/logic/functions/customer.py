@@ -147,6 +147,7 @@ def get(
         'data':[],
         'order':intendedOrder,
         'mapping':[mappedCols[col] for col in intendedOrder],
+        'table_name':translation['table_mapping']['customer']
     }
 
     #endregion

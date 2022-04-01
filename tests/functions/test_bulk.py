@@ -85,7 +85,7 @@ class TestBulk(unittest.TestCase):
                 'Phone',  'Mobile', 'Birthdate', 'Approach', 'Notes'
             ])
 
-            self.assertEqual(mock_csv.call_args_list[0][0][1], str(app.config['BLUEPRINT_PATH']/"customers_blueprint.csv"))
+            self.assertEqual(mock_csv.call_args_list[0][0][1], str(app.config['BLUEPRINT_PATH']/"Customers_blueprint.csv"))
 
             #endregion
 
@@ -98,7 +98,7 @@ class TestBulk(unittest.TestCase):
                 'id', 'Name'
             ])
 
-            self.assertEqual(mock_csv.call_args_list[-1][0][1], str(app.config['BLUEPRINT_PATH']/"category_blueprint.csv"))
+            self.assertEqual(mock_csv.call_args_list[-1][0][1], str(app.config['BLUEPRINT_PATH']/"Category_blueprint.csv"))
 
             #endregion
 
@@ -111,7 +111,7 @@ class TestBulk(unittest.TestCase):
                 'id', 'Name'
             ])
 
-            self.assertEqual(mock_csv.call_args_list[-1][0][1], str(app.config['BLUEPRINT_PATH']/"subcategory_blueprint.csv"))
+            self.assertEqual(mock_csv.call_args_list[-1][0][1], str(app.config['BLUEPRINT_PATH']/"Subcategory_blueprint.csv"))
 
             #endregion
 
@@ -125,7 +125,7 @@ class TestBulk(unittest.TestCase):
                 'Phone'
             ])
 
-            self.assertEqual(mock_csv.call_args_list[-1][0][1], str(app.config['BLUEPRINT_PATH']/"products_blueprint.csv"))
+            self.assertEqual(mock_csv.call_args_list[-1][0][1], str(app.config['BLUEPRINT_PATH']/"Products_blueprint.csv"))
 
             #endregion
 
@@ -138,7 +138,7 @@ class TestBulk(unittest.TestCase):
                 'Subcategory', 'Qnt.'
             ])
 
-            self.assertEqual(mock_csv.call_args_list[-1][0][1], str(app.config['BLUEPRINT_PATH']/"abo_blueprint.csv"))
+            self.assertEqual(mock_csv.call_args_list[-1][0][1], str(app.config['BLUEPRINT_PATH']/"Subscription_blueprint.csv"))
 
             #endregion
 
@@ -254,7 +254,7 @@ class TestBulk(unittest.TestCase):
                 'success':True, 
                 'data':{
                     'loaded':{
-                        'products':{
+                        'Products':{
                             'file':pd.DataFrame(columns=['id', 'name']),
                             'path':"somepath"
                         },
@@ -267,7 +267,7 @@ class TestBulk(unittest.TestCase):
 
             # assert
             self.assertTrue(result['success'])
-            self.assertEqual(result['data']['msg'], 'Successfull: {}, Failures: {products is empty}')
+            self.assertEqual(result['data']['msg'], 'Successfull: {}, Failures: {Products is empty}')
 
             #endregion
 
@@ -276,7 +276,7 @@ class TestBulk(unittest.TestCase):
                 'success':True, 
                 'data':{
                     'loaded':{
-                        'customers':{
+                        'Customers':{
                             'file':dfs['customers'],
                             'path':"somepath"
                         },
@@ -321,7 +321,7 @@ class TestBulk(unittest.TestCase):
                 'success':True, 
                 'data':{
                     'loaded':{
-                        'category':{
+                        'Category':{
                             'file':dfs['category'],
                             'path':"somepath"
                         },
@@ -354,7 +354,7 @@ class TestBulk(unittest.TestCase):
                 'success':True, 
                 'data':{
                     'loaded':{
-                        'subcategory':{
+                        'Subcategory':{
                             'file':dfs['subcategory'],
                             'path':"somepath"
                         },
@@ -387,7 +387,7 @@ class TestBulk(unittest.TestCase):
                 'success':True, 
                 'data':{
                     'loaded':{
-                        'products':{
+                        'Products':{
                             'file':dfs['products'],
                             'path':"somepath"
                         },
@@ -426,7 +426,7 @@ class TestBulk(unittest.TestCase):
                 'success':True, 
                 'data':{
                     'loaded':{
-                        'abo':{
+                        'Subscription':{
                             'file':dfs['abo'],
                             'path':"somepath"
                         },
@@ -479,7 +479,7 @@ class TestBulk(unittest.TestCase):
                 'success':True, 
                 'data':{
                     'loaded':{
-                        'abo':{
+                        'Subscription':{
                             'file':withUnknown,
                             'path':"somepath"
                         },

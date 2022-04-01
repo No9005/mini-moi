@@ -1,5 +1,0 @@
-id;Date;Name;Surname;Street;Nr;Postal;City;Phone;Mobile;Birthdate;Approach;Notes
-1;;Hans;Peter;Salzburgstraß;5;834086;Somewhere;;;01.04.1980;3;The approach is used to sort the customers within one city
-2;;Maria;Uters;Nebenan;10;834086;Somewhere;+15 -maria;;22.08.1998;1;
-3;;Fritzchen;Numa;Sitzburg;80;90488;Another;;;01.12.1988;3;He is in another city, so he should be the first one in his city.
-6;;Klaus;Morgenwald;Last Street;1420;834086;Somewhere;;49151850;12.01.1900;2;The id is given by the app. Klaus will be the 4th entry (if injected into a new db)

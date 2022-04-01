@@ -159,8 +159,8 @@ class TestCategories(unittest.TestCase):
                     ],
                 'category_type':"category",
                 'order': ['id', 'name'], 
-                'mapping': ['id', 'Name']
-                
+                'mapping': ['id', 'Name'],
+                'table_name':"Category"
                 }
         })
 
@@ -176,7 +176,8 @@ class TestCategories(unittest.TestCase):
             'data':[],
             'order':["id", "name"],
             'mapping':["id", "Name"],
-            'category_type':"category"
+            'category_type':"category",
+            'table_name':"Category"
         })
 
         #endregion
@@ -196,7 +197,8 @@ class TestCategories(unittest.TestCase):
                     ],
             'category_type':"category",
             'order': ['id', 'name'], 
-            'mapping': ['id', 'Name']
+            'mapping': ['id', 'Name'],
+            'table_name':"Category"
             }
             })
 
@@ -224,7 +226,8 @@ class TestCategories(unittest.TestCase):
                     ],
                 'category_type':"subcategory",
                 'order': ['id', 'name'], 
-                'mapping': ['id', 'Name']
+                'mapping': ['id', 'Name'],
+                'table_name':"Subcategory"
                 }
         })
 

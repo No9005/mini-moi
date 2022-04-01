@@ -168,7 +168,8 @@ class TestCustomer(unittest.TestCase):
                     'id', 'Date', 'Name', 'Surname', 'Street', 'Nr', 
                     'Postal', 'City', 'Phone', 'Mobile', 'Birthdate', 
                     'Approach', 'Notes'
-                ]
+                ],
+                'table_name':"Customer"
                 }
         })
 
@@ -193,7 +194,8 @@ class TestCustomer(unittest.TestCase):
                 'Nr', 'Postal', 'City',
                 'Phone', 'Mobile', 'Birthdate', 'Approach',
                 'Notes'
-            ]
+            ],
+            'table_name':"Customer"
         })
 
         #endregion
@@ -234,7 +236,8 @@ class TestCustomer(unittest.TestCase):
                 'id', 'Date', 'Name', 'Surname', 'Street', 'Nr', 
                 'Postal', 'City', 'Phone', 'Mobile', 'Birthdate', 
                 'Approach', 'Notes'
-            ]
+            ],
+            'table_name':"Customer"
             }})
 
         #endregion
@@ -274,7 +277,8 @@ class TestCustomer(unittest.TestCase):
                 'id', 'Date', 'Name', 'Surname', 'Street', 'Nr', 
                 'Postal', 'City', 'Phone', 'Mobile', 'Birthdate', 
                 'Approach', 'Notes'
-            ]
+            ],
+            'table_name':"Customer"
             }})
 
         #endregion
@@ -299,7 +303,8 @@ class TestCustomer(unittest.TestCase):
                 'Nr', 'Postal', 'City',
                 'Phone', 'Mobile', 'Birthdate', 'Approach',
                 'Notes'
-            ]
+            ],
+            'table_name':"Customer"
         })
 
         #endregion

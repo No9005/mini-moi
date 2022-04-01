@@ -95,7 +95,8 @@ def get(
         'data':[],
         'order':intendedOrder,
         'mapping':[mappedCols[col] for col in intendedOrder],
-        'category_type':category_type
+        'category_type':category_type,
+        'table_name':translation['table_mapping'][category_type]
     }
 
     #endregion

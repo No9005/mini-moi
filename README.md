@@ -28,7 +28,7 @@ Little assistant to organizing deliveries. <br>
 # <a name='whats-it'></a> Introduction <sub><sub>[Back to top](#top)</sub></sub> 
 
 <b>Mini Moi</b> enables you to perform CRM light functions. The centerpiece though is the tracking of next-day deliveries. <br>
-After creating your **sortiment, customers & abos**, the programm is automatically tracking and creating overviews for upcoming deliveries. <br>
+After creating your **sortiment, customers & subscriptions**, the programm is automatically tracking and creating overviews for upcoming deliveries. <br>
 Easy and reliable. What remains is more sparetime for you! <br>
 
 <br>
@@ -39,52 +39,54 @@ Easy and reliable. What remains is more sparetime for you! <br>
 
 <br>
 
-It also comes packed with three Languages: **English, German and French.** <br>
-To use it you just have to install python, load the current release and install the requirements. For detailed instructions please refere to [Installing](#install).
+It also comes packed with two Languages: **English & German** (French should be added soon).<br>
+To use it you just have to download the executables for **Windows** or **Linux**. <br>
+If you rather build it from source, you can do this too :-). <br>
+For detailed instructions please refere to [Installing](#install).
 
 <br>
 
 # <a name='features'></a> Features <sub><sub>[Back to top](#top)</sub></sub> 
 
 The core features are:
-- Creation, editing & deleting of customers, products & abos either (`Management screen`):
+- Creation, editing & deleting of customers, products & subscriptions in on of the following (`Management` tab):
     - The frontend: A HTML/javascript combination which is executed in the browser of your choice. 
-    - Bulk editor: You can use (and create!) the excel blueprints to mass upload new table entries!
-- Next delivery tracking (`Delivery screen`):
+    - Bulk editor: You can use (and create!) the `.csv` blueprints to mass upload new table entries!
+- Next delivery tracking (`Delivery` tab):
     - Check the deliveries for the next day
-    - Download a excel report, which summarizes the to be shipped products & the delivery addresses of your customers.
-    - Book the next deliveries. This logs the products for the next day and enables them for the reporting section
+    - Download a excel report, which summarizes the to-be-shipped products & the delivery addresses of your customers.
+    - Book the next deliveries. This logs the products for the next day and enables the reporting.
 - Creating reports (`Report screen`):
     - Get an overview of your earnings, revenue and sold products for different time periods.
 - Multi language support:
     - <b>Mini Moi</b> supports 3 languages:
         - English
         - German
-        - French
+        - (coming soon) French
 - Database backup & rollback options 
 
 <br>
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/52833906/160295206-e823d9e3-bd81-4441-8184-17e3fb2061e2.png" alt="mini-moi management screen" style="width:50%">
+<img src="https://user-images.githubusercontent.com/52833906/161303960-7a9e40ed-c9cd-4f10-8292-9d425556b6ae.png" alt="mini-moi management screen" style="width:50%">
 </p>
 
 <br>
 
 # <a name='install'></a> Installing <sub><sub>[Back to top](#top)</sub></sub>
 Below are the instructions to use the app on **Windows 10** & **Linux** <br>
-You can also download the source files, modify the project and execute them.
+You can also download the source files, modify the project and run it.
 
 <br>
 
 > _Note:_
-> _Indepentend of your os of choice, you need a modern Browser installed on your system. **Mini Moi** was tested with Chrome, Firefox and IE_
+> _Indepentend of your OS choice, you need a modern browser installed on your system. **Mini Moi** was tested with Chrome, Firefox and IE_
 
 <br>
 
 ## <a name='win-install'></a> 1. Windows <sub><sub>[Back to top](#top)</sub></sub>
-If you are using **Windows 10** you can download the `.exe` which is a self running executable. <br>
-The App is not installing anything. **Just plug and play!** <br>
+If you are using **Windows 10** you can download the `.exe` which is a self-contained executable. <br>
+The app is not installing anything. **Just plug and play!** <br>
 You can find & download the newest release [here](https://github.com/No9005/mini-moi/releases).
 
 <br>
@@ -110,9 +112,9 @@ $ ./miniMoi
 
 <br>
 
-## <a name='source-install'></a> 4. From source <sub><sub>[Back to top](#top)</sub></sub>
+## <a name='source-install'></a> 3. From source <sub><sub>[Back to top](#top)</sub></sub>
 
-If you have already Python (at least 3.8) installed on your machine, you can directly download & install the app in a few steps:
+If you have already **Python** (at least 3.8) installed on your machine, you can directly download & install the app in a few steps:
 - Download the [latest](https://github.com/No9005/mini-moi/releases) release
 - Install the `pip` requirements
 - Run the app
@@ -122,7 +124,7 @@ If you have already Python (at least 3.8) installed on your machine, you can dir
 ### Download the latest release
 
 Download the latest (release)[https://github.com/No9005/mini-moi/releases] or `git clone` the project. It's up to you. <br>
-After downloading (and unzipping the file) you are ready for: 
+After downloading (and unzipping the file) you are ready for the installing. 
 
 <br>
 
@@ -157,7 +159,7 @@ $ python app.py
 
 Below are some tips & tricks.
 
-- **`venv` recommended**: <br> As with all python installations, you should not install packages directly into your main path. <br> It is recommended to use a virtual environment (`.venv`) to keep the main system clean. <br> You can use your virtual environment manager of your choice. I do prefere the `pipenv` manager. <br> If you use `pipenv` you can use the following commands to install (in your app directory) everything: <br>
+- **`venv` recommended**: <br> As with all python installations, you should not install packages directly into your main path. <br> It is recommended to use a virtual environment (`.venv`) to keep the main system clean. <br> You can use a virtual environment manager of your choice. I do prefere the `pipenv` manager. <br> If you use `pipenv` you can use the following commands (inside of your app directory) to install everything: <br>
 
 <br>
 
@@ -167,25 +169,25 @@ $ pipenv install -r requirements.txt
 
 <br>
 
-- **Windows user**: <br> You have to install the **Visual C++ build tools** to enable the wheel backwards compatible building.
+- **Windows user**: <br> You have to install the **Visual C++ build tools** to enable the wheel backwards compatible building. You can find the [Visual Studio 2022](https://visualstudio.microsoft.com/de/downloads/) on the official microsoft page. After downloading the client, you have to select the Build Tools for C++ & Python (round about 5.6gb of data).
 
 <br>
 
 # <a name='how'></a> Quickstart <sub><sub>[Back to top](#top)</sub></sub> 
 
 After setting up the app (you can set your prefered language in the **Settings** menu), you can start adding your service related data. <br>
-You can use either the data **input masks** or the **bulk importert**. Both options are found in the **Management** tab.
+You can use either the data **input masks** or the **bulk importer**. Both options are found in the **Management** tab.
 
 <br>
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/52833906/160431860-46f87d87-13ea-483f-b39d-2eff0d808d71.png"/>
+<img src="https://user-images.githubusercontent.com/52833906/161303671-2f4d8165-b6b8-48f3-b207-8ae14b41fd5b.png"/>
 </p>
 
 <br>
 
 ## A. Input mask
-Click on one of the table buttons (`Customers`, `Categories`, `Subcategories`, `Products`, `Abos`) to fetch the current available data (which is - suprise, suprise - empty):
+Click on one of the table buttons (`Customers`, `Categories`, `Subcategories`, `Products`, `Subscriptions`) to fetch the current available data (which is - suprise, suprise - empty):
 
 <br>
 
@@ -229,8 +231,8 @@ Add button |  Remove button | Upload button
 Below the table buttons is the `Bulk upload` button in light gray. Clicking opens up a new window with the instructions. To use the bulk importing you have to follow in general these steps:
 
 1. **Create a blueprint**: <br>
-To create a blueprint you just have to click on the button naming the data you want to input. **Mini Moi** generates an excel file which is located in your home directory under `~/mini-moi/blueprints` . <br> 
-Open the file and start inputting your data.
+To create a blueprint you just have to click on the button naming the data you want to input. **Mini Moi** generates an `.csv` file which is located in your home directory under `~/mini-moi/blueprints` . <br> 
+Open the file and enter your data.
 
 <br>
 
@@ -239,8 +241,8 @@ Open the file and start inputting your data.
 
 <br>
 
-2. **Edit the excel**: <br>
-Copy & paste your data into the excel sheet. As in the **input masks** you do not have to provide information for the `id`. The app will add these automatically. If you are unsure whether to insert data or not, you should do so. The app will automatically remove unneeded information. <br>
+2. **Edit the `.csv`**: <br>
+Copy & paste your data into the excel/csv sheet. As with the **input masks** you do not have to provide information for the `id`. The app will add these automatically. If you are unsure whether to insert data or not, you should do so. The app will automatically remove unneeded information. <br>
 
 <br>
 
@@ -262,13 +264,13 @@ Once you are done editing the file, save it and push the red button in the `bulk
 <br>
 
 **Mini Moi** will scan your directory and import every blueprint within the folder. <br>
-After the job is finished, the app will delete successfull imported blueprints automatically.
+After the job is done, the app will delete successful imported blueprints automatically.
 
 <br>
 
 
 ## Create a delivery report
-After the data import is done, you can create the report for the next day. <br>
+After the data import is completed, you can create the report for the next day. <br>
 Switch to the `Delivery` tab and click on `Create`. The app will fetch the orders and show you a formatted overview of the next day.
 
 <br>
@@ -283,11 +285,11 @@ Summary |  Detailed overview
 
 <br>
 
-If you want to, you can edit & customize the detailed overview (maybe a customer just called you and requested a little change for tomorrow?). After editing (or not) you can download the presented summary and overview by clicking on the `Download report` button and **Mini Moi** will save it as an excel in your home directory under `~/mini-moi/delivery`. <br>
+If you want to, you can edit & customize the detailed overview (maybe a customer just called you and requested a little change for tomorrow?). After editing (or not) you can download the on-screen summary and overview by clicking on the `Download report` button and **Mini Moi** will save it as an excel in your home directory under `~/mini-moi/delivery`. <br>
 
 <br>
 
-You must have already seen the yellow button which says `Book`, right? This button saves the current overview (inclusive all your editing) to the 'Orders' table. This table tracks orders which where made in the past. It also triggers the calculation of the next delivery dates for your abos.
+You have probably seen the yellow button which says `Book`, right? This button saves the current overview (inclusive all your edits) to the 'Orders' table. This table stores the orders made in the past. It also triggers the calculation of the next delivery dates for your subscriptions.
 
 <br>
 
@@ -299,20 +301,20 @@ You must have already seen the yellow button which says `Book`, right? This butt
 # <a name='manual'></a> Manual <sub><sub>[Back to top](#top)</sub></sub> 
 The core functionality is already explained in the [Quickstart](#how) section. <br>
 
-This section provides you additional infos for:
+This section provides you additional info for:
 - Terminology
 - `Reporting` tab
 - Blueprint format
 - Allowed types and formats
 - How the next delivery date gets calculated & its options
 - What the 'approach' column is for
-- Nice to knows about the `Customers` & `Abo` input masks
+- Nice to knows about the `Customers` & `Subs.` input masks
 - Columns & their meaning
 
 <br>
 
 ## Terminology
-**Mini Moi** is acutally a database with additional business logic. This business logic enables you to trach deliveries, download your overvies, etc. <br>
+**Mini Moi** is acutally a database with additional business logic. This business logic enables you to track deliveries, download your overviews, etc. <br>
 The graphical interface you see after starting the app is nothing more than a fancy input mask to perform typical database processes (which are `create`, `read`, `update`, `delete`). <br>
 When we talk about tables, this means the data tables within the database.
 
@@ -332,7 +334,7 @@ For each of these periods you see:
 
 ## Blueprint format
 The `Blueprint` (created in the `Bulk upload` menu on the `Management` tab) is a `.csv` file containing the column heads of the table you would like to write data to. Each row represents one database entry to create. <br>
-The below table shows an example for the `Abo` table:<br>
+The below table shows an example for the `Subs.` table:<br>
 
 <br>
 
@@ -343,7 +345,7 @@ Auto. | Auto. | Auto. | Interval | 4 | | Milk | None | 1
 
 <br>
 
-As you can see, the `Blueprint` has two rows. This means the database will add two entries to the `Abo` table (after the blueprint was successfully uploaded you can see them in the `Abo` input mask on the `Management` tab.). <br>
+As you can see, the `Blueprint` has two rows. This means the database will add two entries to the `Subs.` table (after the blueprint was successfully uploaded you can see them in the `Subs.` input mask on the `Management` tab.). <br>
 You can add as many lines as you prefere. Upon uploading, all rows in the csv will be added to the database. <br>
 
 <br>
@@ -356,13 +358,13 @@ Please keep in mind, that you have to save the bluprint as `.csv` with semicolon
 
 <br>
 
-The created file has to be named according to the name of the database table you want to manipulate and the addition *_blueprint* (e.g. for abo its *abo_blueprint.csv*). The database tables are named: <br>
+The created file has to be named according to the name of the database table you want to manipulate and the addition *_blueprint* (e.g. for subs. its *Subscription_blueprint.csv*). The database tables are named: <br>
 
 <br>
 
-**table name** | abo | category | subcategory | customers | products
+**table name** | subs. | category | subcategory | customers | products
 :-------------:|:---:|:--------:|:-----------:|:---------:|:--------:
-**file name** | abo_blueprint.csv | category_blueprint.csv | subcategory_blueprint.csv | customers_blueprint.csv | products_blueprint.csv 
+**file name** | Subscription_blueprint.csv | Category_blueprint.csv | Cubcategory_blueprint.csv | Customers_blueprint.csv | Products_blueprint.csv 
 
 <br>
 
@@ -412,8 +414,8 @@ The next delivery date is calculated automatically after you booked the orders. 
 
 <br>
 
-Deliveries based on **one time** abonements (`abo`) are only tracked until they are booked. From on onwards they are inactive until you edit the **Next delivery** to be in the futur. <br>
-These types of deliveries are market in the `abo` input mask of the `Management` tab as **Cycle type** None.
+Deliveries based on **one time** subscriptions (`Subs.`) are only tracked until they are booked. From on onwards they are inactive until you edit the **Next delivery** to be in the futur. <br>
+These types of deliveries are market in the `Subs.` input mask of the `Management` tab as **Cycle type** None.
 
 <br>
 
@@ -438,7 +440,7 @@ To sum it all up:
 <br>
 
 ## What the 'approach' column is for
-You can find this column in the `customers` input mask. This number in this column indicates the order of delivery addresses within one city. E.g. If you have two customers for the city of *Berlin* you can set the order of appearance in the delivery overviews as follows:
+You can find this column in the `Customers` input mask. This number in this column indicates the order of delivery addresses within one city. E.g. If you have two customers for the city of *Berlin* you can set the order of appearance in the delivery overviews as follows:
 
 <br>
 
@@ -449,19 +451,19 @@ id | Date | Name | Surname | Street | Nr | Postal | City | ... | Approach | Note
 
 <br>
 
-## Nice to knows about the `Customers` & `Abo` input masks
-The `customers` input mask has a button in the column **special** which is linked to his abos.
+## Nice to knows about the `Customers` & `Subs` input masks
+The `Customers` input mask has a button in the column **special** which is linked to his subs.
 
 <br>
 
-Special button |  Customer's abos 
+Special button |  Customer's subs 
 :-------------------------:|:-------------------------:
 <img src="https://user-images.githubusercontent.com/52833906/160558479-f7c1e9f4-1d1a-42ef-b18b-6f6d43533bf0.png" width="250" />  |  <img src="https://user-images.githubusercontent.com/52833906/160559276-8fd2543b-5522-40aa-a362-6f52dcccfc28.png" width="200" /> 
 
 <br>
 
-If you are adding new entries to the `Abo` table (by the input mask or the bulk importer) you have to supply the **Customer_id**. You can either lookup the customer in the `Customers` input mask tab, or you can just click on **abo button**. <br>
-The second method only works for you the selected customer has already at least one abonement.
+If you are adding new entries to the `Subs` table (by the input mask or the bulk importer) you have to supply the **Customer_id**. You can either lookup the customer in the `Customers` input mask tab, or you can just click on **subs button**. <br>
+The second method only works for you the selected customer has already at least one subscription.
 
 <br>
 
@@ -496,11 +498,11 @@ Below is a list of each column (EN version of the app) and their meaning:
     - **Margin**: The margin of the product. **Automatically added*
     - **Store**: The name of the store you buy the product from. *optional*
     - **Phone**: The phone number of the store you buy the product from. *optional*
-- `Abos`:
+- `Subscription.`:
     - **id**: The unique identifier. *Automatically added*
     - **Customer id**: The unique identifier of the customer. _See `Customers`_ _**id**_
     - **Update date**: The date of the last update. *Automatically added*
-    - **Cycle type**: The type of the abo interval. *For further information see: How the next delivery Date gets calculated & its options*
+    - **Cycle type**: The type of the subscription interval. *For further information see: How the next delivery Date gets calculated & its options*
         - Options:
             - Weekday: deliveries are set to the specific weekday
             - Interval: deliveries are set to be every n-days.
@@ -515,9 +517,8 @@ Below is a list of each column (EN version of the app) and their meaning:
 
 
 # <a name='why'></a> Additional info <sub><sub>[Back to top](#top)</sub></sub> 
-This project was created to help out a frind of mine aaaaaaannnddd... also to check out what I am able to work in 48h. <br>
-As you can already imagine, it didn't quite work out as expected. <br>
-Anyway, to appreciate all the work and effort, you are also welcome to use the project! :-) <br>
+This project was created to help out a friend of mine.<br>
+To appreciate all the work and effort, you are also welcome to use the project! :-) <br>
 
 <br>
 
@@ -531,7 +532,7 @@ Have fun using the app! :-)
 
 ## Technical details
 The app is a combination of python/flask in the backend and HTML, CSS & java script for the UI. <br>
-Personally I do not like the GUI tools of python, so it was just natural for me to create this project as the above described combination. <br>
+Personally I am not a hughe fan of the GUI tools for python, so it was just natural for me to create this project as the above described combination. <br>
 <br>
 For the sake of simplicity, the inbuilt **Werkzeug server** was used. The database, which stores the data, is a **sqlite3 lite** database instance. To interact the **sqlAlchemy** ORM is used. <br>
 <br>

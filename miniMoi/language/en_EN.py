@@ -72,7 +72,7 @@ mapping = {
         'product_selling_price':"selling price",
         'product_id':"Product id",
         'customer_id':"Customer id",
-        'id':"Abo"
+        'id':"Subscription"
     },
     'html_text':{
         'base_html':{
@@ -155,8 +155,8 @@ mapping = {
                 "Describe your products in the <span class='text-info'>Products Table</span>"
                 ),
             'index_data_abos':(
-                "Last, but not least: Add the regular orders to the (consumer) abo's "
-                "(<span class='text-info'>Abo Table</span>)"
+                "Last, but not least: Add the regular orders to the (consumer) subscriptions's "
+                "(<span class='text-info'>Subscription Table</span>)"
                 ),
             'index_create_report':"Create the report for the next day deliveries!"
         },
@@ -185,7 +185,7 @@ mapping = {
                 "Book locks your current report and moves the products "
                 "to the 'Orders' table. Additionally the dates for the "
                 "next deliveries are calculated for "
-                "your customers (based on the set abos in the database!). CAUTION: "
+                "your customers (based on the set subscriptions in the database!). CAUTION: "
                 "You can not undo or re-create the report once you have "
                 "'booked' your deliveries!!!"
                 ),
@@ -221,8 +221,8 @@ mapping = {
             'management_subcategory_btn':"Subcategories",
             'management_products_btn':"Products",
             'management_bulk_btn':"Bulk upload",
-            'management_abo_btn':"Abos",
-            'managment_abo_btn_label':"abo",
+            'management_abo_btn':"Subs.",
+            'managment_abo_btn_label':"Subs.",
             'management_tbl_col_remover':"Remove",
             'management_tbl_col_updater':"Update",
             'management_tbl_col_special':"Special",
@@ -240,7 +240,7 @@ mapping = {
             'bulk_category_btn':"Category",
             'bulk_subcategory_btn':"Subcategory",
             'bulk_products_btn':"Products",
-            'bulk_abo_btn':"Abos",
+            'bulk_abo_btn':"Subs.",
             'bulk_edit_blueprints':"2. Edit your blueprints",
             'bulk_edit_addition':(
                 "Got to your 'mini-moi/blueprints' folder in your home directory "
@@ -351,8 +351,8 @@ mapping = {
         'subcategory':"Subcategory",
         'products':"Products",
         'product':"Product",
-        'abos':"Abos",
-        'abo':"Abo"
+        'abos':"Subscriptions",
+        'abo':"Subscription"
     },
     'cycle_type_mapping':{
         'None':"None",
